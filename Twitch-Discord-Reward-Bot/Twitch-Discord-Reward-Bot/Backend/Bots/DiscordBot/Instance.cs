@@ -11,7 +11,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.DiscordBot
     {
         public Instance(BotInstance BotInstance) : base(BotInstance)
         {
-
+            StartBot();
         }
 
         DiscordSocketClient Client;
@@ -21,6 +21,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.DiscordBot
             SocketConfig.AlwaysDownloadUsers = true;
 
             Client = new DiscordSocketClient(SocketConfig);
+            Client.MessageReceived += BotInstance.CommandHandler.Handle;
             await Client.LoginAsync(Discord.TokenType.Bot, BotInstance.LoginConfig["Discord"]["Bot"]["Token"].ToString());
             await Client.StartAsync();
         }

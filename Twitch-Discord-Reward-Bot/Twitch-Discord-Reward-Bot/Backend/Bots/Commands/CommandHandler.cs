@@ -20,9 +20,9 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         {
             Handle(sender, StandardisedMessageRequest.FromTwitch(e));
         }
-        public void Handle(object sender, SocketMessage e)
+        public async Task Handle(SocketMessage e)
         {
-            Handle(sender, StandardisedMessageRequest.FromDiscord(e));
+            Handle(null, StandardisedMessageRequest.FromDiscord(e));
         }
 
         public void Handle(object sender, StandardisedMessageRequest e)
