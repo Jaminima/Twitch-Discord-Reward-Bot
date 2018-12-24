@@ -10,10 +10,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.TwitchBot
 {
     public class Instance:BaseObject
     {
-        CommandHandler HandlerInstance;
         public Instance(BotInstance BotInstance):base(BotInstance)
         {
-            HandlerInstance = new CommandHandler(BotInstance);
             StartBot();
         }
 
@@ -27,8 +25,10 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.TwitchBot
                 );
             Client = new TwitchClient();
             Client.Initialize(BotDetails,BotInstance.CommandConfig["ChannelName"].ToString());
-            Client.OnMessageReceived += HandlerInstance.Handle;
+            Client.OnMessageReceived += BotInstance.CommandHandler.Handle;
             Client.Connect();
         }
+
+
     }
 }

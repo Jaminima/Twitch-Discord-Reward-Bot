@@ -25,6 +25,7 @@ namespace Twitch_Discord_Reward_Bot.Backend
     {
         public Backend.Bots.DiscordBot.Instance DiscordBot;
         public Backend.Bots.TwitchBot.Instance TwitchBot;
+        public Backend.Bots.Commands.CommandHandler CommandHandler;
         string ConfigPath;
         public Newtonsoft.Json.Linq.JToken CommandConfig, LoginConfig;
 
@@ -32,6 +33,7 @@ namespace Twitch_Discord_Reward_Bot.Backend
         {
             this.ConfigPath = ConfigPath;
             LoadConfig();
+            CommandHandler = new Bots.Commands.CommandHandler(this);
             DiscordBot = new Backend.Bots.DiscordBot.Instance(this);
             TwitchBot = new Backend.Bots.TwitchBot.Instance(this);
         }

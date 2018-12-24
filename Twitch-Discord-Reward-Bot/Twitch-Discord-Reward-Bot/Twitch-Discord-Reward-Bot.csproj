@@ -259,8 +259,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Backend\Bots\BaseObject.cs" />
+    <Compile Include="Backend\Bots\Commands\CommandHandler.cs" />
     <Compile Include="Backend\Bots\DiscordBot\Instance.cs" />
-    <Compile Include="Backend\Bots\TwitchBot\CommandHandler.cs" />
+    <Compile Include="Backend\Bots\Objects.cs" />
     <Compile Include="Backend\Data\FileHandler.cs" />
     <Compile Include="Backend\Init.cs" />
     <Compile Include="Backend\Bots\TwitchBot\Instance.cs" />
