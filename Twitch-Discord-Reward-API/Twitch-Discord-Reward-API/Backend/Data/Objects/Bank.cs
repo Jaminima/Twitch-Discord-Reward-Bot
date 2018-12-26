@@ -52,5 +52,24 @@ WHERE (((Bank.CurrencyID)=@CurrencyID));
             }
             return CurrencyBanks;
         }
+
+        public static List<Bank> FromUser(int UserID)
+        {
+            List<OleDbParameter> Parmas = new List<OleDbParameter> { new OleDbParameter("UserID", UserID) };
+            List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bank.BankID, Bank.UserID, Bank.Balance, Bank.CurrencyID
+FROM Bank
+WHERE (((Bank.UserID)=@UserID));
+", Parmas);
+            List<Bank> UserBanks = new List<Bank> { };
+            foreach (String[] Item in RData)
+            {
+                Bank Bank = new Bank();
+                Bank.ID = int.Parse(Item[0]);
+                Bank.Balance = int.Parse(Item[2]);
+                Bank.Currency = null;//Must replace
+                UserBanks.Add(Bank);
+            }
+            return UserBanks;
+        }
     }
 }

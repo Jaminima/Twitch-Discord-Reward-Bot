@@ -10,7 +10,7 @@ namespace Twitch_Discord_Reward_API
     {
         static void Main(string[] args)
         {
-            var D = Backend.Data.Objects.Bank.FromCurrency(1);
+            var D = Backend.Data.Objects.Bank.FromCurrency(2);
         }
     }
 }
