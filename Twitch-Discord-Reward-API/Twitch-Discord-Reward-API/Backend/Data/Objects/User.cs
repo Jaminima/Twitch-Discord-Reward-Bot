@@ -51,5 +51,23 @@ WHERE "+WhereQuery+@";
             User.DiscordID = RData[0][2];
             return User;
         }
+
+        public bool Save()
+        {
+            if (FromTwitchDiscord(this.TwitchID) == null && FromTwitchDiscord(null,this.DiscordID)==null)
+            {
+                List<OleDbParameter> Params = new List<OleDbParameter> { };
+                string Columns = "", Values = "";
+                if (this.TwitchID != null) { Params.Add(new OleDbParameter("TwitchID", this.TwitchID)); Columns += "TwitchID"; Values += "@TwitchID"; }
+                if (this.DiscordID != null) {
+                    Params.Add(new OleDbParameter("DiscordID", this.DiscordID));
+                    if (Columns != "") { Columns += ","; Values += ","; }
+                    Columns += "DiscordID"; Values += "@DiscordID";
+                }
+                Init.SQLi.Execute(@"INSERT INTO Users ("+Columns+@") VALUES ("+Values+@")", Params);
+                return true;
+            }
+            return false;
+        }
     }
 }
