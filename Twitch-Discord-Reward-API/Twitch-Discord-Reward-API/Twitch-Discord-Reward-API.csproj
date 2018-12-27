@@ -52,7 +52,6 @@
     <Compile Include="Backend\Data\Objects\Bot.cs" />
     <Compile Include="Backend\Data\Objects\Currency.cs" />
     <Compile Include="Backend\Data\Objects\Login.cs" />
-    <Compile Include="Backend\Data\Objects\ObjectSet.cs" />
     <Compile Include="Backend\Data\Objects\User.cs" />
     <Compile Include="Backend\Data\SQL.cs" />
     <Compile Include="Backend\Init.cs" />

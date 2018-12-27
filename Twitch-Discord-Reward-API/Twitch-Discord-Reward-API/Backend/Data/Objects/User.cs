@@ -11,7 +11,7 @@ namespace Twitch_Discord_Reward_API.Backend.Data.Objects
     {
         public string DiscordID, TwitchID;
 
-        public User FromJson(Newtonsoft.Json.Linq.JToken Json)
+        public static User FromJson(Newtonsoft.Json.Linq.JToken Json)
         {
             return Json.ToObject<User>();
         }

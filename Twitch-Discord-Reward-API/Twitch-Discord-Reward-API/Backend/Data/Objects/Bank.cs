@@ -13,12 +13,12 @@ namespace Twitch_Discord_Reward_API.Backend.Data.Objects
         public User User;
         public Currency Currency;
 
-        public Bank FromJson(Newtonsoft.Json.Linq.JToken Json)
+        public static Bank FromJson(Newtonsoft.Json.Linq.JToken Json)
         {
             return Json.ToObject<Bank>();
         }
 
-        public static Bank FromID(int ID,ObjectSet ChildOf=ObjectSet.None)
+        public static Bank FromID(int ID)
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("ID",ID) };
             List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bank.BankID, Bank.UserID, Bank.Balance, Bank.CurrencyID
@@ -29,8 +29,7 @@ WHERE(((Bank.BankID) = @ID));
             Bank Bank = new Bank();
             Bank.ID = ID;
             Bank.Balance = int.Parse(RData[0][2]);
-            if (ChildOf != ObjectSet.Currency) { }
-            if (ChildOf != ObjectSet.User) { Bank.User = User.FromID(int.Parse(RData[0][1])); }
+            Bank.User = User.FromID(int.Parse(RData[0][1]));
             return Bank;
         }
 
@@ -66,7 +65,7 @@ WHERE (((Bank.UserID)=@UserID));
                 Bank Bank = new Bank();
                 Bank.ID = int.Parse(Item[0]);
                 Bank.Balance = int.Parse(Item[2]);
-                Bank.Currency = null;//Must replace
+                Bank.Currency = Currency.FromID(int.Parse(Item[1]));
                 UserBanks.Add(Bank);
             }
             return UserBanks;
