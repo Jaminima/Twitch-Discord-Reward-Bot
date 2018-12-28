@@ -38,7 +38,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             try
             {
                 if (Req.Method == "get") { Get.Handle(Req); }
-                if (Req.Method == "post") { }
+                if (Req.Method == "post") { Post.Handle(Req); }
             }
             catch (Exception E) { Console.WriteLine(E); ResponseObject.Code = 500; ResponseObject.Message = "Internal Server Error"; }
             byte[] ByteResponseData = Encoding.UTF8.GetBytes(ResponseObject.ToJson().ToString());

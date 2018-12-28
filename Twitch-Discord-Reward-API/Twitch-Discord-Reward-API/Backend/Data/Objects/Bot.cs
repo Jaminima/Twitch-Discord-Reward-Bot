@@ -98,5 +98,14 @@ WHERE (((Bots.AccessToken)=@AccessToken) AND ((Bots.CurrencyID)=@CurrencyID));
 ", Params);
             return RData.Count != 0;
         }
+        public static bool IsValidAccessToken(string AccessToken)
+        {
+            List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("AccessToken", AccessToken) };
+            List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.AccessToken, Bots.CurrencyID
+FROM Bots
+WHERE ((Bots.AccessToken)=@AccessToken);
+", Params);
+            return RData.Count != 0;
+        }
     }
 }

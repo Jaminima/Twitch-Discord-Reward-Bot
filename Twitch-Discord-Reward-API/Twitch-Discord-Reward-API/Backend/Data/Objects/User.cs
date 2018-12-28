@@ -33,6 +33,7 @@ WHERE (((Users.UserID)=@ID));
 
         public static User FromTwitchDiscord(string TwitchID=null,string DiscordID=null)
         {
+            if (TwitchID == null && DiscordID == null) { return null; }
             List<OleDbParameter> Params = new List<OleDbParameter> { };
             string WhereQuery = "";
             if (TwitchID != null) { Params.Add(new OleDbParameter("TwitchID", TwitchID)); WhereQuery += "(((Users.TwitchID)=@TwitchID))"; }
