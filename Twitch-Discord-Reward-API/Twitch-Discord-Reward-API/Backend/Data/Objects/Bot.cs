@@ -76,6 +76,24 @@ WHERE (((Bots.CurrencyID)=@CurrencyID));
             return Bots;
         }
 
+        public static Bot FromAccessToken(string AccessToken)
+        {
+            List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("AccessToken", AccessToken) };
+            List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID
+FROM Bots
+WHERE ((Bots.AccessToken)=@AccessToken);
+", Params);
+            if (RData.Count == 0) { return null; }
+            Bot Bot = new Bot();
+            Bot.ID = int.Parse(RData[0][0]);
+            Bot.Currency = Currency.FromID(int.Parse(RData[0][1]));
+            Bot.AccessToken = RData[0][2];
+            Bot.TokenRefreshDateTime = DateTime.Parse(RData[0][3]);
+            Bot.RefreshToken = RData[0][4];
+            Bot.OwnerLogin = Login.FromID(int.Parse(RData[0][5]));
+            return Bot;
+        }
+
         public bool Save()
         {
             List<OleDbParameter> Params = new List<OleDbParameter> {
@@ -87,25 +105,6 @@ WHERE (((Bots.CurrencyID)=@CurrencyID));
             };
             Init.SQLi.Execute(@"INSERT INTO Bots (CurrencyID, LoginID, AccessToken, RefreshToken, TokenRefreshDateTime) VALUES (@CurrencyID, @LoginID, @AccessToken, @RefreshToken, @TokenRefreshDateTime)", Params);
             return true;
-        }
-
-        public static bool IsValidAccessToken(string AccessToken,int CurrencyID)
-        {
-            List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("AccessToken",AccessToken), new OleDbParameter("CurrencyID",CurrencyID) };
-            List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.AccessToken, Bots.CurrencyID
-FROM Bots
-WHERE (((Bots.AccessToken)=@AccessToken) AND ((Bots.CurrencyID)=@CurrencyID));
-", Params);
-            return RData.Count != 0;
-        }
-        public static bool IsValidAccessToken(string AccessToken)
-        {
-            List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("AccessToken", AccessToken) };
-            List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.AccessToken, Bots.CurrencyID
-FROM Bots
-WHERE ((Bots.AccessToken)=@AccessToken);
-", Params);
-            return RData.Count != 0;
         }
     }
 }

@@ -1,5 +1,6 @@
 {
 	"CurrencyName":"Your Coin",
 	"Prefix":"!",
-	"ChannelName":"Your Twitch Username"
+	"ChannelName":"Your Twitch Username",
+	"InititalBalance":500
 }

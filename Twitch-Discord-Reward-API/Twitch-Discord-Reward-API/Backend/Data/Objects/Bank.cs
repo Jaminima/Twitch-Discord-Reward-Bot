@@ -31,7 +31,7 @@ WHERE(((Bank.BankID) = @ID));
             Bank.Balance = int.Parse(RData[0][3]);
             Bank.DiscordID = RData[0][1];
             Bank.TwitchID = RData[0][2];
-            Bank.Currency = Currency.FromID(int.Parse(RData[0][3]));
+            Bank.Currency = Currency.FromID(int.Parse(RData[0][4]));
             return Bank;
         }
 
@@ -95,12 +95,17 @@ WHERE "+WhereStatment+@";
             if (FromTwitchDiscord(this.DiscordID,this.TwitchID).Find(x => x.Currency.ID == this.Currency.ID) == null)
             {
                 List<OleDbParameter> Params = new List<OleDbParameter> {
-                    new OleDbParameter("TwitchID",this.TwitchID),
-                    new OleDbParameter("DiscordID",this.DiscordID),
                     new OleDbParameter("Balance",this.Balance),
                     new OleDbParameter("CurrencyID",this.Currency.ID)
                 };
-                Init.SQLi.Execute(@"INSERT INTO Bank (TwitchID, DiscordID, Balance, CurrencyID) VALUES (@TwitchID, @DiscordID, @Balance, @CurrencyID)", Params);
+                string PostStatment = "",PreStatment="";
+                if (DiscordID != null) { Params.Add(new OleDbParameter("DiscordID", DiscordID)); PreStatment += "DiscordID"; PostStatment += "@DiscordID"; }
+                if (TwitchID != null)
+                {
+                    if (PostStatment != "") { PreStatment += ","; PostStatment += ","; }
+                    Params.Add(new OleDbParameter("TwitchID", TwitchID)); PreStatment += "TwitchID"; PostStatment += "@TwitchID";
+                }
+                Init.SQLi.Execute(@"INSERT INTO Bank (Balance, CurrencyID, " + PreStatment+ @") VALUES (@Balance, @CurrencyID, " + PostStatment+@")", Params);
                 return true;
             }
             return false;

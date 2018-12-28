@@ -11,19 +11,43 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
         public static ResponseObject Handle(StandardisedRequestObject Context)
         {
             bool ErrorOccured = false;
-
+            Backend.Data.Objects.Bot CorrespondingBot = AuthCheck(Context);
+            if (Context.URLSegments[1] == "bank")
+            {
+                if (Context.Headers.AllKeys.Contains("TwitchID") || Context.Headers.AllKeys.Contains("DiscordID"))
+                {
+                    if (CorrespondingBot != null)
+                    {
+                        Data.Objects.Bank B = new Data.Objects.Bank();
+                        B.DiscordID = Context.Headers["DiscordID"];
+                        B.TwitchID = Context.Headers["TwitchID"];
+                        B.Currency = CorrespondingBot.Currency;
+                        B.Balance = int.Parse(CorrespondingBot.Currency.CommandConfig["InititalBalance"].ToString());
+                        B.Save();
+                    }
+                    else
+                    {
+                        ErrorOccured = true;
+                        Context.ResponseObject.Code = 403; Context.ResponseObject.Message = "Invalid AuthToken";
+                    }
+                }
+                else
+                {
+                    ErrorOccured = true;
+                    Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, No operable Headers provided";
+                }
+            }
             if (ErrorOccured == false) { Context.ResponseObject.Code = 200; Context.ResponseObject.Message = "The requested task was performed successfully"; }
             return Context.ResponseObject;
         }
 
-        static bool AuthCheck(StandardisedRequestObject Context,int CurrencyID=-1)
+        static Data.Objects.Bot AuthCheck(StandardisedRequestObject Context)
         {
             if (Context.Headers.AllKeys.Contains("AuthToken"))
             {
-                if (CurrencyID != -1) { return Backend.Data.Objects.Bot.IsValidAccessToken(Context.Headers["AuthToken"], CurrencyID); }
-                else { return Backend.Data.Objects.Bot.IsValidAccessToken(Context.Headers["AuthToken"]); }
+                return Data.Objects.Bot.FromAccessToken(Context.Headers["AuthToken"]);
             }
-            else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AuthToken is missing"; return false; }
+            else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AuthToken is missing"; return null; }
         }
     }
 }
