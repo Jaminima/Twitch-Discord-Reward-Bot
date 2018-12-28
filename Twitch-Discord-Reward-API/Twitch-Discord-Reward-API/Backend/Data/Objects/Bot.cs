@@ -75,5 +75,18 @@ WHERE (((Bots.CurrencyID)=@CurrencyID));
             }
             return Bots;
         }
+
+        public bool Save()
+        {
+            List<OleDbParameter> Params = new List<OleDbParameter> {
+                new OleDbParameter("CurrencyID",this.Currency.ID),
+                new OleDbParameter("LoginID",this.OwnerLogin.ID),
+                new OleDbParameter("AccessToken",Networking.TokenSystem.CreateToken(32)),
+                new OleDbParameter("RefreshToken",Networking.TokenSystem.CreateToken(64)),
+                new OleDbParameter("TokenRefreshDateTime",DateTime.Now.ToString())
+            };
+            Init.SQLi.Execute(@"INSERT INTO Bots (CurrencyID, LoginID, AccessToken, RefreshToken, TokenRefreshDateTime) VALUES (@CurrencyID, @LoginID, @AccessToken, @RefreshToken, @TokenRefreshDateTime)", Params);
+            return true;
+        }
     }
 }

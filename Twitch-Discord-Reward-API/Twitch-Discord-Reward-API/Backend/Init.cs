@@ -8,6 +8,7 @@ namespace Twitch_Discord_Reward_API.Backend
 {
     public static class Init
     {
+        public static Random Rnd = new Random();
         public static Data.SQL SQLi = new Data.SQL("./Data/Database");
     }
 }

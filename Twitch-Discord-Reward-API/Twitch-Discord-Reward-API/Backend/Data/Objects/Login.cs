@@ -62,5 +62,22 @@ WHERE (((Logins.Email)=@Email));
             Login.LastLoginDateTime = DateTime.Parse(RData[0][4]);
             return Login;
         }
+
+        public bool Save()
+        {
+            if (FromEmail(this.Email) == null && FromUserName(this.UserName) == null)
+            {
+                List<OleDbParameter> Params = new List<OleDbParameter> {
+                    new OleDbParameter("UserName",this.UserName),
+                    new OleDbParameter("HashedPassword",this.HashedPassword),
+                    new OleDbParameter("AccessToken",Networking.TokenSystem.CreateToken(32)),
+                    new OleDbParameter("LastLoginDateTime",DateTime.Now.ToString()),
+                    new OleDbParameter("Email",this.Email)
+                };
+                Init.SQLi.Execute(@"INSERT INTO Logins (UserName, HashedPassword, AccessToken, LastLoginDateTime, Email) VALUES (@UserName, @HashedPassword, @AccessToken, @LastLoginDateTime, @Email)", Params);
+                return true;
+            }
+            return false;
+        }
     }
 }

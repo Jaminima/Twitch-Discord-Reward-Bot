@@ -10,8 +10,9 @@ namespace Twitch_Discord_Reward_API
     {
         static void Main(string[] args)
         {
-            var D = new Backend.Data.Objects.Currency();
+            var D = new Backend.Data.Objects.Bot();
             D.OwnerLogin = Backend.Data.Objects.Login.FromID(1);
+            D.Currency = Backend.Data.Objects.Currency.FromID(1);
             D.Save();
         }
     }

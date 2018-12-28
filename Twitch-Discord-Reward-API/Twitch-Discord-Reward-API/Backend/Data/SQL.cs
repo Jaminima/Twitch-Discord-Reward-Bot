@@ -44,7 +44,7 @@ namespace Twitch_Discord_Reward_API.Backend.Data
         {
             OleDbCommand Command = new OleDbCommand(sCommand, Conn); // Create the command, using the opened connection ad the sql string parameter
             if (ParamCollection != null) { for (int i = 0; i < ParamCollection.Count; i++) { Command.Parameters.Add(ParamCollection[i]); } } // Add the paramaters
-            try { Command.ExecuteNonQuery(); /*RestartConn();*/ } catch (Exception E) { Console.WriteLine(E); } // Execute the command
+            try { Command.ExecuteNonQuery(); /*RestartConn();*/ } catch (OleDbException E) { Console.WriteLine(E); } // Execute the command
         }
     }
 }
