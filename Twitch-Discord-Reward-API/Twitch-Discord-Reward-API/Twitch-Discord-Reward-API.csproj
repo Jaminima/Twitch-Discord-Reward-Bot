@@ -58,8 +58,10 @@
     <Compile Include="Backend\Data\Objects\User.cs" />
     <Compile Include="Backend\Data\SQL.cs" />
     <Compile Include="Backend\Init.cs" />
+    <Compile Include="Backend\Networking\HTTPServer\Get\Handler.cs" />
     <Compile Include="Backend\Networking\HTTPServer\Init.cs" />
     <Compile Include="Backend\Networking\ResponseObject.cs" />
+    <Compile Include="Backend\Networking\StandardisedRequestObject.cs" />
     <Compile Include="Backend\Networking\TokenSystem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -69,6 +71,8 @@
     <None Include="app.manifest" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Backend\API\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

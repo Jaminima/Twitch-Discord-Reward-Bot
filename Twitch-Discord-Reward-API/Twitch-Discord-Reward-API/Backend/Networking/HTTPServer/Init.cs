@@ -33,10 +33,12 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             Resp.StatusCode = 200;
             Resp.ContentType = "application/json";
             ResponseObject ResponseObject = new ResponseObject();
-            ResponseObject.Code = 400; ResponseObject.Message = "Bad Request";
+            ResponseObject.Code = 400; ResponseObject.Message = "Non-Specific Bad Request";
+            StandardisedRequestObject Req = new StandardisedRequestObject(Context,ResponseObject);
             try
             {
-
+                if (Req.Method == "get") { Get.Handler.Handle(Req); }
+                if (Req.Method == "post") { }
             }
             catch (Exception E) { Console.WriteLine(E); ResponseObject.Code = 500; ResponseObject.Message = "Internal Server Error"; }
             byte[] ByteResponseData = Encoding.UTF8.GetBytes(ResponseObject.ToJson().ToString());
