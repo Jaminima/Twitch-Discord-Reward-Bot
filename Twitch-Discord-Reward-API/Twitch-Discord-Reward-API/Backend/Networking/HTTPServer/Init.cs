@@ -37,7 +37,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             StandardisedRequestObject Req = new StandardisedRequestObject(Context,ResponseObject);
             try
             {
-                if (Req.Method == "get") { Get.Handler.Handle(Req); }
+                if (Req.Method == "get") { Get.Handle(Req); }
                 if (Req.Method == "post") { }
             }
             catch (Exception E) { Console.WriteLine(E); ResponseObject.Code = 500; ResponseObject.Message = "Internal Server Error"; }

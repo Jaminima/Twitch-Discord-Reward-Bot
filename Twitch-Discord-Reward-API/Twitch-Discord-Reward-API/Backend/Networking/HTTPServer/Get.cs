@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer.Get
+namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
 {
-    public static class Handler
+    public static class Get
     {
         public static ResponseObject Handle(StandardisedRequestObject Context)
         {

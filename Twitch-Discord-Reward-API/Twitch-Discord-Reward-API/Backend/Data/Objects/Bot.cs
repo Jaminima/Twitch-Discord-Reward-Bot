@@ -88,5 +88,15 @@ WHERE (((Bots.CurrencyID)=@CurrencyID));
             Init.SQLi.Execute(@"INSERT INTO Bots (CurrencyID, LoginID, AccessToken, RefreshToken, TokenRefreshDateTime) VALUES (@CurrencyID, @LoginID, @AccessToken, @RefreshToken, @TokenRefreshDateTime)", Params);
             return true;
         }
+
+        public static bool IsValidAccessToken(string AccessToken,int CurrencyID)
+        {
+            List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("AccessToken",AccessToken), new OleDbParameter("CurrencyID",CurrencyID) };
+            List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.AccessToken, Bots.CurrencyID
+FROM Bots
+WHERE (((Bots.AccessToken)=@AccessToken) AND ((Bots.CurrencyID)=@CurrencyID));
+", Params);
+            return RData.Count != 0;
+        }
     }
 }
