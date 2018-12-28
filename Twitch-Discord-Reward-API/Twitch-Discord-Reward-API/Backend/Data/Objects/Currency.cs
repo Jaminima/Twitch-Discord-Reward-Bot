@@ -55,5 +55,16 @@ WHERE (((Currency.LoginID)=@UserID));
             }
             return Currencies;
         }
+
+        public bool Save()
+        {
+            List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("LoginID",this.OwnerLogin.ID) };
+            Init.SQLi.Execute(@"INSERT INTO [Currency] (LoginID) VALUES (@LoginID)", Params);
+            Currency C = FromLogin(this.OwnerLogin.ID).Last();
+            System.IO.Directory.CreateDirectory("./Data/CurrencyConfigs/" + C.ID);
+            System.IO.File.Copy("./Data/DefaultConfigs/Command.config.json", "./Data/CurrencyConfigs/" + C.ID+ "/Command.config.json");
+            System.IO.File.Copy("./Data/DefaultConfigs/Login.config.json", "./Data/CurrencyConfigs/" + C.ID + "/Login.config.json");
+            return true;
+        }
     }
 }

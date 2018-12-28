@@ -30,6 +30,7 @@ WHERE(((Bank.BankID) = @ID));
             Bank.ID = ID;
             Bank.Balance = int.Parse(RData[0][2]);
             Bank.User = User.FromID(int.Parse(RData[0][1]));
+            Bank.Currency = Currency.FromID(int.Parse(RData[0][3]));
             return Bank;
         }
 
@@ -65,10 +66,25 @@ WHERE (((Bank.UserID)=@UserID));
                 Bank Bank = new Bank();
                 Bank.ID = int.Parse(Item[0]);
                 Bank.Balance = int.Parse(Item[2]);
-                Bank.Currency = Currency.FromID(int.Parse(Item[1]));
+                Bank.Currency = Currency.FromID(int.Parse(Item[3]));
                 UserBanks.Add(Bank);
             }
             return UserBanks;
+        }
+
+        public bool Save()
+        {
+            if (FromUser(this.User.ID).Find(x => x.Currency.ID == this.Currency.ID) == null)
+            {
+                List<OleDbParameter> Params = new List<OleDbParameter> {
+                    new OleDbParameter("UserID",this.User.ID),
+                    new OleDbParameter("Balance",this.Balance),
+                    new OleDbParameter("CurrencyID",this.Currency.ID)
+                };
+                Init.SQLi.Execute(@"INSERT INTO Bank (UserID, Balance, CurrencyID) VALUES (@UserID, @Balance, @CurrencyID)", Params);
+                return true;
+            }
+            return false;
         }
     }
 }

@@ -36,7 +36,7 @@ WHERE (((Bots.BotID)=@ID));
                 Bot.TokenRefreshDateTime = DateTime.Parse(RData[0][3]);
                 Bot.RefreshToken = RData[0][4];
             }
-            Bot.OwnerLogin = Login.FromID(int.Parse(RData[0][5]), WithSecretData);
+            Bot.OwnerLogin = Login.FromID(int.Parse(RData[0][5]));
             return Bot;
         }
 

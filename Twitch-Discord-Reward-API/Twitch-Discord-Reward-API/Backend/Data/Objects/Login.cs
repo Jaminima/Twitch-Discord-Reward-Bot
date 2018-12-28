@@ -47,7 +47,7 @@ WHERE (((Logins.Email)=@Email));
             return FromRData(RData, WithSecretData);
         }
 
-        static Login FromRData(List<string[]> RData, bool WithSecretData = false)
+        static Login FromRData(List<string[]> RData, bool WithSecretData)
         {
             if (RData.Count == 0) { return null; }
             Login Login = new Login();
