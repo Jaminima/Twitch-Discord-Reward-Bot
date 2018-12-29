@@ -134,23 +134,37 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     }
                     else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Refresh Token does not correspond to a bot"; }
                 }
-                if (Context.Headers.AllKeys.Contains("AccessToken")&&Context.Headers.AllKeys.Contains("CurrencyID"))
+                else if (Context.Headers.AllKeys.Contains("AccessToken") && Context.Headers.AllKeys.Contains("InviteCode") && Context.Headers.AllKeys.Contains("CurrencyID"))
                 {
-                    try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
+                    try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
                     Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
                     if (L != null)
                     {
-                        if (Data.Objects.Currency.FromLogin(L.ID).Find(x => x.ID == int.Parse(Context.Headers["CurrencyID"])) != null)
+                        Data.Objects.Bot B = Data.Objects.Bot.FromInviteCode(Context.Headers["InviteCode"]);
+                        if (B != null)
                         {
+                            if (B.Currency == null)
+                            {
+                                B.Currency = Data.Objects.Currency.FromLogin(L.ID).Find(x => x.ID == int.Parse(Context.Headers["CurrencyID"]));
+                                if (B.Currency == null) { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is not allowed to edit that currency"; }
+                                else { B.UpdateCurrency(); }
+                            }
+                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Bot is already bound to a currency"; }
+                        }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, InviteCode doesnt match any bot"; }
+                    }
+                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
+                }
+                else if (Context.Headers.AllKeys.Contains("AccessToken"))
+                {
+                    Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
+                    if (L != null)
+                    {
                             Data.Objects.Bot B = new Data.Objects.Bot();
                             B.OwnerLogin = Data.Objects.Login.FromID(L.ID);
-                            B.Currency = Data.Objects.Currency.FromID(int.Parse(Context.Headers["CurrencyID"]));
                             B.Save();
                             B = Data.Objects.Bot.FromLogin(L.ID,true).Last();
-                            B.Currency = null;
                             Context.ResponseObject.Data = B.ToJson();
-                        }
-                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, This bot does not have permission to edit that Currency"; }
                     }
                     else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
                 }
