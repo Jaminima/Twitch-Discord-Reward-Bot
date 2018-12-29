@@ -13,6 +13,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking
         public string[] URLSegments;
         public System.Collections.Specialized.NameValueCollection Headers;
         public ResponseObject ResponseObject;
+        public Newtonsoft.Json.Linq.JToken RequestData;
         public HttpListenerContext Context;
         
         public StandardisedRequestObject(HttpListenerContext Context,ResponseObject ResponseObject)
@@ -21,6 +22,11 @@ namespace Twitch_Discord_Reward_API.Backend.Networking
             URL = Context.Request.RawUrl.ToLower();
             Method = Context.Request.HttpMethod.ToLower();
             URLSegments = URL.Split("/".ToCharArray());
+            if (Method == "post")
+            {
+                string StreamString = new System.IO.StreamReader(Context.Request.InputStream).ReadToEnd();
+                if (StreamString != "") { RequestData = Newtonsoft.Json.Linq.JToken.Parse(StreamString); }
+            }
             this.Context = Context;
             this.ResponseObject = ResponseObject;
         }

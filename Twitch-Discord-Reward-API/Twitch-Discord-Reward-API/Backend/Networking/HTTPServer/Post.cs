@@ -122,6 +122,44 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Missing HashedPassword";
                 }
             }
+            else if (Context.URLSegments[1] == "bot")
+            {
+                if (Context.Headers.AllKeys.Contains("RefreshToken"))
+                {
+                    Backend.Data.Objects.Bot B = Backend.Data.Objects.Bot.FromRefreshToken(Context.Headers["RefreshToken"]);
+                    if (B != null)
+                    {
+                        B.PerformRefresh();
+                        Context.ResponseObject.Data = B.ToJson();
+                    }
+                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Refresh Token does not correspond to a bot"; }
+                }
+                if (Context.Headers.AllKeys.Contains("AccessToken")&&Context.Headers.AllKeys.Contains("CurrencyID"))
+                {
+                    try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
+                    Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
+                    if (L != null)
+                    {
+                        if (Data.Objects.Currency.FromLogin(L.ID).Find(x => x.ID == int.Parse(Context.Headers["CurrencyID"])) != null)
+                        {
+                            Data.Objects.Bot B = new Data.Objects.Bot();
+                            B.OwnerLogin = Data.Objects.Login.FromID(L.ID);
+                            B.Currency = Data.Objects.Currency.FromID(int.Parse(Context.Headers["CurrencyID"]));
+                            B.Save();
+                            B = Data.Objects.Bot.FromLogin(L.ID,true).Last();
+                            B.Currency = null;
+                            Context.ResponseObject.Data = B.ToJson();
+                        }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, This bot does not have permission to edit that Currency"; }
+                    }
+                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
+                }
+                else
+                {
+                    ErrorOccured = true;
+                    Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, No operable Headers provided";
+                }
+            }
             else
             {
                 Context.ResponseObject.Code = 404;

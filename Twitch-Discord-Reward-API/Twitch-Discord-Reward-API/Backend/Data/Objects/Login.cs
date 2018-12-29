@@ -97,9 +97,9 @@ WHERE (((Logins.AccessToken)=@AccessToken));
                 this.AccessToken = Networking.TokenSystem.CreateToken(32);
                 this.LastLoginDateTime = DateTime.Now;
                 List<OleDbParameter> Params = new List<OleDbParameter> {
-                    new OleDbParameter("ID",this.ID),
                     new OleDbParameter("AccessToken",this.AccessToken),
-                    new OleDbParameter("LastLoginDateTime",this.LastLoginDateTime.ToString())
+                    new OleDbParameter("LastLoginDateTime",this.LastLoginDateTime.ToString()),
+                    new OleDbParameter("ID",this.ID)
                 };
                 Init.SQLi.Execute(@"UPDATE Logins SET Logins.AccessToken = @AccessToken, Logins.LastLoginDateTime = @LastLoginDateTime
 WHERE(((Logins.LoginID) = @ID));
