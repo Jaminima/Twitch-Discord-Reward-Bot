@@ -110,5 +110,23 @@ WHERE "+WhereStatment+@";
             }
             return false;
         }
+
+        public bool Update()
+        {
+            if (FromID(this.ID) != null)
+            {
+                List <OleDbParameter> Params = new List<OleDbParameter> {
+                    new OleDbParameter("DiscordID",this.DiscordID),
+                    new OleDbParameter("TwitchID",this.TwitchID),
+                    new OleDbParameter("Balance",this.Balance),
+                    new OleDbParameter("ID",this.ID)
+                };
+                Init.SQLi.Execute(@"UPDATE Bank SET Bank.DiscordID = @DiscordID, Bank.TwitchID = @TwitchID, Bank.Balance = @Balance
+WHERE(((Bank.BankID) = @ID));
+", Params);
+                return true;
+            }
+            else { return false; }
+        }
     }
 }

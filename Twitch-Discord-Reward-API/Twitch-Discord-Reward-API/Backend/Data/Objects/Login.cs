@@ -47,6 +47,16 @@ WHERE (((Logins.Email)=@Email));
             return FromRData(RData, WithSecretData);
         }
 
+        public static Login FromAccessToken(string AccessToken)
+        {
+            List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("AccessToken", AccessToken) };
+            List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Logins.LoginID, Logins.UserName, Logins.HashedPassword, Logins.AccessToken, Logins.LastLoginDateTime, Logins.Email
+FROM Logins
+WHERE (((Logins.AccessToken)=@AccessToken));
+",Params);
+            return FromRData(RData, true);
+        }
+
         static Login FromRData(List<string[]> RData, bool WithSecretData)
         {
             if (RData.Count == 0) { return null; }
@@ -75,6 +85,25 @@ WHERE (((Logins.Email)=@Email));
                     new OleDbParameter("Email",this.Email)
                 };
                 Init.SQLi.Execute(@"INSERT INTO Logins (UserName, HashedPassword, AccessToken, LastLoginDateTime, Email) VALUES (@UserName, @HashedPassword, @AccessToken, @LastLoginDateTime, @Email)", Params);
+                return true;
+            }
+            return false;
+        }
+
+        public bool UpdateToken()
+        {
+            if (FromID(this.ID)!=null)
+            {
+                this.AccessToken = Networking.TokenSystem.CreateToken(32);
+                this.LastLoginDateTime = DateTime.Now;
+                List<OleDbParameter> Params = new List<OleDbParameter> {
+                    new OleDbParameter("ID",this.ID),
+                    new OleDbParameter("AccessToken",this.AccessToken),
+                    new OleDbParameter("LastLoginDateTime",this.LastLoginDateTime.ToString())
+                };
+                Init.SQLi.Execute(@"UPDATE Logins SET Logins.AccessToken = @AccessToken, Logins.LastLoginDateTime = @LastLoginDateTime
+WHERE(((Logins.LoginID) = @ID));
+                ", Params);
                 return true;
             }
             return false;

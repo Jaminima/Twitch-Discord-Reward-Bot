@@ -57,6 +57,7 @@
     <Compile Include="Backend\Data\Objects\Login.cs" />
     <Compile Include="Backend\Data\SQL.cs" />
     <Compile Include="Backend\Init.cs" />
+    <Compile Include="Backend\Networking\Checks.cs" />
     <Compile Include="Backend\Networking\HTTPServer\Get.cs" />
     <Compile Include="Backend\Networking\HTTPServer\Init.cs" />
     <Compile Include="Backend\Networking\HTTPServer\Post.cs" />
