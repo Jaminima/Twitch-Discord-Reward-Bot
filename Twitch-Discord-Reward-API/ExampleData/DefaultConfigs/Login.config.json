@@ -11,7 +11,9 @@
 	},
 	"Discord":{
 		"Bot":{
-			"Token":"",
+			"AuthToken":""
+		},
+		"User":{
 			"AuthToken":""
 		}
 	}
