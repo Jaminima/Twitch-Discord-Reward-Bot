@@ -174,6 +174,22 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, No operable Headers provided";
                 }
             }
+            else if (Context.URLSegments[1] == "currency")
+            {
+                if (Context.Headers.AllKeys.Contains("AccessToken"))
+                {
+                    Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
+                    if (L != null)
+                    {
+                        Data.Objects.Currency B = new Data.Objects.Currency();
+                        B.OwnerLogin = Data.Objects.Login.FromID(L.ID);
+                        B.Save();
+                        B = Data.Objects.Currency.FromLogin(L.ID).Last();
+                        Context.ResponseObject.Data = B.ToJson();
+                    }
+                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
+                }
+            }
             else
             {
                 Context.ResponseObject.Code = 404;
