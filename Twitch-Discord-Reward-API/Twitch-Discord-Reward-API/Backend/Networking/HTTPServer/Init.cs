@@ -34,9 +34,9 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             Resp.ContentType = "application/json";
             ResponseObject ResponseObject = new ResponseObject();
             ResponseObject.Code = 400; ResponseObject.Message = "Non-Specific Bad Request";
-            StandardisedRequestObject Req = new StandardisedRequestObject(Context,ResponseObject);
             try
             {
+                StandardisedRequestObject Req = new StandardisedRequestObject(Context, ResponseObject);
                 if (Req.Method == "get") { Get.Handle(Req); }
                 if (Req.Method == "post") { Post.Handle(Req); }
             }

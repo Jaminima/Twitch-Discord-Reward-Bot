@@ -66,5 +66,11 @@ WHERE (((Currency.LoginID)=@UserID));
             System.IO.File.Copy("./Data/DefaultConfigs/Login.config.json", "./Data/CurrencyConfigs/" + C.ID + "/Login.config.json");
             return true;
         }
+
+        public void UpdateConfigs()
+        {
+            System.IO.File.WriteAllText("./Data/CurrencyConfigs/" + this.ID + "/Command.config.json",this.CommandConfig.ToString());
+            System.IO.File.WriteAllText("./Data/CurrencyConfigs/" + this.ID + "/Login.config.json", this.LoginConfig.ToString());
+        }
     }
 }

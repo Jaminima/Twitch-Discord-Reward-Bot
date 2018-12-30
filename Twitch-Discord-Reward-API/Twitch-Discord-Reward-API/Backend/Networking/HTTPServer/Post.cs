@@ -176,7 +176,31 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             }
             else if (Context.URLSegments[1] == "currency")
             {
-                if (Context.Headers.AllKeys.Contains("AccessToken"))
+                if (Context.Headers.AllKeys.Contains("AccessToken") && Context.RequestData != null && Context.Headers.AllKeys.Contains("CurrencyID"))
+                {
+                    try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
+                    Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
+                    if (L != null)
+                    {
+                        Data.Objects.Currency B = Data.Objects.Currency.FromID(int.Parse(Context.Headers["CurrencyID"]));
+                        B.LoadConfigs(true);
+                        if (B.OwnerLogin.ID == L.ID)
+                        {
+                            if (Context.RequestData["LoginConfig"] != null)
+                            {
+                                B.LoginConfig = Context.RequestData["LoginConfig"];
+                            }
+                            if (Context.RequestData["CommandConfig"] != null)
+                            {
+                                B.CommandConfig = Context.RequestData["CommandConfig"];
+                            }
+                            B.UpdateConfigs();
+                        }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, This login does not have permission to edit that Currency"; }
+                    }
+                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
+                }
+                else if (Context.Headers.AllKeys.Contains("AccessToken"))
                 {
                     Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
                     if (L != null)
