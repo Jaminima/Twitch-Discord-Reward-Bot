@@ -29,6 +29,7 @@ WHERE (((Logins.LoginID)=@ID));
 
         public static Login FromUserName(string UserName,bool WithSecretData=false)
         {
+            if (UserName == null) { return null; }
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("UserName", UserName) };
             List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Logins.LoginID, Logins.UserName, Logins.HashedPassword, Logins.AccessToken, Logins.LastLoginDateTime, Logins.Email
 FROM Logins
@@ -39,6 +40,7 @@ WHERE (((Logins.UserName)=@UserName));
 
         public static Login FromEmail(string Email,bool WithSecretData = false)
         {
+            if (Email == null) { return null; }
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("Email",Email) };
             List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Logins.LoginID, Logins.UserName, Logins.HashedPassword, Logins.AccessToken, Logins.LastLoginDateTime, Logins.Email
 FROM Logins
@@ -78,13 +80,18 @@ WHERE (((Logins.AccessToken)=@AccessToken));
             if (FromEmail(this.Email) == null && FromUserName(this.UserName) == null)
             {
                 List<OleDbParameter> Params = new List<OleDbParameter> {
-                    new OleDbParameter("UserName",this.UserName),
                     new OleDbParameter("HashedPassword",this.HashedPassword),
                     new OleDbParameter("AccessToken",Networking.TokenSystem.CreateToken(32)),
-                    new OleDbParameter("LastLoginDateTime",DateTime.Now.ToString()),
-                    new OleDbParameter("Email",this.Email)
+                    new OleDbParameter("LastLoginDateTime",DateTime.Now.ToString())
                 };
-                Init.SQLi.Execute(@"INSERT INTO Logins (UserName, HashedPassword, AccessToken, LastLoginDateTime, Email) VALUES (@UserName, @HashedPassword, @AccessToken, @LastLoginDateTime, @Email)", Params);
+                string PreValue = ""; string PostValue = "";
+                if (this.Email != null) { Params.Add(new OleDbParameter("Email", this.Email)); PreValue += "Email"; PostValue += "@Email"; }
+                if (this.UserName != null) {
+                    Params.Add(new OleDbParameter("UserName", this.UserName));
+                    if (PreValue != "") { PreValue += ","; PostValue += ","; }
+                    PreValue += "UserName"; PostValue += "@UserName";
+                }
+                Init.SQLi.Execute(@"INSERT INTO Logins (HashedPassword, AccessToken, LastLoginDateTime, "+PreValue+@") VALUES (@HashedPassword, @AccessToken, @LastLoginDateTime, "+PostValue+@")", Params);
                 return true;
             }
             return false;
@@ -103,10 +110,44 @@ WHERE (((Logins.AccessToken)=@AccessToken));
                 };
                 Init.SQLi.Execute(@"UPDATE Logins SET Logins.AccessToken = @AccessToken, Logins.LastLoginDateTime = @LastLoginDateTime
 WHERE(((Logins.LoginID) = @ID));
-                ", Params);
+", Params);
                 return true;
             }
             return false;
+        }
+
+        public bool UpdateUserNameEmailPassword()
+        {
+            bool IsTaken = false;
+            if (FromUserName(this.UserName) != null) { if (FromUserName(this.UserName).ID != this.ID) { IsTaken = true; } }
+            if (FromEmail(this.Email) != null) { if (FromEmail(this.Email).ID != this.ID) { IsTaken = true; } }
+            if (FromID(this.ID) != null)
+            {
+                if (!IsTaken)
+                {
+                    List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("HashedPassword",this.HashedPassword) };
+                    string UpdateString = "";
+                    if (this.UserName != null) { UpdateString += ", Logins.UserName = @UserName"; Params.Add(new OleDbParameter("UserName", this.UserName)); }
+                    if (this.Email != null) { UpdateString += ", Logins.Email = @Email"; Params.Add(new OleDbParameter("Email", this.Email)); }
+                    Params.Add(new OleDbParameter("ID", this.ID));
+                    Init.SQLi.Execute(@"UPDATE Logins SET Logins.HashedPassword = @HashedPassword"+UpdateString+@"
+WHERE(((Logins.LoginID) = @ID));
+", Params);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void Delete()
+        {
+            if (FromID(this.ID) != null)
+            {
+                List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("ID", this.ID) };
+                Init.SQLi.Execute(@"DELETE FROM Logins
+WHERE (((Logins.LoginID)=@ID));
+", Params);
+            }
         }
     }
 }

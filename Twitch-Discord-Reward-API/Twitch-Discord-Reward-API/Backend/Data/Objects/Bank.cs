@@ -128,5 +128,16 @@ WHERE(((Bank.BankID) = @ID));
             }
             else { return false; }
         }
+
+        public void Delete()
+        {
+            if (FromID(this.ID) != null)
+            {
+                List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("ID",this.ID) };
+                Init.SQLi.Execute(@"DELETE FROM Bank
+WHERE (((Bank.BankID)=@ID));
+",Params);
+            }
+        }
     }
 }

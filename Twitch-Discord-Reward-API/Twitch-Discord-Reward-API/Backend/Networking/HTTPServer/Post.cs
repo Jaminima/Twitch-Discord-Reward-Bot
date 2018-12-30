@@ -88,7 +88,19 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             }
             else if (Context.URLSegments[1] == "login")
             {
-                if (Context.Headers.AllKeys.Contains("HashedPassword"))
+                if ((Context.Headers.AllKeys.Contains("UserName") || Context.Headers.AllKeys.Contains("Email") || Context.Headers.AllKeys.Contains("HashedPassword")) && Context.Headers.AllKeys.Contains("AccessToken"))
+                {
+                    Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
+                    if (L != null)
+                    {
+                        if (Context.Headers["Email"] != null) { L.Email = Context.Headers["Email"]; }
+                        if (Context.Headers["UserName"] != null) { L.UserName = Context.Headers["UserName"]; }
+                        if (Context.Headers["HashedPassword"] != null) { L.HashedPassword = Context.Headers["HashedPassword"]; }
+                        if (!L.UpdateUserNameEmailPassword()) { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, That UserName or Email may be in use by another account"; }
+                    }
+                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
+                }
+                else if (Context.Headers.AllKeys.Contains("HashedPassword"))
                 {
                     if (Context.Headers.AllKeys.Contains("UserName"))
                     {
@@ -116,10 +128,37 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Email or UserName header is required";
                     }
                 }
+                else if (Context.URLSegments.Length == 3) { 
+                    if (Context.Headers.AllKeys.Contains("AccessToken") && Context.URLSegments[2] == "delete")
+                    {
+                        Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
+                        if (L != null)
+                        {
+                            L.Delete();
+                        }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
+                    }
+                }
                 else
                 {
                     ErrorOccured = true;
-                    Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Missing HashedPassword";
+                    Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, No operable Headers provided";
+                }
+            }
+            else if (Context.URLSegments[1] == "signup")
+            {
+                if ((Context.Headers.AllKeys.Contains("UserName") || Context.Headers.AllKeys.Contains("Email")) && Context.Headers.AllKeys.Contains("HashedPassword"))
+                {
+                    Backend.Data.Objects.Login L = new Data.Objects.Login();
+                    L.Email = Context.Headers["Email"];
+                    L.UserName = Context.Headers["UserName"];
+                    L.HashedPassword = Context.Headers["HashedPassword"];
+                    L.Save();
+                }
+                else
+                {
+                    ErrorOccured = true;
+                    Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, No operable Headers provided";
                 }
             }
             else if (Context.URLSegments[1] == "bot")

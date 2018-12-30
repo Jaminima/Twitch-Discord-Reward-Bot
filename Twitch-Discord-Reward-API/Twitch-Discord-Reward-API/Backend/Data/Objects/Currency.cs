@@ -72,5 +72,16 @@ WHERE (((Currency.LoginID)=@UserID));
             System.IO.File.WriteAllText("./Data/CurrencyConfigs/" + this.ID + "/Command.config.json",this.CommandConfig.ToString());
             System.IO.File.WriteAllText("./Data/CurrencyConfigs/" + this.ID + "/Login.config.json", this.LoginConfig.ToString());
         }
+
+        public void Delete()
+        {
+            if (FromID(this.ID) != null)
+            {
+                List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("ID", this.ID) };
+                Init.SQLi.Execute(@"DELETE FROM [Currency]
+WHERE (((Currency.CurrencyID)=@ID));
+", Params);
+            }
+        }
     }
 }

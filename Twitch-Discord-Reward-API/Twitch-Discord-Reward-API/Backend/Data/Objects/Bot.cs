@@ -197,5 +197,16 @@ WHERE (((Bots.BotID) = @ID));
             }
             return false;
         }
+
+        public void Delete()
+        {
+            if (FromID(this.ID) != null)
+            {
+                List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("ID", this.ID) };
+                Init.SQLi.Execute(@"DELETE FROM Bots
+WHERE (((Bots.BankID)=@ID));
+", Params);
+            }
+        }
     }
 }
