@@ -36,6 +36,41 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
             }
         }
 
+
+        public static ResponseObject PostRequest(string URL, List<KeyValuePair<string, string>> Headers = null,bool Auth=false,Newtonsoft.Json.Linq.JToken Data = null)
+        {
+            WebRequest Req = WebRequest.Create(Init.MasterConfig["API"]["WebAddress"] + ":" + Init.MasterConfig["API"]["Port"] + "/" + URL);
+            Req.Method = "POST";
+            if (Headers != null)
+            {
+                foreach (KeyValuePair<string, string> HeaderPair in Headers)
+                {
+                    Req.Headers.Add(HeaderPair.Key, HeaderPair.Value);
+                }
+            }
+            if (Auth) { Req.Headers.Add("AuthToken",GetAuthToken()); }
+            Byte[] PostData = new byte[] { };
+            if (Data != null) { PostData = Encoding.UTF8.GetBytes(Data.ToString()); }
+            Req.ContentLength = PostData.Length;
+            Stream PostStream = Req.GetRequestStream();
+            PostStream.Write(PostData, 0, PostData.Length);
+            PostStream.Flush();
+            PostStream.Close();
+            try
+            {
+                WebResponse Res = Req.GetResponse();
+                string StreamString = new StreamReader(Res.GetResponseStream()).ReadToEnd();
+                Newtonsoft.Json.Linq.JToken JData = Newtonsoft.Json.Linq.JToken.Parse(StreamString);
+                ResponseObject RObj = ResponseObject.FromJson(JData);
+                return RObj;
+            }
+            catch (WebException E)
+            {
+                Console.WriteLine(E);
+                return null;
+            }
+        }
+
         static string LastAuthToken = null;
         static DateTime LastRefreshed = DateTime.MinValue;
         public static string GetAuthToken()

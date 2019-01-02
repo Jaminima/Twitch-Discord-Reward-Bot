@@ -32,15 +32,19 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 
         async Task HandleThread(StandardisedMessageRequest e)
         {
-            string Prefix = BotInstance.CommandConfig["Prefix"].ToString();
-
-            if (e.SegmentedBody[0].StartsWith(Prefix))
+            try
             {
-                if (e.SegmentedBody[0].EndsWith("echo"))
+                string Prefix = BotInstance.CommandConfig["Prefix"].ToString();
+
+                if (e.SegmentedBody[0].StartsWith(Prefix))
                 {
-                    await SendMessage("@<SenderUser> @<OtherString>", e, null, -1, -1, e.MessageBody.Replace(e.SegmentedBody[0], ""));
+                    if (e.SegmentedBody[0].EndsWith("echo"))
+                    {
+                        await SendMessage("@<SenderUser> @<OtherString>", e, null, -1, -1, e.MessageBody.Replace(e.SegmentedBody[0], ""));
+                    }
                 }
             }
+            catch (Exception E) { Console.WriteLine(E); }
         }
 
         public async Task SendMessage(string ParamaterisedMessage, StandardisedMessageRequest e, string TargetUsername = null, int Amount = -1, int NewBal = -1, string OtherString = "", string SenderUsername = null)

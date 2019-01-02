@@ -12,7 +12,7 @@ namespace Twitch_Discord_Reward_Bot.Backend
         static List<BotInstance> Instances = new List<BotInstance> { };
         public static void Start()
         {
-            foreach (Newtonsoft.Json.Linq.JToken Currency in Data.APIIntergrations.RewardCurrencyAPI.WebRequests.GetRequest("currency/all").Data)
+            foreach (Newtonsoft.Json.Linq.JToken Currency in Data.APIIntergrations.RewardCurrencyAPI.WebRequests.PostRequest("currency/all",null,true).Data)
             {
                 Instances.Add(new BotInstance(Currency));
             }
@@ -28,15 +28,12 @@ namespace Twitch_Discord_Reward_Bot.Backend
 
         public BotInstance(Newtonsoft.Json.Linq.JToken Currency)
         {
+            Data.APIIntergrations.RewardCurrencyAPI.Objects.Currency C = Data.APIIntergrations.RewardCurrencyAPI.Objects.Currency.FromJson(Currency);
+            CommandConfig = C.CommandConfig;
+            LoginConfig = C.LoginConfig;
             CommandHandler = new Bots.Commands.CommandHandler(this);
-            DiscordBot = new Backend.Bots.DiscordBot.Instance(this);
-            TwitchBot = new Backend.Bots.TwitchBot.Instance(this);
-        }
-
-        public void LoadConfig()
-        {
-            //CommandConfig = Data.FileHandler.ReadJSON(ConfigPath + "/Command.config.json");
-            //LoginConfig = Data.FileHandler.ReadJSON(ConfigPath + "/Login.config.json");
+            try { DiscordBot = new Backend.Bots.DiscordBot.Instance(this); } catch { }
+            try { TwitchBot = new Backend.Bots.TwitchBot.Instance(this); } catch { }
         }
     }
 }

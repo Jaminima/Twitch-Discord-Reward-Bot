@@ -22,7 +22,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.DiscordBot
 
             Client = new DiscordSocketClient(SocketConfig);
             Client.MessageReceived += BotInstance.CommandHandler.Handle;
-            await Client.LoginAsync(Discord.TokenType.Bot, BotInstance.LoginConfig["Discord"]["Bot"]["Token"].ToString());
+            await Client.LoginAsync(Discord.TokenType.Bot, BotInstance.LoginConfig["Discord"]["Bot"]["AuthToken"].ToString());
             await Client.StartAsync();
         }
     }

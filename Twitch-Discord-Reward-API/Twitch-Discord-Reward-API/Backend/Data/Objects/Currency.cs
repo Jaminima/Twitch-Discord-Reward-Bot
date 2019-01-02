@@ -56,7 +56,7 @@ WHERE (((Currency.LoginID)=@UserID));
             return Currencies;
         }
 
-        public static List<Currency> All()
+        public static List<Currency> All(bool WithSecretData = false)
         {
             List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Currency.CurrencyID, Currency.LoginID
 FROM [Currency];");
@@ -66,7 +66,7 @@ FROM [Currency];");
                 Currency Currency = new Currency();
                 Currency.ID = int.Parse(Item[0]);
                 Currency.OwnerLogin = Login.FromID(int.Parse(RData[0][1]));
-                Currency.LoadConfigs();
+                Currency.LoadConfigs(WithSecretData);
                 Currencies.Add(Currency);
             }
             return Currencies;

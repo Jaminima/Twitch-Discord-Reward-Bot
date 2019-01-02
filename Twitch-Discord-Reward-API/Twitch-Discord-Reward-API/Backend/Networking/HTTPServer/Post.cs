@@ -224,7 +224,19 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             }
             else if (Context.URLSegments[1] == "currency")
             {
-                if (Context.Headers.AllKeys.Contains("AccessToken") && Context.RequestData != null && Context.Headers.AllKeys.Contains("CurrencyID"))
+                if (Context.URLSegments.Length == 3 && CorrespondingBot != null)
+                {
+                    if (Context.URLSegments[2] == "all" && CorrespondingBot.IsSuperBot)
+                    {
+                        Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(Data.Objects.Currency.All(true));
+                    }
+                    else
+                    {
+                        ErrorOccured = true;
+                        Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Bot is not SuperBot";
+                    }
+                }
+                else if (Context.Headers.AllKeys.Contains("AccessToken") && Context.RequestData != null && Context.Headers.AllKeys.Contains("CurrencyID"))
                 {
                     try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
                     Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
