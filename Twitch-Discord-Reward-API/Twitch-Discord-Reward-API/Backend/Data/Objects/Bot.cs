@@ -14,6 +14,7 @@ namespace Twitch_Discord_Reward_API.Backend.Data.Objects
         public string AccessToken, RefreshToken;
         public DateTime TokenRefreshDateTime;
         public Login OwnerLogin;
+        public bool IsSuperBot=false;
 
         public static Bot FromJson(Newtonsoft.Json.Linq.JToken Json)
         {
@@ -23,7 +24,7 @@ namespace Twitch_Discord_Reward_API.Backend.Data.Objects
         public static Bot FromID(int ID,bool WithSecretData=false)
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("ID",ID) };
-            List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.InviteCode
+            List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.InviteCode, Bots.IsSuperBot
 FROM Bots
 WHERE (((Bots.BotID)=@ID));
 ", Params);
@@ -38,6 +39,7 @@ WHERE (((Bots.BotID)=@ID));
                 Bot.RefreshToken = RData[0][4];
                 Bot.InviteCode = RData[0][6];
             }
+            Bot.IsSuperBot = RData[0][7] == "True";
             Bot.OwnerLogin = Login.FromID(int.Parse(RData[0][5]));
             return Bot;
         }
@@ -45,7 +47,7 @@ WHERE (((Bots.BotID)=@ID));
         public static List<Bot> FromLogin(int LoginID, bool WithSecretData = false)
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("LoginID",LoginID) };
-            List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.InviteCode
+            List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.InviteCode, Bots.IsSuperBot
 FROM Bots
 WHERE (((Bots.LoginID)=@LoginID));
 ", Params);
@@ -61,6 +63,7 @@ WHERE (((Bots.LoginID)=@LoginID));
                     Bot.TokenRefreshDateTime = DateTime.Parse(RData[0][3]);
                     Bot.RefreshToken = RData[0][4];
                     Bot.InviteCode = RData[0][6];
+                    Bot.IsSuperBot = RData[0][7] == "True";
                 }
                 Bots.Add(Bot);
             }
@@ -70,7 +73,7 @@ WHERE (((Bots.LoginID)=@LoginID));
         public static List<Bot> FromCurrency(int CurrencyID,bool WithSecretData = false)
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("CurrencyID",CurrencyID) };
-            List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.InviteCode
+            List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.InviteCode, Bots.IsSuperBot
 FROM Bots
 WHERE (((Bots.CurrencyID)=@CurrencyID));
 ", Params);
@@ -80,6 +83,7 @@ WHERE (((Bots.CurrencyID)=@CurrencyID));
                 Bot Bot = new Bot();
                 Bot.ID = int.Parse(Item[0]);
                 Bot.OwnerLogin = Login.FromID(int.Parse(Item[5]));
+                Bot.IsSuperBot = Item[7] == "True";
                 Bots.Add(Bot);
             }
             return Bots;
@@ -88,7 +92,7 @@ WHERE (((Bots.CurrencyID)=@CurrencyID));
         public static Bot FromAccessToken(string AccessToken)
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("AccessToken", AccessToken) };
-            List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.InviteCode
+            List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.InviteCode, Bots.IsSuperBot
 FROM Bots
 WHERE ((Bots.AccessToken)=@AccessToken);
 ", Params);
@@ -101,6 +105,7 @@ WHERE ((Bots.AccessToken)=@AccessToken);
             Bot.RefreshToken = RData[0][4];
             Bot.OwnerLogin = Login.FromID(int.Parse(RData[0][5]));
             Bot.InviteCode = RData[0][6];
+            Bot.IsSuperBot = RData[0][7] == "True";
 
             if ((int)((TimeSpan)(DateTime.Now - Bot.TokenRefreshDateTime)).TotalMinutes < 10) { return Bot; }
             else { return null; }
@@ -109,7 +114,7 @@ WHERE ((Bots.AccessToken)=@AccessToken);
         public static Bot FromRefreshToken(string RefreshToken)
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("RefreshToken", RefreshToken) };
-            List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.InviteCode
+            List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.InviteCode, Bots.IsSuperBot
 FROM Bots
 WHERE ((Bots.RefreshToken)=@RefreshToken);
 ", Params);
@@ -122,6 +127,7 @@ WHERE ((Bots.RefreshToken)=@RefreshToken);
             Bot.RefreshToken = RData[0][4];
             Bot.OwnerLogin = Login.FromID(int.Parse(RData[0][5]));
             Bot.InviteCode = RData[0][6];
+            Bot.IsSuperBot = RData[0][7] == "True";
 
             if ((int)((TimeSpan)(DateTime.Now - Bot.TokenRefreshDateTime)).TotalMinutes < 10) { return Bot; }
             else { return null; }
@@ -130,7 +136,7 @@ WHERE ((Bots.RefreshToken)=@RefreshToken);
         public static Bot FromInviteCode(string InviteCode)
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("FromInviteCode", InviteCode) };
-            List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.InviteCode
+            List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.InviteCode, Bots.IsSuperBot
 FROM Bots
 WHERE ((Bots.InviteCode)=@InviteCode);
 ", Params);
@@ -140,6 +146,7 @@ WHERE ((Bots.InviteCode)=@InviteCode);
             if (RData[0][1] != "") { Bot.Currency = Currency.FromID(int.Parse(RData[0][1])); }
             Bot.OwnerLogin = Login.FromID(int.Parse(RData[0][5]));
             Bot.InviteCode = RData[0][6];
+            Bot.IsSuperBot = RData[0][7] == "True";
             return Bot;
         }
 

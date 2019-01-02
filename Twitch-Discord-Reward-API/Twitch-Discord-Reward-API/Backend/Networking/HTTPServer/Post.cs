@@ -29,7 +29,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     if (CorrespondingBot != null)
                     {
                         Data.Objects.Bank B = Data.Objects.Bank.FromID(int.Parse(Context.Headers["ID"]));
-                        if (B.Currency.ID == CorrespondingBot.Currency.ID)
+                        if (B.Currency.ID == CorrespondingBot.Currency.ID || CorrespondingBot.IsSuperBot)
                         {
                             if (Context.Headers["DiscordID"] != null) { B.DiscordID = Context.Headers["DiscordID"]; }
                             if (Context.Headers["TwitchID"] != null) { B.TwitchID = Context.Headers["TwitchID"]; }
@@ -50,9 +50,18 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         Data.Objects.Bank B = new Data.Objects.Bank();
                         B.DiscordID = Context.Headers["DiscordID"];
                         B.TwitchID = Context.Headers["TwitchID"];
-                        B.Currency = CorrespondingBot.Currency;
+                        if (Context.Headers.AllKeys.Contains("CurrencyID"))
+                        {
+                            try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
+                            if (int.Parse(Context.Headers["CurrencyID"]) == CorrespondingBot.Currency.ID || CorrespondingBot.IsSuperBot)
+                            {
+                                B.Currency = Data.Objects.Currency.FromID(int.Parse(Context.Headers["CurrencyID"]));
+                            }
+                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, This bot does not have permission to edit that Currency"; }
+                        }
+                        else { B.Currency = CorrespondingBot.Currency; }
                         B.Balance = int.Parse(CorrespondingBot.Currency.CommandConfig["InititalBalance"].ToString());
-                        B.Save();
+                        if (B.Currency != null) { B.Save(); }
                     }
                     else
                     {
@@ -66,7 +75,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     {
                         try { int.Parse(Context.Headers["ID"]); int.Parse(Context.Headers["Value"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID and/or Value"; return Context.ResponseObject; }
                         Data.Objects.Bank B = Data.Objects.Bank.FromID(int.Parse(Context.Headers["ID"]));
-                        if (B.Currency.ID == CorrespondingBot.Currency.ID)
+                        if (B.Currency.ID == CorrespondingBot.Currency.ID || CorrespondingBot.IsSuperBot)
                         {
                             if (Context.Headers["Operator"].ToString() == "+") { B.Balance += int.Parse(Context.Headers["Value"]); B.Update(); }
                             else if (Context.Headers["Operator"].ToString() == "-") { B.Balance -= int.Parse(Context.Headers["Value"]); B.Update(); }
