@@ -58,6 +58,18 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             }
             else if (Context.URLSegments[1] == "currency")
             {
+                if (Context.URLSegments.Length == 3)
+                {
+                    if (Context.URLSegments[2] == "all")
+                    {
+                        Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(Data.Objects.Currency.All());
+                    }
+                    else
+                    {
+                        ErrorOccured = true;
+                        Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, No operable Headers provided";
+                    }
+                }
                 if (Context.Headers.AllKeys.Contains("ID"))
                 {
                     try { int.Parse(Context.Headers["ID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }

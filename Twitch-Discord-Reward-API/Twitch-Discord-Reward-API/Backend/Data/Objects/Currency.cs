@@ -56,6 +56,22 @@ WHERE (((Currency.LoginID)=@UserID));
             return Currencies;
         }
 
+        public static List<Currency> All()
+        {
+            List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Currency.CurrencyID, Currency.LoginID
+FROM [Currency];");
+            List<Currency> Currencies = new List<Currency> { };
+            foreach (String[] Item in RData)
+            {
+                Currency Currency = new Currency();
+                Currency.ID = int.Parse(Item[0]);
+                Currency.OwnerLogin = Login.FromID(int.Parse(RData[0][1]));
+                Currency.LoadConfigs();
+                Currencies.Add(Currency);
+            }
+            return Currencies;
+        }
+
         public bool Save()
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("LoginID",this.OwnerLogin.ID) };

@@ -12,5 +12,12 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data
         {
             return Newtonsoft.Json.Linq.JToken.Parse(System.IO.File.ReadAllText(FilePath));
         }
+
+
+        public static void SaveJSON(string FilePath,Newtonsoft.Json.Linq.JToken Data)
+        {
+            try { System.IO.File.WriteAllText(FilePath, Data.ToString()); }
+            catch { SaveJSON(FilePath, Data); }
+        }
     }
 }

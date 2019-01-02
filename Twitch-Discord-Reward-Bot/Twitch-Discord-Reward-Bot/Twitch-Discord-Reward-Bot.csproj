@@ -262,9 +262,12 @@
     <Compile Include="Backend\Bots\Commands\CommandHandler.cs" />
     <Compile Include="Backend\Bots\DiscordBot\Instance.cs" />
     <Compile Include="Backend\Bots\Objects.cs" />
-    <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\Account.cs" />
+    <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\Bank.cs" />
     <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\BaseObject.cs" />
-    <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\User.cs" />
+    <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\Bot.cs" />
+    <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\Currency.cs" />
+    <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\Login.cs" />
+    <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\ResponseObject.cs" />
     <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\WebRequests.cs" />
     <Compile Include="Backend\Data\FileHandler.cs" />
     <Compile Include="Backend\Init.cs" />

@@ -129,8 +129,7 @@ WHERE ((Bots.RefreshToken)=@RefreshToken);
             Bot.InviteCode = RData[0][6];
             Bot.IsSuperBot = RData[0][7] == "True";
 
-            if ((int)((TimeSpan)(DateTime.Now - Bot.TokenRefreshDateTime)).TotalMinutes < 10) { return Bot; }
-            else { return null; }
+            return Bot;
         }
 
         public static Bot FromInviteCode(string InviteCode)

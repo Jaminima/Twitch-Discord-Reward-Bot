@@ -8,15 +8,13 @@ namespace Twitch_Discord_Reward_Bot.Backend
 {
     public static class Init
     {
+        public static Newtonsoft.Json.Linq.JToken MasterConfig = Data.FileHandler.ReadJSON("./Data/Master.config.json");
         static List<BotInstance> Instances = new List<BotInstance> { };
         public static void Start()
         {
-            foreach (string Path in System.IO.Directory.GetDirectories("./Config/"))
+            foreach (Newtonsoft.Json.Linq.JToken Currency in Data.APIIntergrations.RewardCurrencyAPI.WebRequests.GetRequest("currency/all").Data)
             {
-                if (!Path.ToLower().EndsWith("ignore") && !Path.ToLower().StartsWith("ignore"))
-                {
-                    Instances.Add(new BotInstance(Path));
-                }
+                Instances.Add(new BotInstance(Currency));
             }
         }
     }
@@ -26,13 +24,10 @@ namespace Twitch_Discord_Reward_Bot.Backend
         public Backend.Bots.DiscordBot.Instance DiscordBot;
         public Backend.Bots.TwitchBot.Instance TwitchBot;
         public Backend.Bots.Commands.CommandHandler CommandHandler;
-        string ConfigPath;
         public Newtonsoft.Json.Linq.JToken CommandConfig, LoginConfig;
 
-        public BotInstance(string ConfigPath)
+        public BotInstance(Newtonsoft.Json.Linq.JToken Currency)
         {
-            this.ConfigPath = ConfigPath;
-            LoadConfig();
             CommandHandler = new Bots.Commands.CommandHandler(this);
             DiscordBot = new Backend.Bots.DiscordBot.Instance(this);
             TwitchBot = new Backend.Bots.TwitchBot.Instance(this);
@@ -40,8 +35,8 @@ namespace Twitch_Discord_Reward_Bot.Backend
 
         public void LoadConfig()
         {
-            CommandConfig = Data.FileHandler.ReadJSON(ConfigPath + "/Command.config.json");
-            LoginConfig = Data.FileHandler.ReadJSON(ConfigPath + "/Login.config.json");
+            //CommandConfig = Data.FileHandler.ReadJSON(ConfigPath + "/Command.config.json");
+            //LoginConfig = Data.FileHandler.ReadJSON(ConfigPath + "/Login.config.json");
         }
     }
 }
