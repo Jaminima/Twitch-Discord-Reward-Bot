@@ -1,20 +1,20 @@
 {
-	"Twitch":{
-		"Bot":{
-			"Username": "",
-			"AuthToken": ""
-		},
-		"API":{
-			"ClientId": "",
-			"AccessToken": ""
-		}
-	},
-	"Discord":{
-		"Bot":{
-			"AuthToken":""
-		},
-		"User":{
-			"AuthToken":""
-		}
-	}
+  "Twitch": {
+    "Bot": {
+      "Username": "",
+      "AuthToken": ""
+    },
+    "API": {
+      "ClientId": "",
+      "AccessToken": ""
+    }
+  },
+  "Discord": {
+    "Bot": {
+      "AuthToken": ""
+    },
+    "User": {
+      "AuthToken": ""
+    }
+  }
 }

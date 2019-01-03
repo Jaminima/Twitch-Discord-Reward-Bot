@@ -137,7 +137,8 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Email or UserName header is required";
                     }
                 }
-                else if (Context.URLSegments.Length == 3) { 
+                else if (Context.URLSegments.Length == 3)
+                {
                     if (Context.Headers.AllKeys.Contains("AccessToken") && Context.URLSegments[2] == "delete")
                     {
                         Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
@@ -208,11 +209,11 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
                     if (L != null)
                     {
-                            Data.Objects.Bot B = new Data.Objects.Bot();
-                            B.OwnerLogin = Data.Objects.Login.FromID(L.ID);
-                            B.Save();
-                            B = Data.Objects.Bot.FromLogin(L.ID,true).Last();
-                            Context.ResponseObject.Data = B.ToJson();
+                        Data.Objects.Bot B = new Data.Objects.Bot();
+                        B.OwnerLogin = Data.Objects.Login.FromID(L.ID);
+                        B.Save();
+                        B = Data.Objects.Bot.FromLogin(L.ID, true).Last();
+                        Context.ResponseObject.Data = B.ToJson();
                     }
                     else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
                 }
@@ -248,17 +249,34 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         {
                             if (Context.RequestData["LoginConfig"] != null)
                             {
-                                B.LoginConfig = Context.RequestData["LoginConfig"];
+                                if (Checks.JSONLayoutCompare(
+                                    Newtonsoft.Json.Linq.JToken.Parse(System.IO.File.ReadAllText("./Data/DefaultConfigs/Login.config.json")),
+                                    Context.RequestData["LoginConfig"])) { B.LoginConfig = Context.RequestData["LoginConfig"]; }
+                                else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, LoginConfig does not follow the required structure"; }
                             }
                             if (Context.RequestData["CommandConfig"] != null)
                             {
-                                B.CommandConfig = Context.RequestData["CommandConfig"];
+                                if (Checks.JSONLayoutCompare(
+                                    Newtonsoft.Json.Linq.JToken.Parse(System.IO.File.ReadAllText("./Data/DefaultConfigs/Command.config.json")),
+                                    Context.RequestData["CommandConfig"])) { B.CommandConfig = Context.RequestData["CommandConfig"]; }
+                                else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ComamndConfig does not follow the required structure"; }
                             }
-                            B.UpdateConfigs();
+                            if (ErrorOccured == false) { B.UpdateConfigs(); }
                         }
                         else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, This login does not have permission to edit that Currency"; }
                     }
                     else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
+                }
+                else if (Context.Headers.AllKeys.Contains("CurrencyID") && CorrespondingBot != null)
+                {
+                    try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
+                    Data.Objects.Currency C = Data.Objects.Currency.FromID(int.Parse(Context.Headers["CurrencyID"]));
+                    if (CorrespondingBot.Currency.ID == C.ID || CorrespondingBot.IsSuperBot)
+                    {
+                        C.LoadConfigs(true);
+                        Context.ResponseObject.Data = C.ToJson();
+                    }
+                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, This bot does not have permission to read that Currency"; }
                 }
                 else if (Context.Headers.AllKeys.Contains("AccessToken"))
                 {

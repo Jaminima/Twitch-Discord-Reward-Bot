@@ -1,6 +1,24 @@
 {
 	"CurrencyName":"Your Coin",
-	"Prefix":"!",
-	"ChannelName":"Your Twitch Username",
-	"InititalBalance":500
+	"CurrencyAcronym":"YC",
+	"Prefix":"?",
+	"ChannelName":"Your Twitch User Name",
+	"InititalBalance":500,
+	"MessageDelay":10,
+	"CommandSetup":{
+		"Alert":{
+			"CoolDown":{
+				"Global":60,
+				"Individual":120
+			}
+			"Alerts":[
+				{
+					"Name":"",
+					"URL":"",
+					"Cost":100
+				}
+			]
+		}
+	
+	}
 }
