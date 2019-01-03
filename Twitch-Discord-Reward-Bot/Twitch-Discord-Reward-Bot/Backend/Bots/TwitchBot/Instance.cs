@@ -27,6 +27,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.TwitchBot
             Client.Initialize(BotDetails,BotInstance.CommandConfig["ChannelName"].ToString());
             Client.OnMessageReceived += BotInstance.CommandHandler.Handle;
             Client.Connect();
+            Console.WriteLine("Started Twitch Bot for Currency: " + BotInstance.Currency.ID);
         }
 
 

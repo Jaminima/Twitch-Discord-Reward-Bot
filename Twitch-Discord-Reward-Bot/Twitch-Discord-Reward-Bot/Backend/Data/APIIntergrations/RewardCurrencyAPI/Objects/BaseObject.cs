@@ -8,6 +8,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
 {
     public class BaseObject // The baseobject is inherited by the other objects, so we can have generic functions be shared, reducing code repeats.
     {
+        public int ID;
         public Newtonsoft.Json.Linq.JToken ToJson()
         {
             return Newtonsoft.Json.Linq.JToken.FromObject(this);

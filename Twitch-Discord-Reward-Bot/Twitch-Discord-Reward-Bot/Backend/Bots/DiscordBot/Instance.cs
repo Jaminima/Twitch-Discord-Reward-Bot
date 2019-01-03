@@ -24,6 +24,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.DiscordBot
             Client.MessageReceived += BotInstance.CommandHandler.Handle;
             await Client.LoginAsync(Discord.TokenType.Bot, BotInstance.LoginConfig["Discord"]["Bot"]["AuthToken"].ToString());
             await Client.StartAsync();
+            Console.WriteLine("Started DiscordBot for Currency: " + BotInstance.Currency.ID);
         }
     }
 }
