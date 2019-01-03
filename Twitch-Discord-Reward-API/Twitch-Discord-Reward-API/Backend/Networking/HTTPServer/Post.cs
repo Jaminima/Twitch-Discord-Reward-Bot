@@ -225,11 +225,12 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             }
             else if (Context.URLSegments[1] == "currency")
             {
-                if (Context.URLSegments.Length == 3 && CorrespondingBot != null)
+                if (Context.URLSegments.Length == 3)
                 {
-                    if (Context.URLSegments[2] == "all" && CorrespondingBot.IsSuperBot)
+                    if (Context.URLSegments[2] == "all")
                     {
-                        Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(Data.Objects.Currency.All(true));
+                        if (CorrespondingBot!=null&&CorrespondingBot.IsSuperBot) { Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(Data.Objects.Currency.All(true)); }
+                        else { Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(Data.Objects.Currency.All()); }
                     }
                     else
                     {
