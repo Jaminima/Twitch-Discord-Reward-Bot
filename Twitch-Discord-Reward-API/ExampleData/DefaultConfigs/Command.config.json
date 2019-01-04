@@ -2,15 +2,30 @@
 	"CurrencyName":"Your Coin",
 	"CurrencyAcronym":"YC",
 	"Prefix":"?",
-	"ChannelName":"Your Twitch User Name",
+	"ChannelName":"Your Twitch Channel Name",
 	"InititalBalance":500,
 	"MessageDelay":10,
+	"DiscordChannels":[
+	],
 	"CommandSetup":{
+		"Balance":{
+			"Enabled":true,
+			"Commands":[
+				"bal",
+				"balance"
+			],
+			"Responses":{
+				"OwnBalance":"@<SenderUser> You have @<Amount> @<CurrencyName>",
+				"OtherBalance":"@<SenderUser> @<TargetUser> has @<Amount> @<CurrencyName>",
+				"OtherUnknown":"@<SenderUser> Cannot find that user"
+			}
+		},
 		"Alert":{
+			"Enabled":false,
 			"CoolDown":{
 				"Global":60,
 				"Individual":120
-			}
+			},
 			"Alerts":[
 				{
 					"Name":"",

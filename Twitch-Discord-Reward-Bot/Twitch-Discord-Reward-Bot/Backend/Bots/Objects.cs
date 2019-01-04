@@ -5,12 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using TwitchLib.Client.Events;
 using Discord.WebSocket;
+using System.Net;
+using System.IO;
 
 namespace Twitch_Discord_Reward_Bot.Backend.Bots
 {
     public class StandardisedMessageRequest
     {
-
         public string MessageBody,ChannelID,ChannelName,SenderID,SenderUserName;
         public string[] SegmentedBody;
         public MessageType MessageType;
@@ -42,6 +43,33 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots
             S.ChannelID = e.Channel.Id.ToString();
             S.ChannelName = e.Channel.Name;
             return S;
+        }
+    }
+
+    public class StandardisedUser
+    {
+        public string UserName;
+        public string ID;
+
+        public static StandardisedUser FromTwitchUsername(string MessageSegment, BotInstance BotInstance)
+        {
+            string UserName = MessageSegment.Replace("@", "");
+            WebRequest Req = WebRequest.Create("https://api.twitch.tv/helix/users?username=" + UserName);
+            Req.Method = "GET"; Req.Headers.Add("Authorization", BotInstance.LoginConfig["Twitch"]["API"]["AccessToken"].ToString());
+            WebResponse Res = Req.GetResponse();
+            string StreamString = new StreamReader(Res.GetResponseStream()).ReadToEnd();
+            Newtonsoft.Json.Linq.JToken JData = Newtonsoft.Json.Linq.JToken.Parse(StreamString);
+            StandardisedUser U = new StandardisedUser();
+            U.ID = JData["data"][0]["id"].ToString();
+            U.UserName = UserName;
+            return U;
+        }
+
+        public static StandardisedUser FromDiscordMention(string MessageSegment, BotInstance BotInstance)
+        {
+            StandardisedUser U = new StandardisedUser();
+            U.ID = MessageSegment.Replace("<@", "").Replace(">", "");
+            return U;
         }
     }
 

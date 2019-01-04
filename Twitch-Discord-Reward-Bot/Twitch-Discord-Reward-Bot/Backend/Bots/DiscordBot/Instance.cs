@@ -14,7 +14,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.DiscordBot
             StartBot();
         }
 
-        DiscordSocketClient Client;
+        public DiscordSocketClient Client;
         public async void StartBot()
         {
             DiscordSocketConfig SocketConfig = new DiscordSocketConfig();

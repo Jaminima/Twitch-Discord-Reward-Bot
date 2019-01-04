@@ -18,6 +18,12 @@ namespace Twitch_Discord_Reward_Bot.Backend
                 {
                     Data.APIIntergrations.RewardCurrencyAPI.Objects.Currency C = Data.APIIntergrations.RewardCurrencyAPI.Objects.Currency.FromJson(Currency);
                     if (!Instances.Keys.Contains(C.ID)) { Instances.Add(C.ID, new BotInstance(C)); }
+                    else
+                    {
+                        Instances[C.ID].CommandConfig = C.CommandConfig;
+                        Instances[C.ID].LoginConfig = C.LoginConfig;
+                        Instances[C.ID].Currency = C;
+                    }
                 }
                 System.Threading.Thread.Sleep(60000);
             }
@@ -35,9 +41,9 @@ namespace Twitch_Discord_Reward_Bot.Backend
         public BotInstance(Data.APIIntergrations.RewardCurrencyAPI.Objects.Currency Currency)
         {
             this.Currency = Currency;
-            CommandConfig = Currency.CommandConfig;
-            LoginConfig = Currency.LoginConfig;
-            CommandHandler = new Bots.Commands.CommandHandler(this);
+            this.CommandConfig = this.Currency.CommandConfig;
+            this.LoginConfig = this.Currency.LoginConfig;
+            this.CommandHandler = new Bots.Commands.CommandHandler(this);
             try { DiscordBot = new Backend.Bots.DiscordBot.Instance(this); } catch { }
             try { TwitchBot = new Backend.Bots.TwitchBot.Instance(this); } catch { }
         }
