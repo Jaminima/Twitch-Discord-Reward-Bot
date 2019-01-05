@@ -13,20 +13,29 @@ namespace Twitch_Discord_Reward_Bot.Backend
         static Dictionary<int,BotInstance> Instances = new Dictionary<int, BotInstance> { };
         public static void Start()
         {
-            while (true)
+            string S = Data.APIIntergrations.RewardCurrencyAPI.WebRequests.GetAuthToken();
+            if (S == null) { Console.WriteLine("API Tokens misconfigured!"); }
+            else
             {
-                foreach (Newtonsoft.Json.Linq.JToken Currency in Data.APIIntergrations.RewardCurrencyAPI.WebRequests.PostRequest("currency/all", null, true).Data)
+                while (true)
                 {
-                    Data.APIIntergrations.RewardCurrencyAPI.Objects.Currency C = Data.APIIntergrations.RewardCurrencyAPI.Objects.Currency.FromJson(Currency);
-                    if (!Instances.Keys.Contains(C.ID)) { Instances.Add(C.ID, new BotInstance(C)); }
-                    else
+                    foreach (Newtonsoft.Json.Linq.JToken Currency in Data.APIIntergrations.RewardCurrencyAPI.WebRequests.PostRequest("currency/all", null, true).Data)
                     {
-                        Instances[C.ID].CommandConfig = C.CommandConfig;
-                        Instances[C.ID].LoginConfig = C.LoginConfig;
-                        Instances[C.ID].Currency = C;
+                        Data.APIIntergrations.RewardCurrencyAPI.Objects.Currency C = Data.APIIntergrations.RewardCurrencyAPI.Objects.Currency.FromJson(Currency);
+                        if (C.CommandConfig.Count() != 0 && C.LoginConfig.Count() != 0)
+                        {
+                            if (!Instances.Keys.Contains(C.ID)) { Instances.Add(C.ID, new BotInstance(C)); }
+                            else
+                            {
+                                Instances[C.ID].CommandConfig = C.CommandConfig;
+                                Instances[C.ID].LoginConfig = C.LoginConfig;
+                                Instances[C.ID].Currency = C;
+                            }
+                        }
+                        else { Console.WriteLine("There was a error relating to currency configs"); }
                     }
+                    System.Threading.Thread.Sleep(60000);
                 }
-                System.Threading.Thread.Sleep(60000);
             }
         }
     }

@@ -1,13 +1,17 @@
 {
-	"CurrencyName":"Jam Coin",
-	"CurrencyAcronym":"JC",
+	"CurrencyName":"Your Coin",
+	"CurrencyAcronym":"YC",
 	"Prefix":"?",
-	"ChannelName":"jccjaminima",
+	"ChannelName":"",
 	"InititalBalance":500,
 	"MessageDelay":10,
-	"DiscordTwitchMerging":true,
-	"DiscordChannels":[
-	],
+	"Discord":{
+		"TwitchMerging":true,
+		"StatusMessage":"I am alive!!!",
+		"Channels":[
+		],
+		"SubscriberRoleID":""
+	},
 	"CommandSetup":{
 		"ErrorResponses":{
 			"APIError":"@<SenderUser> An error occured while polling the API, if this persists please contact a developer!",
@@ -15,6 +19,13 @@
 			"ParamaterCount":"@<SenderUser> You have provided too many or too few paramaters, please check your command and try again.",
 			"NumberParamaterInvalid":"@<SenderUser> The Numeric paramater is invalid, please check your command and try again.",
 			"NumberParamaterNegative":"@<SenderUser> The Number paramater is negative, please check your command and try again."
+		},
+		"SimpleResponses":{
+			"TwitchEnabled":true,
+			"DiscordEnabled":true,
+			"Commands":{
+				"discord":"@<SenderUser> link"
+			}
 		},
 		"Balance":{
 			"TwitchEnabled":true,
@@ -46,6 +57,7 @@
 			"DiscordEnabled":true,
 			"MinimumPayment":100,
 			"WinChance":45,
+			"WinMultiplyer":1,
 			"Commands":[
 				"gamble",
 				"roulette"
@@ -56,6 +68,60 @@
 				"NotEnough":"@<SenderUser> You dont have enough @<CurrencyName>",
 				"TooSmall":"@<SenderUser> You must pay at least @<Amount> @<CurrencyName>"
 			}
+		},
+		"Slots":{
+			"TwitchEnabled":true,
+			"DiscordEnabled":true,
+			"MinimumPayment":100,
+			"WinChance":10,
+			"WinMultiplyer":10,
+			"Emotes":{
+				"Discord":[
+				    "<:harbonA:486210663866171403>",
+				    "<:harbonCITO:438851118601207848>",
+				    "<:harbonDAB:243138145640644618>"
+				],
+				"Twitch":[
+					"harbonCITO",
+					"harbonSOCIETY",
+					"harbonA"
+				]
+			},
+			"Commands":[
+				"slots"
+			],
+			"Responses":{
+				"Win":"@<SenderUser> You got @<OtherString> Won @<Amount> @<CurrencyName>",
+				"Lose":"@<SenderUser> You got @<OtherString> Lost @<Amount> @<CurrencyName>",
+				"NotEnough":"@<SenderUser> You dont have enough @<CurrencyName>",
+				"TooSmall":"@<SenderUser> You must pay at least @<Amount> @<CurrencyName>"
+			}
+		},
+		"Fish":{
+			"TwitchEnabled":true,
+			"DiscordEnabled":true,
+			"RequireLive":true,
+			"Commands":[
+				"fish"
+			],
+			"Responses":{
+				"Started":"@<SenderUser> You started fishing!",
+				"Finished":"@<SenderUser> You got @<OtherString> Worth @<Amount> @<CurrencyName>",
+				"NotEnough":"@<SenderUser> You dont have enough @<CurrencyName>"
+			},
+			"Cost":{
+				"Viewer":500,
+				"Subscriber":250
+			},
+			"MinTime":60,
+			"MaxTime":300,
+			"Items":[
+				{
+					"Name":"Box of Fish",
+					"Chance":50,
+					"Reward":500
+				}
+			]
 		},
 		"Alert":{
 			"TwitchEnabled":true,

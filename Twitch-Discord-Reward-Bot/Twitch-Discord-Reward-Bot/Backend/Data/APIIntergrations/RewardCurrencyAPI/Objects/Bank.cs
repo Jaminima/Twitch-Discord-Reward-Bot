@@ -52,7 +52,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
 
         public static bool MergeAccounts(Bots.StandardisedMessageRequest e,BotInstance BotInstance,string ID)
         {
-            if (BotInstance.CommandConfig["DiscordTwitchMerging"].ToString().ToLower() == "true")
+            if (BotInstance.CommandConfig["Discord"]["TwitchMerging"].ToString().ToLower() == "true")
             {
                 if (e.MessageType == Bots.MessageType.Discord)
                 {
