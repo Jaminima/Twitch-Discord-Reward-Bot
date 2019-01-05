@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net;
+using System.IO;
 
 namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrencyAPI.Objects
 {
@@ -44,6 +46,46 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
             if (RObj.Code == 200)
             {
                 return true;
+            }
+            return false;
+        }
+
+        public static bool MergeAccounts(Bots.StandardisedMessageRequest e,BotInstance BotInstance,string ID)
+        {
+            if (e.MessageType == Bots.MessageType.Discord)
+            {
+                WebRequest Req = WebRequest.Create("https://discordapp.com/api/v6/users/" + ID + "/profile");
+                Req.Headers.Add("Authorization", Init.MasterConfig["Discord"]["User"]["AuthToken"].ToString());
+                Req.Method = "GET";
+                WebResponse Res = Req.GetResponse();
+                string D = new StreamReader(Res.GetResponseStream()).ReadToEnd();
+                Newtonsoft.Json.Linq.JObject ProfileData = Newtonsoft.Json.Linq.JObject.Parse(D);
+                foreach (Newtonsoft.Json.Linq.JObject Connection in ProfileData["connected_accounts"])
+                {
+                    if (Connection["type"].ToString() == "twitch")
+                    {
+                        List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("CurrencyID", BotInstance.Currency.ID.ToString()), new KeyValuePair<string, string> ("TwitchID", Connection["id"].ToString()) };
+                        ResponseObject RObj = WebRequests.GetRequest("bank", Headers);
+                        if (RObj.Code == 200)
+                        {
+                            Bank Twitch = FromJson(RObj.Data);
+                            Bank Discord = FromTwitchDiscord(e, BotInstance, e.SenderID);
+                            if (Twitch.DiscordID==null && Discord.TwitchID == null)
+                            {
+                                AdjustBalance(Twitch, Twitch.Balance, "-");
+                                AdjustBalance(Discord, Twitch.Balance, "+");
+                                Headers = new List<KeyValuePair<string, string>> {
+                                    new KeyValuePair<string, string>("TwitchID", Connection["id"].ToString()),
+                                    new KeyValuePair<string, string>("DiscordID",ID),
+                                    new KeyValuePair<string, string>("ID",Discord.ID.ToString())
+                                };
+                                RObj = WebRequests.PostRequest("bank", Headers,true);
+                                Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("ID", Twitch.ID.ToString()) };
+                                RObj = WebRequests.PostRequest("bank", Headers, true);
+                            }
+                        }
+                    }
+                }
             }
             return false;
         }

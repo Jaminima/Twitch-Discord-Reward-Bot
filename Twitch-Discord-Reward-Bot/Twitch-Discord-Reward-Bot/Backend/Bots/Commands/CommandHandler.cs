@@ -35,6 +35,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         {
             try
             {
+                Objects.Bank.MergeAccounts(e, BotInstance, e.SenderID);
                 if (e.SenderID != BotInstance.DiscordBot.Client.CurrentUser.Id.ToString())
                 {
                     string Prefix = BotInstance.CommandConfig["Prefix"].ToString();
@@ -81,22 +82,64 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 if (U.ID != null)
                                 {
                                     Objects.Bank Self = Objects.Bank.FromTwitchDiscord(e, BotInstance, e.SenderID),
-                                        Other = Objects.Bank.FromTwitchDiscord(e,BotInstance,U.ID);
+                                        Other = Objects.Bank.FromTwitchDiscord(e, BotInstance, U.ID);
                                     try { int.Parse(e.SegmentedBody[2]); } catch { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["NumberParamaterInvalid"].ToString(), e); return; }
-                                    int ChangeBy = int.Parse(e.SegmentedBody[2]), MinPayment= int.Parse(BotInstance.CommandConfig["CommandSetup"]["Pay"]["MinimumPayment"].ToString());
+                                    int ChangeBy = int.Parse(e.SegmentedBody[2]), MinPayment = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Pay"]["MinimumPayment"].ToString());
+                                    if (Self != null && Other != null)
+                                    {
+                                        if (ChangeBy >= MinPayment)
+                                        {
+                                            if (ChangeBy >= 0)
+                                            {
+                                                if (Self.Balance - ChangeBy >= 0)
+                                                {
+                                                    if (Objects.Bank.AdjustBalance(Self, ChangeBy, "-"))
+                                                    {
+                                                        if (Objects.Bank.AdjustBalance(Other, ChangeBy, "+"))
+                                                        {
+                                                            await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Pay"]["Responses"]["Paid"].ToString(), e, U, ChangeBy);
+                                                        }
+                                                        else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
+                                                    }
+                                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
+                                                }
+                                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Pay"]["Responses"]["NotEnough"].ToString(), e); }
+                                            }
+                                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["NumberParamaterNegative"].ToString(), e); }
+                                        }
+                                        else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Pay"]["Responses"]["TooSmall"].ToString(), e, null, MinPayment); }
+                                    }
+                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
+                                }
+                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["CannotFindUser"].ToString(), e); }
+                            }
+                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["ParamaterCount"].ToString(), e); }
+                        }
+                        if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Gamble"], e) &&
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Gamble"]["Commands"], Command))
+                        {
+                            if (e.SegmentedBody.Length == 2)
+                            {
+                                try { int.Parse(e.SegmentedBody[1]); } catch { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["NumberParamaterInvalid"].ToString(), e); return; }
+                                int ChangeBy = int.Parse(e.SegmentedBody[1]), 
+                                    MinPayment = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Gamble"]["MinimumPayment"].ToString()),
+                                    WinChance = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Gamble"]["WinChance"].ToString());
+                                Objects.Bank Self = Objects.Bank.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                if (Self != null)
+                                {
                                     if (ChangeBy >= MinPayment)
                                     {
                                         if (ChangeBy >= 0)
                                         {
                                             if (Self.Balance - ChangeBy >= 0)
                                             {
-                                                if (Objects.Bank.AdjustBalance(Self, ChangeBy, "-"))
+                                                string Operator;
+                                                if (Init.Rnd.Next(0, 100) <= WinChance) { Operator = "+"; }
+                                                else { Operator = "-"; }
+                                                if (Objects.Bank.AdjustBalance(Self, ChangeBy, Operator))
                                                 {
-                                                    if (Objects.Bank.AdjustBalance(Other, ChangeBy, "+"))
-                                                    {
-                                                        await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Pay"]["Responses"]["Paid"].ToString(), e, U, ChangeBy);
-                                                    }
-                                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
+                                                    if (Operator == "+") { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Gamble"]["Responses"]["Win"].ToString(), e, null, ChangeBy); }
+                                                    else if (Operator == "-") { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Gamble"]["Responses"]["Lose"].ToString(), e, null, ChangeBy); }
                                                 }
                                                 else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
                                             }
@@ -104,9 +147,9 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                         }
                                         else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["NumberParamaterNegative"].ToString(), e); }
                                     }
-                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Pay"]["Responses"]["TooSmall"].ToString(), e,null,MinPayment); }
+                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Pay"]["Responses"]["TooSmall"].ToString(), e, null, MinPayment); }
                                 }
-                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["CannotFindUser"].ToString(), e); }
+                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
                             }
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["ParamaterCount"].ToString(), e); }
                         }

@@ -8,6 +8,7 @@ namespace Twitch_Discord_Reward_Bot.Backend
 {
     public static class Init
     {
+        public static Random Rnd = new Random();
         public static Newtonsoft.Json.Linq.JToken MasterConfig = Data.FileHandler.ReadJSON("./Data/Master.config.json");
         static Dictionary<int,BotInstance> Instances = new Dictionary<int, BotInstance> { };
         public static void Start()
