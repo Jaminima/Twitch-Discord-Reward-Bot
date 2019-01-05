@@ -78,8 +78,16 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         Data.Objects.Bank B = Data.Objects.Bank.FromID(int.Parse(Context.Headers["ID"]));
                         if (B.Currency.ID == CorrespondingBot.Currency.ID || CorrespondingBot.IsSuperBot)
                         {
-                            if (Context.Headers["Operator"].ToString() == "+") { B.Balance += int.Parse(Context.Headers["Value"]); B.Update(); }
-                            else if (Context.Headers["Operator"].ToString() == "-") { B.Balance -= int.Parse(Context.Headers["Value"]); B.Update(); }
+                            if (Context.Headers["Operator"].ToString() == "+") {
+                                B.Balance += int.Parse(Context.Headers["Value"]);
+                                if (B.Balance >= 0) { B.Update(); }
+                                else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Cannot set balance as negative"; }
+                            }
+                            else if (Context.Headers["Operator"].ToString() == "-") {
+                                B.Balance -= int.Parse(Context.Headers["Value"]);
+                                if (B.Balance >= 0) { B.Update(); }
+                                else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Cannot set balance as negative"; }
+                            }
                             else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Operator must be + or -"; }
                         }
                         else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, This bot does not have permission to edit that Bank"; }

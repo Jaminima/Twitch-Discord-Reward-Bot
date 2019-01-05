@@ -68,7 +68,10 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots
         public static StandardisedUser FromDiscordMention(string MessageSegment, BotInstance BotInstance)
         {
             StandardisedUser U = new StandardisedUser();
-            U.ID = MessageSegment.Replace("<@", "").Replace(">", "");
+            if (MessageSegment.StartsWith("<@") && MessageSegment.EndsWith(">"))
+            {
+                U.ID = MessageSegment.Replace("<@", "").Replace(">", "");
+            }
             return U;
         }
     }
