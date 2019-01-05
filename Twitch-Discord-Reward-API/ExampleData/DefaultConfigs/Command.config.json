@@ -114,8 +114,8 @@
 				"Viewer":500,
 				"Subscriber":250
 			},
-			"MinTime":300,
-			"MaxTime":60,
+			"MinTime":60,
+			"MaxTime":300,
 			"Items":[
 				{
 					"Name":"Box of Fish",
