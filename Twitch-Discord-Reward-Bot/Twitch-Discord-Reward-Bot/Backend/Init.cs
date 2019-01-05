@@ -46,6 +46,7 @@ namespace Twitch_Discord_Reward_Bot.Backend
         public Backend.Bots.DiscordBot.Instance DiscordBot;
         public Backend.Bots.TwitchBot.Instance TwitchBot;
         public Backend.Bots.Commands.CommandHandler CommandHandler;
+        public Bots.Commands.TimeEvents TimeEvents;
         public Newtonsoft.Json.Linq.JToken CommandConfig, LoginConfig;
 
         public BotInstance(Data.APIIntergrations.RewardCurrencyAPI.Objects.Currency Currency)
@@ -53,6 +54,8 @@ namespace Twitch_Discord_Reward_Bot.Backend
             this.Currency = Currency;
             this.CommandConfig = this.Currency.CommandConfig;
             this.LoginConfig = this.Currency.LoginConfig;
+            this.TimeEvents =  new Bots.Commands.TimeEvents();
+            this.TimeEvents.Start();
             this.CommandHandler = new Bots.Commands.CommandHandler(this);
             try { DiscordBot = new Backend.Bots.DiscordBot.Instance(this); } catch { }
             try { TwitchBot = new Backend.Bots.TwitchBot.Instance(this); } catch { }

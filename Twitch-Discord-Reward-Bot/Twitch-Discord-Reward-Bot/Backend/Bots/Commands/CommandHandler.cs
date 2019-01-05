@@ -226,11 +226,16 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                     { if (((SocketGuildUser)e.DiscordRaw.Author).Roles.Where(x => x.Id.ToString() == BotInstance.CommandConfig["Discord"]["SubscriberRoleID"].ToString()).Count()!=0) { Cost = SubscriberCost; } }
                                     if (Self.Balance - Cost >= 0)
                                     {
-                                        if (Objects.Bank.AdjustBalance(Self, Cost, "-")) {
-                                            await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Fish"]["Responses"]["Started"].ToString(), e);
-                                            //CONTINUE FROM HERE
+                                        if (BotInstance.TimeEvents.Fishermen.Where(x => x.Value.e.SenderID == e.SenderID).Count() == 0)
+                                        {
+                                            if (Objects.Bank.AdjustBalance(Self, Cost, "-"))
+                                            {
+                                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Fish"]["Responses"]["Started"].ToString(), e);
+                                                BotInstance.TimeEvents.Fishermen.Add(DateTime.Now, new Fisherman(e, BotInstance));
+                                            }
+                                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
                                         }
-                                        else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
+                                        else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Fish"]["Responses"]["AlreadyFishing"].ToString(), e); }
                                     }
                                     else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Pay"]["Responses"]["NotEnough"].ToString(), e); }
                                 }

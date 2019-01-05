@@ -106,20 +106,26 @@
 			],
 			"Responses":{
 				"Started":"@<SenderUser> You started fishing!",
-				"Finished":"@<SenderUser> You got @<OtherString> Worth @<Amount> @<CurrencyName>",
-				"NotEnough":"@<SenderUser> You dont have enough @<CurrencyName>"
+				"Finished":"@<SenderUser> You got a @<OtherString> Worth @<Amount> @<CurrencyName>",
+				"NotEnough":"@<SenderUser> You dont have enough @<CurrencyName>",
+				"AlreadyFishing":"@<SenderUser> You are already fishing!"
 			},
 			"Cost":{
 				"Viewer":500,
 				"Subscriber":250
 			},
-			"MinTime":60,
-			"MaxTime":300,
+			"MinTime":300,
+			"MaxTime":60,
 			"Items":[
 				{
 					"Name":"Box of Fish",
 					"Chance":50,
 					"Reward":500
+				},
+				{
+					"Name":"Sock",
+					"Chance":100,
+					"Reward":5
 				}
 			]
 		},
