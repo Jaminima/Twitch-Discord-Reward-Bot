@@ -83,9 +83,9 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 {
                                     Objects.Bank Self = Objects.Bank.FromTwitchDiscord(e, BotInstance, e.SenderID),
                                         Other = Objects.Bank.FromTwitchDiscord(e, BotInstance, U.ID);
-                                    int ChangeBy, MinPayment = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Pay"]["MinimumPayment"].ToString());
-                                    if (e.SegmentedBody[2].ToLower() == "all") { ChangeBy = Self.Balance; }
-                                    else { try { ChangeBy = int.Parse(e.SegmentedBody[2]); } catch { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["NumberParamaterInvalid"].ToString(), e); return; } }
+                                    int ChangeBy=ValueFromMessageSegment(e.SegmentedBody[2],Self), 
+                                        MinPayment = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Pay"]["MinimumPayment"].ToString());
+                                    if (ChangeBy==-1) { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["NumberParamaterInvalid"].ToString(), e); return; }
                                     if (Self != null && Other != null)
                                     {
                                         if (ChangeBy >= MinPayment)
@@ -122,11 +122,10 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             if (e.SegmentedBody.Length == 2)
                             {
                                 Objects.Bank Self = Objects.Bank.FromTwitchDiscord(e, BotInstance, e.SenderID);
-                                int ChangeBy,
+                                int ChangeBy = ValueFromMessageSegment(e.SegmentedBody[1],Self),
                                        MinPayment = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Gamble"]["MinimumPayment"].ToString()),
                                        WinChance = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Gamble"]["WinChance"].ToString());
-                                if (e.SegmentedBody[1].ToLower() == "all") { ChangeBy = Self.Balance; }
-                                else { try { ChangeBy = int.Parse(e.SegmentedBody[1]); } catch { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["NumberParamaterInvalid"].ToString(), e); return; } }
+                                if (ChangeBy==-1) { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["NumberParamaterInvalid"].ToString(), e); return; }
                                 if (Self != null)
                                 {
                                     if (ChangeBy >= MinPayment)
@@ -172,6 +171,21 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 return StandardisedUser.FromTwitchUsername(MessageSegment, BotInstance);
             }
             return null;
+        }
+
+        public int ValueFromMessageSegment(string MessageSegment,Objects.Bank Bank)
+        {
+            try { return int.Parse(MessageSegment); } catch { }
+            if (MessageSegment.ToLower() == "all") { return Bank.Balance; }
+            if (MessageSegment.ToLower().EndsWith("k"))
+            {
+                try { return int.Parse(MessageSegment.ToLower().Replace("k", "")) * 1000; } catch { }
+            }
+            if (MessageSegment.ToLower().EndsWith("m"))
+            {
+                try { return int.Parse(MessageSegment.ToLower().Replace("m", "")) * 1000000; } catch { }
+            }
+            return -1;
         }
 
         public bool JArrayContainsString(Newtonsoft.Json.Linq.JToken Array,string S)
