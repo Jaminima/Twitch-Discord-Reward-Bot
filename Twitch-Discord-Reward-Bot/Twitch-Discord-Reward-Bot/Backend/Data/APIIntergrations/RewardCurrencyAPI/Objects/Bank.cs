@@ -52,39 +52,56 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
 
         public static bool MergeAccounts(Bots.StandardisedMessageRequest e,BotInstance BotInstance,string ID)
         {
-            if (e.MessageType == Bots.MessageType.Discord)
+            if (BotInstance.CommandConfig["DiscordTwitchMerging"].ToString().ToLower() == "true")
             {
-                WebRequest Req = WebRequest.Create("https://discordapp.com/api/v6/users/" + ID + "/profile");
-                Req.Headers.Add("Authorization", Init.MasterConfig["Discord"]["User"]["AuthToken"].ToString());
-                Req.Method = "GET";
-                WebResponse Res = Req.GetResponse();
-                string D = new StreamReader(Res.GetResponseStream()).ReadToEnd();
-                Newtonsoft.Json.Linq.JObject ProfileData = Newtonsoft.Json.Linq.JObject.Parse(D);
-                foreach (Newtonsoft.Json.Linq.JObject Connection in ProfileData["connected_accounts"])
+                if (e.MessageType == Bots.MessageType.Discord)
                 {
-                    if (Connection["type"].ToString() == "twitch")
+                    try
                     {
-                        List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("CurrencyID", BotInstance.Currency.ID.ToString()), new KeyValuePair<string, string> ("TwitchID", Connection["id"].ToString()) };
-                        ResponseObject RObj = WebRequests.GetRequest("bank", Headers);
-                        if (RObj.Code == 200)
+                        WebRequest Req = WebRequest.Create("https://discordapp.com/api/v6/users/" + ID + "/profile");
+                        Req.Headers.Add("authorization", Init.MasterConfig["Discord"]["User"]["AuthToken"].ToString());
+                        Req.Method = "GET";
+                        WebResponse Res = Req.GetResponse();
+                        string D = new StreamReader(Res.GetResponseStream()).ReadToEnd();
+                        Newtonsoft.Json.Linq.JObject ProfileData = Newtonsoft.Json.Linq.JObject.Parse(D);
+                        foreach (Newtonsoft.Json.Linq.JObject Connection in ProfileData["connected_accounts"])
                         {
-                            Bank Twitch = FromJson(RObj.Data);
-                            Bank Discord = FromTwitchDiscord(e, BotInstance, e.SenderID);
-                            if (Twitch.DiscordID==null && Discord.TwitchID == null)
+                            if (Connection["type"].ToString() == "twitch")
                             {
-                                AdjustBalance(Twitch, Twitch.Balance, "-");
-                                AdjustBalance(Discord, Twitch.Balance, "+");
-                                Headers = new List<KeyValuePair<string, string>> {
-                                    new KeyValuePair<string, string>("TwitchID", Connection["id"].ToString()),
-                                    new KeyValuePair<string, string>("DiscordID",ID),
-                                    new KeyValuePair<string, string>("ID",Discord.ID.ToString())
-                                };
-                                RObj = WebRequests.PostRequest("bank", Headers,true);
-                                Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("ID", Twitch.ID.ToString()) };
-                                RObj = WebRequests.PostRequest("bank", Headers, true);
+                                List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("CurrencyID", BotInstance.Currency.ID.ToString()), new KeyValuePair<string, string>("TwitchID", Connection["id"].ToString()) };
+                                ResponseObject RObj = WebRequests.GetRequest("bank", Headers);
+                                if (RObj.Code == 200)
+                                {
+                                    Bank Twitch = FromJson(RObj.Data);
+                                    Bank Discord = FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                    if (Twitch.DiscordID == "" && Discord.TwitchID == "")
+                                    {
+                                        AdjustBalance(Twitch, Twitch.Balance, "-");
+                                        AdjustBalance(Discord, Twitch.Balance, "+");
+                                        Headers = new List<KeyValuePair<string, string>> {
+                                            new KeyValuePair<string, string>("TwitchID", Connection["id"].ToString()),
+                                            new KeyValuePair<string, string>("DiscordID",ID),
+                                            new KeyValuePair<string, string>("ID",Discord.ID.ToString())
+                                        };
+                                        RObj = WebRequests.PostRequest("bank", Headers, true);
+                                        Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("ID", Twitch.ID.ToString()) };
+                                        RObj = WebRequests.PostRequest("bank", Headers, true);
+                                    }
+                                }
+                                else
+                                {
+                                    Bank Discord = FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                    Headers = new List<KeyValuePair<string, string>> {
+                                        new KeyValuePair<string, string>("TwitchID", Connection["id"].ToString()),
+                                        new KeyValuePair<string, string>("DiscordID",ID),
+                                        new KeyValuePair<string, string>("ID",Discord.ID.ToString())
+                                    };
+                                    RObj = WebRequests.PostRequest("bank", Headers, true);
+                                }
                             }
                         }
                     }
+                    catch (WebException E) { }
                 }
             }
             return false;

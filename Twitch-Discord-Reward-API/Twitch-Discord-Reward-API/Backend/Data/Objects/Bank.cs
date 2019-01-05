@@ -73,6 +73,8 @@ WHERE "+WhereStatment+@";
             {
                 Bank Bank = new Bank();
                 Bank.ID = int.Parse(Item[0]);
+                Bank.DiscordID = Item[1];
+                Bank.TwitchID = Item[2];
                 Bank.Balance = int.Parse(Item[3]);
                 Bank.Currency = Currency.FromID(int.Parse(Item[4]));
                 UserBanks.Add(Bank);

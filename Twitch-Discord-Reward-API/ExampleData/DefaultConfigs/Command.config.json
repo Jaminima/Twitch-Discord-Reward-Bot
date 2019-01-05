@@ -1,27 +1,65 @@
 {
-	"CurrencyName":"Your Coin",
-	"CurrencyAcronym":"YC",
+	"CurrencyName":"Jam Coin",
+	"CurrencyAcronym":"JC",
 	"Prefix":"?",
-	"ChannelName":"Your Twitch Channel Name",
+	"ChannelName":"jccjaminima",
 	"InititalBalance":500,
 	"MessageDelay":10,
+	"DiscordTwitchMerging":true,
 	"DiscordChannels":[
 	],
 	"CommandSetup":{
+		"ErrorResponses":{
+			"APIError":"@<SenderUser> An error occured while polling the API, if this persists please contact a developer!",
+			"CannotFindUser":"@<SenderUser> Cannot find the target user, please check your command and try again.",
+			"ParamaterCount":"@<SenderUser> You have provided too many or too few paramaters, please check your command and try again.",
+			"NumberParamaterInvalid":"@<SenderUser> The Numeric paramater is invalid, please check your command and try again.",
+			"NumberParamaterNegative":"@<SenderUser> The Number paramater is negative, please check your command and try again."
+		},
 		"Balance":{
-			"Enabled":true,
+			"TwitchEnabled":true,
+			"DiscordEnabled":true,
 			"Commands":[
 				"bal",
 				"balance"
 			],
 			"Responses":{
 				"OwnBalance":"@<SenderUser> You have @<Amount> @<CurrencyName>",
-				"OtherBalance":"@<SenderUser> @<TargetUser> has @<Amount> @<CurrencyName>",
-				"OtherUnknown":"@<SenderUser> Cannot find that user"
+				"OtherBalance":"@<SenderUser> @<TargetUser> has @<Amount> @<CurrencyName>"
+			}
+		},
+		"Pay":{
+			"TwitchEnabled":true,
+			"DiscordEnabled":true,
+			"MinimumPayment":100,
+			"Commands":[
+				"pay"
+			],
+			"Responses":{
+				"Paid":"@<SenderUser> You have paid @<TargetUser> @<Amount> @<CurrencyName>",
+				"NotEnough":"@<SenderUser> You dont have enough @<CurrencyName>",
+				"TooSmall":"@<SenderUser> You must pay at least @<Amount> @<CurrencyName>"
+			}
+		},
+		"Gamble":{
+			"TwitchEnabled":true,
+			"DiscordEnabled":true,
+			"MinimumPayment":100,
+			"WinChance":45,
+			"Commands":[
+				"gamble",
+				"roulette"
+			],
+			"Responses":{
+				"Win":"@<SenderUser> You have Won @<Amount> @<CurrencyName>",
+				"Lose":"@<SenderUser> You have Lost @<Amount> @<CurrencyName>",
+				"NotEnough":"@<SenderUser> You dont have enough @<CurrencyName>",
+				"TooSmall":"@<SenderUser> You must pay at least @<Amount> @<CurrencyName>"
 			}
 		},
 		"Alert":{
-			"Enabled":false,
+			"TwitchEnabled":true,
+			"DiscordEnabled":false,
 			"CoolDown":{
 				"Global":60,
 				"Individual":120

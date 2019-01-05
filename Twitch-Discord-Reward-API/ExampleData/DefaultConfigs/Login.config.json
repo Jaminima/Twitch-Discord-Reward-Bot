@@ -12,9 +12,6 @@
   "Discord": {
     "Bot": {
       "AuthToken": ""
-    },
-    "User": {
-      "AuthToken": ""
     }
   }
 }
