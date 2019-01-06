@@ -270,6 +270,7 @@
     <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\Login.cs" />
     <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\ResponseObject.cs" />
     <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\WebRequests.cs" />
+    <Compile Include="Backend\Data\APIIntergrations\Twitch.cs" />
     <Compile Include="Backend\Data\FileHandler.cs" />
     <Compile Include="Backend\Init.cs" />
     <Compile Include="Backend\Bots\TwitchBot\Instance.cs" />

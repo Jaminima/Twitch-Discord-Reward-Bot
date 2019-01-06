@@ -54,11 +54,12 @@ namespace Twitch_Discord_Reward_Bot.Backend
             this.Currency = Currency;
             this.CommandConfig = this.Currency.CommandConfig;
             this.LoginConfig = this.Currency.LoginConfig;
-            this.TimeEvents =  new Bots.Commands.TimeEvents();
-            this.TimeEvents.Start();
             this.CommandHandler = new Bots.Commands.CommandHandler(this);
             try { DiscordBot = new Backend.Bots.DiscordBot.Instance(this); } catch { }
             try { TwitchBot = new Backend.Bots.TwitchBot.Instance(this); } catch { }
+            System.Threading.Thread.Sleep(5000);
+            this.TimeEvents = new Bots.Commands.TimeEvents();
+            this.TimeEvents.Start(this);
         }
     }
 }

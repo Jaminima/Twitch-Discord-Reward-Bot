@@ -262,7 +262,9 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             }
             else if (e.MessageType == MessageType.Twitch)
             {
-                return StandardisedUser.FromTwitchUsername(MessageSegment, BotInstance);
+                StandardisedUser S = new StandardisedUser();
+                S.ID = e.SenderID; S.UserName = S.UserName;
+                return S;
             }
             return null;
         }
@@ -293,11 +295,15 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 
         public bool CommandEnabled(Newtonsoft.Json.Linq.JToken Command,StandardisedMessageRequest e)
         {
-            if (e.MessageType == MessageType.Discord)
+            return CommandEnabled(Command, e.MessageType);
+        }
+        public bool CommandEnabled(Newtonsoft.Json.Linq.JToken Command, MessageType e)
+        {
+            if (e == MessageType.Discord)
             {
                 if (Command["DiscordEnabled"].ToString().ToLower() == "true") { return true; }
             }
-            if (e.MessageType == MessageType.Twitch)
+            if (e == MessageType.Twitch)
             {
                 if (Command["TwitchEnabled"].ToString().ToLower() == "true") { return true; }
             }

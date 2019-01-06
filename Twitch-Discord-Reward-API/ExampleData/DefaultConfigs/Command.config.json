@@ -5,13 +5,10 @@
 	"ChannelName":"",
 	"InititalBalance":500,
 	"MessageDelay":10,
-	"Discord":{
-		"TwitchMerging":true,
-		"StatusMessage":"I am alive!!!",
-		"Channels":[
-		],
-		"SubscriberRoleID":""
-	},
+	"DiscordTwitchMerging":true,
+	"DiscordStatusMessage":"I am alive!!!",
+	"DiscordChannels":[
+	],
 	"CommandSetup":{
 		"ErrorResponses":{
 			"APIError":"@<SenderUser> An error occured while polling the API, if this persists please contact a developer!",
@@ -96,38 +93,6 @@
 				"NotEnough":"@<SenderUser> You dont have enough @<CurrencyName>",
 				"TooSmall":"@<SenderUser> You must pay at least @<Amount> @<CurrencyName>"
 			}
-		},
-		"Fish":{
-			"TwitchEnabled":true,
-			"DiscordEnabled":true,
-			"RequireLive":true,
-			"Commands":[
-				"fish"
-			],
-			"Responses":{
-				"Started":"@<SenderUser> You started fishing!",
-				"Finished":"@<SenderUser> You got a @<OtherString> Worth @<Amount> @<CurrencyName>",
-				"NotEnough":"@<SenderUser> You dont have enough @<CurrencyName>",
-				"AlreadyFishing":"@<SenderUser> You are already fishing!"
-			},
-			"Cost":{
-				"Viewer":500,
-				"Subscriber":250
-			},
-			"MinTime":60,
-			"MaxTime":300,
-			"Items":[
-				{
-					"Name":"Box of Fish",
-					"Chance":50,
-					"Reward":500
-				},
-				{
-					"Name":"Sock",
-					"Chance":100,
-					"Reward":5
-				}
-			]
 		},
 		"Alert":{
 			"TwitchEnabled":true,

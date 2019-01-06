@@ -9,8 +9,10 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 {
     public class TimeEvents
     {
-        public void Start()
+        BotInstance BotInstance;
+        public void Start(BotInstance BotInstance)
         {
+            this.BotInstance = BotInstance;
             new Thread(async () => await TimeThread()).Start();
         }
 
@@ -18,7 +20,39 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         {
             while (true){
                 await Fish();
+                await AutoMessage();
                 System.Threading.Thread.Sleep(10000);
+            }
+        }
+
+        public Dictionary<int, DateTime> MessageHistory = new Dictionary<int, DateTime> { };
+        public DateTime MessageLast = DateTime.MinValue;
+        public async Task AutoMessage()
+        {
+            if (BotInstance.CommandConfig["AutoMessage"]["RequireLive"].ToString().ToLower() == "true")
+            {
+                if (Data.APIIntergrations.Twitch.IsLive(BotInstance) == false) { return; }
+            }
+            int MinDelay = int.Parse(BotInstance.CommandConfig["AutoMessage"]["MinimumDelay"].ToString());
+            if (((TimeSpan)(DateTime.Now - MessageLast)).TotalSeconds >= MinDelay)
+            {
+                Newtonsoft.Json.Linq.JToken Items = BotInstance.CommandConfig["AutoMessage"]["Messages"];
+                for (int i = 0; i < Items.Count(); i++)
+                {
+                    bool ShouldSend = false;
+                    if (MessageHistory.ContainsKey(i))
+                    {
+                        if (((TimeSpan)(DateTime.Now - MessageHistory[i])).TotalSeconds >= int.Parse(Items[i]["Delay"].ToString())) { ShouldSend = true; }
+                    }
+                    else { ShouldSend = true; }
+                    if (ShouldSend)
+                    {
+                        if (BotInstance.CommandHandler.CommandEnabled(BotInstance.CommandConfig["AutoMessage"], MessageType.Twitch))
+                        { BotInstance.TwitchBot.Client.SendMessage(BotInstance.CommandConfig["ChannelName"].ToString(), Items[i]["Body"].ToString()); }
+                        MessageLast = DateTime.Now;
+                        MessageHistory.Add(i, DateTime.Now);
+                    }
+                }
             }
         }
 
