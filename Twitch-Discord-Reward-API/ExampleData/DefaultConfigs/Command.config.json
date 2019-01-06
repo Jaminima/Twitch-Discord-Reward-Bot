@@ -5,11 +5,19 @@
 	"ChannelName":"",
 	"InititalBalance":500,
 	"MessageDelay":10,
-	"DiscordTwitchMerging":true,
-	"DiscordStatusMessage":"I am alive!!!",
-	"DiscordChannels":[
-	],
+	"Discord":{
+		"TwitchMerging":true,
+		"StatusMessage":"I am Sentient please help me!!!",
+		"Channels":[
+		],
+		"SubscriberRoleID":""
+	},
 	"CommandSetup":{
+		"FallbackMessage":{
+			"TwitchEnabled":false,
+			"DiscordEnabled":true,
+			"Response":"@<SenderUser> What on earth are you trying to do?"
+		},
 		"ErrorResponses":{
 			"APIError":"@<SenderUser> An error occured while polling the API, if this persists please contact a developer!",
 			"CannotFindUser":"@<SenderUser> Cannot find the target user, please check your command and try again.",
@@ -20,6 +28,7 @@
 		"SimpleResponses":{
 			"TwitchEnabled":true,
 			"DiscordEnabled":true,
+			"RequireLive":false,
 			"Commands":{
 				"discord":"@<SenderUser> link"
 			}
@@ -27,6 +36,7 @@
 		"Balance":{
 			"TwitchEnabled":true,
 			"DiscordEnabled":true,
+			"RequireLive":false,
 			"Commands":[
 				"bal",
 				"balance"
@@ -39,6 +49,7 @@
 		"Pay":{
 			"TwitchEnabled":true,
 			"DiscordEnabled":true,
+			"RequireLive":false,
 			"MinimumPayment":100,
 			"Commands":[
 				"pay"
@@ -52,6 +63,7 @@
 		"Gamble":{
 			"TwitchEnabled":true,
 			"DiscordEnabled":true,
+			"RequireLive":false,
 			"MinimumPayment":100,
 			"WinChance":45,
 			"WinMultiplyer":1,
@@ -69,6 +81,7 @@
 		"Slots":{
 			"TwitchEnabled":true,
 			"DiscordEnabled":true,
+			"RequireLive":false,
 			"MinimumPayment":100,
 			"WinChance":10,
 			"WinMultiplyer":10,
@@ -88,9 +101,56 @@
 				"slots"
 			],
 			"Responses":{
-				"Win":"@<SenderUser> You got @<OtherString> Won @<Amount> @<CurrencyName>",
-				"Lose":"@<SenderUser> You got @<OtherString> Lost @<Amount> @<CurrencyName>",
+				"Win":"@<SenderUser> You got @<OtherString> and Won @<Amount> @<CurrencyName>",
+				"Lose":"@<SenderUser> You got @<OtherString> and Lost @<Amount> @<CurrencyName>",
 				"NotEnough":"@<SenderUser> You dont have enough @<CurrencyName>",
+				"TooSmall":"@<SenderUser> You must pay at least @<Amount> @<CurrencyName>"
+			}
+		},
+		"Fish":{
+			"TwitchEnabled":true,
+			"DiscordEnabled":true,
+			"RequireLive":true,
+			"Commands":[
+				"fish"
+			],
+			"Responses":{
+				"Started":"@<SenderUser> You started fishing!",
+				"Finished":"@<SenderUser> You got a @<OtherString> Worth @<Amount> @<CurrencyName>",
+				"NotEnough":"@<SenderUser> You dont have enough @<CurrencyName>",
+				"AlreadyFishing":"@<SenderUser> You are already fishing!"
+			},
+			"Cost":{
+				"Viewer":500,
+				"Subscriber":250
+			},
+			"MinTime":60,
+			"MaxTime":300,
+			"Items":[
+				{
+					"Name":"Box of Fish",
+					"Chance":50,
+					"Reward":500
+				},
+				{
+					"Name":"Sock",
+					"Chance":100,
+					"Reward":5
+				}
+			]
+		},
+		"Duel":{
+			"TwitchEnabled":true,
+			"DiscordEnabled":true,
+			"MinimumPayment":100,
+			"Commands":[
+				"duel"
+			],
+			"Responses":{
+				"Win":"@<SenderUser> You have Won @<Amount> @<CurrencyName>",
+				"Lose":"@<SenderUser> You have Lost @<Amount> @<CurrencyName>",
+				"SelfNotEnough":"@<SenderUser> You dont have enough @<CurrencyName>",
+				"OtherNotEnough":"@<SenderUser> @<TargetUser> dont have enough @<CurrencyName>",
 				"TooSmall":"@<SenderUser> You must pay at least @<Amount> @<CurrencyName>"
 			}
 		},
@@ -109,6 +169,16 @@
 				}
 			]
 		}
-	
+	},
+	"AutoMessage":{
+		"TwitchEnabled":true,
+		"RequireLive":true,
+		"MinimumDelay":90,
+		"Messages":[
+			{
+				"Body":"I Want To Die",
+				"Delay":600
+			}
+		]
 	}
 }

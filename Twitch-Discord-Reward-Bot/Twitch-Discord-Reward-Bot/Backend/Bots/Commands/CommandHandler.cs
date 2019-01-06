@@ -43,10 +43,11 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                     
                     if (e.MessageType==MessageType.Discord && BotInstance.CommandConfig["Discord"]["Channels"].Where(x => x.ToString() == e.ChannelID).Count()==0) { return; }
 
-                    if (e.SegmentedBody[0].StartsWith(Prefix))
+                    if (e.SegmentedBody[0].StartsWith(Prefix) && !e.SegmentedBody[0].StartsWith(Prefix+Prefix))
                     {
                         if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Balance"],e) &&
-                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Balance"]["Commands"],Command))
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Balance"]["Commands"],Command) &&
+                            LiveCheck(BotInstance.CommandConfig["CommandSetup"]["Balance"]))
                         {
                             if (e.SegmentedBody.Length == 1)
                             {
@@ -74,7 +75,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["ParamaterCount"].ToString(), e); }
                         }
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Pay"], e) &&
-                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Pay"]["Commands"], Command))
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Pay"]["Commands"], Command) &&
+                            LiveCheck(BotInstance.CommandConfig["CommandSetup"]["Pay"]))
                         {
                             if (e.SegmentedBody.Length == 3)
                             {
@@ -117,7 +119,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["ParamaterCount"].ToString(), e); }
                         }
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Gamble"], e) &&
-                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Gamble"]["Commands"], Command))
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Gamble"]["Commands"], Command) &&
+                            LiveCheck(BotInstance.CommandConfig["CommandSetup"]["Gamble"]))
                         {
                             if (e.SegmentedBody.Length == 2)
                             {
@@ -156,7 +159,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["ParamaterCount"].ToString(), e); }
                         }
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Slots"], e) &&
-                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Slots"]["Commands"], Command))
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Slots"]["Commands"], Command) &&
+                            LiveCheck(BotInstance.CommandConfig["CommandSetup"]["Slots"]))
                         {
                             if (e.SegmentedBody.Length == 2)
                             {
@@ -210,7 +214,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["ParamaterCount"].ToString(), e); }
                         }
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Fish"],e)&&
-                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Fish"]["Commands"], Command))
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Fish"]["Commands"], Command)&&
+                            LiveCheck(BotInstance.CommandConfig["CommandSetup"]["Fish"]))
                         {
                             if (e.SegmentedBody.Length == 1)
                             {
@@ -244,9 +249,14 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["ParamaterCount"].ToString(), e); }
                         }
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"], e)&&
-                            BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"]["Commands"][Command.ToLower()]!=null)
+                            BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"]["Commands"][Command.ToLower()]!=null &&
+                            LiveCheck(BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"]))
                         {
                             await SendMessage(BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"]["Commands"][Command.ToLower()].ToString(), e);
+                        }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["FallbackMessage"], e))
+                        {
+                            await SendMessage(BotInstance.CommandConfig["CommandSetup"]["FallbackMessage"]["Response"].ToString(), e);
                         }
                     }
                 }
@@ -308,6 +318,15 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 if (Command["TwitchEnabled"].ToString().ToLower() == "true") { return true; }
             }
             return false;
+        }
+
+        public bool LiveCheck(Newtonsoft.Json.Linq.JToken Object)
+        {
+            if (Object["RequireLive"].ToString().ToLower() == "true")
+            {
+                return Data.APIIntergrations.Twitch.IsLive(BotInstance);
+            }
+            return true;
         }
 
         public async Task SendMessage(string ParamaterisedMessage, StandardisedMessageRequest e, StandardisedUser TargetUser = null, int Amount = -1, int NewBal = -1, string OtherString = "", string SenderUsername = null)
