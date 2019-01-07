@@ -21,8 +21,26 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             while (true){
                 await Fish();
                 await AutoMessage();
+                await RemoveDuels();
                 System.Threading.Thread.Sleep(10000);
             }
+        }
+
+        public Dictionary<DateTime,Duel> Duels = new Dictionary<DateTime, Duel> { };
+
+        public async Task RemoveDuels()
+        {
+            int RemoveAfter = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Duel"]["CancelAfter"].ToString());
+            List<DateTime> KeysToRemove = new List<DateTime> { };
+            foreach (KeyValuePair<DateTime,Duel> Duel in Duels.Where(x => ((TimeSpan)(DateTime.Now - x.Key)).TotalSeconds > RemoveAfter))
+            { KeysToRemove.Add(Duel.Key); }
+            foreach (DateTime Key in KeysToRemove)
+            { Duels.Remove(Key); }
+        }
+
+        public bool UserDueling(StandardisedUser User)
+        {
+            return Duels.Where(x => x.Value.Creator.ID == User.ID || x.Value.Acceptor.ID == User.ID).Count() != 0;
         }
 
         public Dictionary<int, DateTime> MessageHistory = new Dictionary<int, DateTime> { };
@@ -79,6 +97,14 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 Fishermen.Remove(FishKey);
             }
         }
+    }
+
+    public class Duel
+    {
+        public StandardisedMessageRequest e;
+        public BotInstance BotInstance;
+        public StandardisedUser Creator, Acceptor;
+        public int ChangeBy;
     }
 
     public class Fisherman

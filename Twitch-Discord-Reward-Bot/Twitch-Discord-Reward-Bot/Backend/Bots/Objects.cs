@@ -51,19 +51,25 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots
         public string UserName;
         public string ID;
 
-        //public static StandardisedUser FromTwitchUsername(string MessageSegment, BotInstance BotInstance)
-        //{
-        //    string UserName = MessageSegment.Replace("@", "");
-        //    WebRequest Req = WebRequest.Create("https://api.twitch.tv/helix/users?username=" + UserName);
-        //    Req.Method = "GET"; Req.Headers.Add("Authorization", BotInstance.LoginConfig["Twitch"]["API"]["AccessToken"].ToString());
-        //    WebResponse Res = Req.GetResponse();
-        //    string StreamString = new StreamReader(Res.GetResponseStream()).ReadToEnd();
-        //    Newtonsoft.Json.Linq.JToken JData = Newtonsoft.Json.Linq.JToken.Parse(StreamString);
-        //    StandardisedUser U = new StandardisedUser();
-        //    U.ID = JData["data"][0]["id"].ToString();
-        //    U.UserName = UserName;
-        //    return U;
-        //}
+        public static StandardisedUser FromTwitchUsername(string MessageSegment, BotInstance BotInstance,int Depth=0)
+        {
+            if (Depth == 5) { return null; }
+            string UserName = MessageSegment.Replace("@", "");
+            try
+            {
+                WebRequest Req = WebRequest.Create("https://api.twitch.tv/helix/users?username=" + UserName);
+                Req.Method = "GET"; Req.Headers.Add("Authorization", BotInstance.LoginConfig["Twitch"]["API"]["AuthToken"].ToString());
+                WebResponse Res = Req.GetResponse();
+                string StreamString = new StreamReader(Res.GetResponseStream()).ReadToEnd();
+                Newtonsoft.Json.Linq.JToken JData = Newtonsoft.Json.Linq.JToken.Parse(StreamString);
+                StandardisedUser U = new StandardisedUser();
+                U.ID = JData["data"][0]["id"].ToString();
+                U.UserName = UserName;
+                return U;
+            }
+            catch { FromTwitchUsername(MessageSegment, BotInstance, Depth++); }
+            return null;
+        }
 
         public static StandardisedUser FromDiscordMention(string MessageSegment, BotInstance BotInstance)
         {

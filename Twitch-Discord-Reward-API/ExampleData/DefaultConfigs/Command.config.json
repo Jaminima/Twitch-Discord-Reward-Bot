@@ -1,6 +1,6 @@
 {
-	"CurrencyName":"Your Coin",
-	"CurrencyAcronym":"YC",
+	"CurrencyName":"Jam Coin",
+	"CurrencyAcronym":"JC",
 	"Prefix":"?",
 	"ChannelName":"",
 	"InititalBalance":500,
@@ -142,16 +142,41 @@
 		"Duel":{
 			"TwitchEnabled":true,
 			"DiscordEnabled":true,
+			"RequireLive":false,
 			"MinimumPayment":100,
+			"CancelAfter":120,
 			"Commands":[
 				"duel"
 			],
 			"Responses":{
-				"Win":"@<SenderUser> You have Won @<Amount> @<CurrencyName>",
-				"Lose":"@<SenderUser> You have Lost @<Amount> @<CurrencyName>",
+				"Started":"@<SenderUser> You have started a duel against @<TargetUser> for @<Amount> @<CurrencyName>, they can type @<Prefix>accept or @<Prefix>deny",
 				"SelfNotEnough":"@<SenderUser> You dont have enough @<CurrencyName>",
-				"OtherNotEnough":"@<SenderUser> @<TargetUser> dont have enough @<CurrencyName>",
-				"TooSmall":"@<SenderUser> You must pay at least @<Amount> @<CurrencyName>"
+				"OtherNotEnough":"@<SenderUser> @<TargetUser> doesnt have enough @<CurrencyName>",
+				"TooSmall":"@<SenderUser> You must pay at least @<Amount> @<CurrencyName>",
+				"SelfDueling":"@<SenderUser> You are already dueling!",
+				"OtherDueling":"@<SenderUser> @<TargetUser> is already dueling!"
+			},
+			"Accepting":{
+				"Commands":[
+					"accept"
+				],
+				"Responses":{
+					"NotDueling":"@<SenderUser> You are not dueling",
+					"SelfNotEnough":"@<SenderUser> You dont have enough @<CurrencyName> , hence the duel has been canceled",
+					"OtherNotEnough":"@<SenderUser> @<TargetUser> doesnt have enough @<CurrencyName> , hence the duel has been canceled",
+					"Win":"@<SenderUser> You have Won @<Amount> @<CurrencyName> against @<TargetUser>",
+					"Lose":"@<SenderUser> You have Lost @<Amount> @<CurrencyName> against @<TargetUser>"
+				}
+			},
+			"Denying":{
+				"Commands":[
+					"deny",
+					"cancel"
+				],
+				"Responses":{
+					"NotDueling":"@<SenderUser> You are not dueling",
+					"Canceled":"@<SenderUser> You are no longer dueling against @<TargetUser>"
+				}
 			}
 		},
 		"Alert":{

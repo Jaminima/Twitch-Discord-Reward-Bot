@@ -6,7 +6,8 @@
     },
     "API": {
       "ClientId": "",
-      "AccessToken": ""
+      "AccessToken": "",
+	  "AuthToken":""
     }
   },
   "Discord": {
