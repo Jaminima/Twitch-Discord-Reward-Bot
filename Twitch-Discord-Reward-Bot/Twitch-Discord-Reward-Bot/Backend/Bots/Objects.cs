@@ -57,7 +57,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots
             string UserName = MessageSegment.Replace("@", "");
             try
             {
-                WebRequest Req = WebRequest.Create("https://api.twitch.tv/helix/users?username=" + UserName);
+                WebRequest Req = WebRequest.Create("https://api.twitch.tv/helix/users?login=" + UserName);
                 Req.Method = "GET"; Req.Headers.Add("Authorization", BotInstance.LoginConfig["Twitch"]["API"]["AuthToken"].ToString());
                 WebResponse Res = Req.GetResponse();
                 string StreamString = new StreamReader(Res.GetResponseStream()).ReadToEnd();
