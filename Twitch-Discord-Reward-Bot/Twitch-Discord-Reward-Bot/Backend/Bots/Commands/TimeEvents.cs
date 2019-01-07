@@ -20,15 +20,15 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         {
             while (true){
                 await Fish();
-                await AutoMessage();
-                await RemoveDuels();
+                AutoMessage();
+                RemoveDuels();
                 System.Threading.Thread.Sleep(10000);
             }
         }
 
         public Dictionary<DateTime,Duel> Duels = new Dictionary<DateTime, Duel> { };
 
-        public async Task RemoveDuels()
+        public void RemoveDuels()
         {
             int RemoveAfter = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Duel"]["CancelAfter"].ToString());
             List<DateTime> KeysToRemove = new List<DateTime> { };
@@ -45,7 +45,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 
         public Dictionary<int, DateTime> MessageHistory = new Dictionary<int, DateTime> { };
         public DateTime MessageLast = DateTime.MinValue;
-        public async Task AutoMessage()
+        public void AutoMessage()
         {
             if (BotInstance.CommandHandler.LiveCheck(BotInstance.CommandConfig["AutoMessage"]))
             {

@@ -14,7 +14,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
         static DateTime LastLiveCheck;
         public static bool IsLive(BotInstance BotInstance)
         {
-            if (((TimeSpan)(DateTime.Now - LastLiveCheck)).TotalSeconds < 30) { return Islive; }
+            if (((TimeSpan)(DateTime.Now - LastLiveCheck)).TotalSeconds < 15) { return Islive; }
             try
             {
                 WebRequest Req = WebRequest.Create("https://api.twitch.tv/helix/streams?user_login=" + BotInstance.CommandConfig["ChannelName"]);
@@ -29,9 +29,11 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
                 {
                     if (JD["data"][0]["type"].ToString() == "live")
                     {
+                        Islive = true;
                         return true;
                     }
                 }
+                Islive = false;
                 return false;
             }
             catch (Exception E)

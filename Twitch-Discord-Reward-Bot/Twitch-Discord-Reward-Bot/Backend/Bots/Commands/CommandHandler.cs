@@ -40,7 +40,6 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 {
                     string Prefix = BotInstance.CommandConfig["Prefix"].ToString(),
                         Command = e.SegmentedBody[0].Replace(Prefix, "").ToLower();
-                    bool LiveDenied = false;
 
                     if (e.MessageType == MessageType.Discord && BotInstance.CommandConfig["Discord"]["Channels"].Where(x => x.ToString() == e.ChannelID).Count() == 0) { return; }
 
@@ -380,7 +379,6 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             {
                                 await SendMessage(BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"]["Commands"][Command.ToLower()].ToString(), e);
                             }
-                            else { LiveDenied = true; }
                         }
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["FallbackMessage"], e))
                         {
