@@ -33,7 +33,6 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 
         async Task HandleThread(StandardisedMessageRequest e)
         {
-            Data.APIIntergrations.Nightbot.GetAuthToken(BotInstance);
             try
             {
                 Objects.Bank.MergeAccounts(e, BotInstance, e.SenderID);
@@ -463,6 +462,12 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             ParamaterisedMessage = ParamaterisedMessage.Replace("@<NewBalance>", NewBal.ToString("N0"));
             ParamaterisedMessage = ParamaterisedMessage.Replace("@<CurrencyAcronym>", BotInstance.CommandConfig["CurrencyAcronym"].ToString());
             ParamaterisedMessage = ParamaterisedMessage.Replace("@<Prefix>", BotInstance.CommandConfig["Prefix"].ToString());
+
+            foreach (Newtonsoft.Json.Linq.JToken Emote in BotInstance.CommandConfig["Emotes"])
+            {
+                if (e.MessageType == MessageType.Discord) { ParamaterisedMessage = ParamaterisedMessage.Replace("@<" + Emote["Name"].ToString() + ">", Emote["Discord"].ToString()); }
+                if (e.MessageType == MessageType.Twitch) { ParamaterisedMessage = ParamaterisedMessage.Replace("@<" + Emote["Name"].ToString() + ">", Emote["Twitch"].ToString()); }
+            }
 
             if (e.MessageType == MessageType.Twitch)
             {

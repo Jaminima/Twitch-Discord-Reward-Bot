@@ -12,6 +12,13 @@
 		],
 		"SubscriberRoleID":""
 	},
+	"Emotes":[
+	{ 
+		"Name":"SexyMan",
+		"Discord":"<:SexyMan:532292716629852169>",
+		"Twitch":"DansGame"
+	}
+	],
 	"CommandSetup":{
 		"FallbackMessage":{
 			"TwitchEnabled":false,
