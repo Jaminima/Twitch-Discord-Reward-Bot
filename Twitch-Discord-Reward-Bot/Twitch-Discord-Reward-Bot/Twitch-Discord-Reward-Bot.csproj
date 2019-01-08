@@ -263,6 +263,7 @@
     <Compile Include="Backend\Bots\Commands\TimeEvents.cs" />
     <Compile Include="Backend\Bots\DiscordBot\Instance.cs" />
     <Compile Include="Backend\Bots\Objects.cs" />
+    <Compile Include="Backend\Data\APIIntergrations\Nightbot.cs" />
     <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\Bank.cs" />
     <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\BaseObject.cs" />
     <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\Bot.cs" />

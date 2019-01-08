@@ -33,6 +33,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 
         async Task HandleThread(StandardisedMessageRequest e)
         {
+            Data.APIIntergrations.Nightbot.GetAuthToken(BotInstance);
             try
             {
                 Objects.Bank.MergeAccounts(e, BotInstance, e.SenderID);

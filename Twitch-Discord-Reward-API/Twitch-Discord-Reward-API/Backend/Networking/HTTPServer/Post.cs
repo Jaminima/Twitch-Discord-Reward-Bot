@@ -267,15 +267,15 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Bot is not SuperBot";
                     }
                 }
-                else if (Context.Headers.AllKeys.Contains("AccessToken") && Context.RequestData != null && Context.Headers.AllKeys.Contains("CurrencyID"))
+                else if ((Context.Headers.AllKeys.Contains("AccessToken")||CorrespondingBot!=null) && Context.RequestData != null && Context.Headers.AllKeys.Contains("CurrencyID"))
                 {
                     try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
                     Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
-                    if (L != null)
+                    if (L != null||CorrespondingBot!=null)
                     {
                         Data.Objects.Currency B = Data.Objects.Currency.FromID(int.Parse(Context.Headers["CurrencyID"]));
                         B.LoadConfigs(true);
-                        if (B.OwnerLogin.ID == L.ID)
+                        if (B.OwnerLogin.ID == L.ID||CorrespondingBot.Currency.ID==B.ID||CorrespondingBot.IsSuperBot)
                         {
                             if (Context.RequestData["LoginConfig"] != null)
                             {

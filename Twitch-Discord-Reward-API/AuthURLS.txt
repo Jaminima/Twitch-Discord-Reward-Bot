@@ -1,0 +1,2 @@
+https://api.nightbot.tv/oauth2/authorize?response_type=code&client_id=CLIENTID&redirect_uri=http://localhost:774/nightbot/&scope=song_requests_queue+song_requests&state=CurrencyID=ID
+https://www.streamlabs.com/api/v1.0/authorize?client_id=CLIENTID&redirect_uri=http://127.0.0.1:774/streamlabs/&response_type=code&scope=donations.read+donations.create&state=CurrencyID=ID

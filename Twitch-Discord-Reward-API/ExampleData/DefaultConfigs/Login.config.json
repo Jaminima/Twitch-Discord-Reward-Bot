@@ -7,12 +7,26 @@
     "API": {
       "ClientId": "",
       "AccessToken": "",
-	  "AuthToken":""
+      "AuthToken": ""
     }
   },
   "Discord": {
     "Bot": {
       "AuthToken": ""
     }
+  },
+  "NightBot": {
+    "ClientId": "",
+    "ClientSecret": "",
+    "RefreshToken": ""
+  },
+  "StreamLabs": {
+    "ClientId": "",
+    "ClientSecret": "",
+    "RefreshToken": ""
+  },
+  "Youtube": {
+    "AuthToken": "",
+    "ChannelID": ""
   }
 }
