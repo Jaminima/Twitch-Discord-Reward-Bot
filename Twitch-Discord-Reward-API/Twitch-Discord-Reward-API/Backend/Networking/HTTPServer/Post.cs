@@ -270,12 +270,16 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 else if ((Context.Headers.AllKeys.Contains("AccessToken")||CorrespondingBot!=null) && Context.RequestData != null && Context.Headers.AllKeys.Contains("CurrencyID"))
                 {
                     try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
-                    Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
+                    Data.Objects.Login L = null;
+                    if (Context.Headers.AllKeys.Contains("AccessToken")) { L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]); }
                     if (L != null||CorrespondingBot!=null)
                     {
                         Data.Objects.Currency B = Data.Objects.Currency.FromID(int.Parse(Context.Headers["CurrencyID"]));
                         B.LoadConfigs(true);
-                        if (B.OwnerLogin.ID == L.ID||CorrespondingBot.Currency.ID==B.ID||CorrespondingBot.IsSuperBot)
+                        bool LoginGood = false, BotGood = false; ;
+                        if (L != null) { LoginGood = B.OwnerLogin.ID == L.ID; }
+                        if (CorrespondingBot != null) { BotGood = CorrespondingBot.Currency.ID == B.ID || CorrespondingBot.IsSuperBot; }
+                        if (LoginGood||BotGood)
                         {
                             if (Context.RequestData["LoginConfig"] != null)
                             {

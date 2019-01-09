@@ -48,6 +48,7 @@ namespace Twitch_Discord_Reward_Bot.Backend
         public Backend.Bots.Commands.CommandHandler CommandHandler;
         public Bots.Commands.TimeEvents TimeEvents;
         public Newtonsoft.Json.Linq.JToken CommandConfig, LoginConfig;
+        public Dictionary<string, Data.APIIntergrations.AccessToken> AccessTokens = new Dictionary<string, Data.APIIntergrations.AccessToken> { };
 
         public BotInstance(Data.APIIntergrations.RewardCurrencyAPI.Objects.Currency Currency)
         {

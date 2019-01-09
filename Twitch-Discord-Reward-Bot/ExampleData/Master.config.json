@@ -1,0 +1,8 @@
+{
+  "API": {
+    "WebAddress": "https://owlcoin.co.uk",
+    "Port": 443,
+    "AddressPath": "webapi",
+    "RefreshToken": ""
+  }
+}

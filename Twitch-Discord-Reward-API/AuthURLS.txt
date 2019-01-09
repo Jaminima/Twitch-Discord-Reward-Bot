@@ -1,2 +1,2 @@
-https://api.nightbot.tv/oauth2/authorize?response_type=code&client_id=CLIENTID&redirect_uri=http://localhost:774/nightbot/&scope=song_requests_queue+song_requests&state=CurrencyID=ID
-https://www.streamlabs.com/api/v1.0/authorize?client_id=CLIENTID&redirect_uri=http://127.0.0.1:774/streamlabs/&response_type=code&scope=donations.read+donations.create&state=CurrencyID=ID
+https://api.nightbot.tv/oauth2/authorize?response_type=code&client_id=3cc02672d864b818995df677b409edd9&redirect_uri=https://owlcoin.co.uk/webapi/nightbot/&scope=song_requests_queue+song_requests&state=CurrencyID=3
+https://www.streamlabs.com/api/v1.0/authorize?client_id=8ORPRenm9wkZGlw2wAtkOCL5edI1N5RwjcqLK12h&redirect_uri=https://owlcoin.co.uk/webapi/streamlabs/&response_type=code&scope=donations.read+donations.create&state=CurrencyID=3
