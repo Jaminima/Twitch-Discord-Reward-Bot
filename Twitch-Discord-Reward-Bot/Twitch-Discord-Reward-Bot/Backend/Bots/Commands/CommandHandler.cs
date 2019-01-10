@@ -35,7 +35,6 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         {
             try
             {
-                Objects.Bank.MergeAccounts(e, BotInstance, e.SenderID);
                 if (e.SenderID != BotInstance.DiscordBot.Client.CurrentUser.Id.ToString())
                 {
                     string Prefix = BotInstance.CommandConfig["Prefix"].ToString(),
@@ -45,6 +44,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 
                     if (e.SegmentedBody[0].StartsWith(Prefix) && !e.SegmentedBody[0].StartsWith(Prefix + Prefix))
                     {
+                        Objects.Bank.MergeAccounts(e, BotInstance, e.SenderID);
                         if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Balance"], e) &&
                             JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Balance"]["Commands"], Command))
                         {
@@ -372,6 +372,23 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             }
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Denying"]["Responses"]["NotDueling"].ToString(), e); }
                         }
+                        else if (CommandEnabled(BotInstance.CommandConfig["Raffle"],e)&&
+                            JArrayContainsString(BotInstance.CommandConfig["Raffle"]["Joining"]["Commands"],Command))
+                        {
+                            StandardisedUser U = new StandardisedUser();
+                            U.ID = e.SenderID; U.UserName = e.SenderUserName;
+                            if (!BotInstance.TimeEvents.UserRaffleing(U))
+                            {
+                                Raffler R = new Raffler();
+                                R.User = U; R.RequestedFrom = e.MessageType;
+                                BotInstance.TimeEvents.RaffleParticipants.Add(R);
+                                if (BotInstance.CommandConfig["Raffle"]["Joining"]["Responses"]["Joined"].ToString() != "") { await SendMessage(BotInstance.CommandConfig["Raffle"]["Joining"]["Responses"]["Joined"].ToString(), e); }
+                            }
+                            else if (BotInstance.CommandConfig["Raffle"]["Joining"]["Responses"]["AlreadyRaffling"].ToString() != "")
+                            {
+                                await SendMessage(BotInstance.CommandConfig["Raffle"]["Joining"]["Responses"]["AlreadyRaffling"].ToString(), e);
+                            }
+                        }
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"], e) &&
                             BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"]["Commands"][Command.ToLower()] != null)
                         {
@@ -456,6 +473,34 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 
         public async Task SendMessage(string ParamaterisedMessage, StandardisedMessageRequest e, StandardisedUser TargetUser = null, int Amount = -1, int NewBal = -1, string OtherString = "", string SenderUsername = null)
         {
+            ParamaterisedMessage = MessageParser(ParamaterisedMessage, e, e.MessageType,TargetUser, Amount, NewBal, OtherString, SenderUsername);
+
+            if (e.MessageType == MessageType.Twitch)
+            {
+                BotInstance.TwitchBot.Client.SendMessage(e.ChannelName, ParamaterisedMessage);
+            }
+            else
+            {
+                await e.DiscordRaw.Channel.SendMessageAsync(ParamaterisedMessage);
+            }
+        }
+
+        public async Task SendMessage(string ParamaterisedMessage, string Channel, MessageType MessageType, StandardisedUser TargetUser = null, int Amount = -1, int NewBal = -1, string OtherString = "", string SenderUsername = null)
+        {
+            ParamaterisedMessage = MessageParser(ParamaterisedMessage, null, MessageType, TargetUser, Amount, NewBal, OtherString, SenderUsername);
+
+            if (MessageType == MessageType.Twitch)
+            {
+                BotInstance.TwitchBot.Client.SendMessage(Channel, ParamaterisedMessage);
+            }
+            else
+            {
+                //await e.DiscordRaw.Channel.SendMessageAsync(ParamaterisedMessage);
+            }
+        }
+
+        public string MessageParser(string ParamaterisedMessage, StandardisedMessageRequest e, MessageType MessageType, StandardisedUser TargetUser = null, int Amount = -1, int NewBal = -1, string OtherString = "", string SenderUsername = null)
+        {
             ParamaterisedMessage = ParamaterisedMessage.Replace("@<OtherString>", OtherString);
             ParamaterisedMessage = ParamaterisedMessage.Replace("@<CurrencyName>", BotInstance.CommandConfig["CurrencyName"].ToString());
             ParamaterisedMessage = ParamaterisedMessage.Replace("@<Amount>", Amount.ToString("N0"));
@@ -465,24 +510,24 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 
             foreach (Newtonsoft.Json.Linq.JToken Emote in BotInstance.CommandConfig["Emotes"])
             {
-                if (e.MessageType == MessageType.Discord) { ParamaterisedMessage = ParamaterisedMessage.Replace("@<" + Emote["Name"].ToString() + ">", Emote["Discord"].ToString()); }
-                if (e.MessageType == MessageType.Twitch) { ParamaterisedMessage = ParamaterisedMessage.Replace("@<" + Emote["Name"].ToString() + ">", Emote["Twitch"].ToString()); }
+                if (MessageType == MessageType.Discord) { ParamaterisedMessage = ParamaterisedMessage.Replace("@<" + Emote["Name"].ToString() + ">", Emote["Discord"].ToString()); }
+                if (MessageType == MessageType.Twitch) { ParamaterisedMessage = ParamaterisedMessage.Replace("@<" + Emote["Name"].ToString() + ">", Emote["Twitch"].ToString()); }
             }
 
-            if (e.MessageType == MessageType.Twitch)
+            if (MessageType == MessageType.Twitch)
             {
                 if (TargetUser != null) { ParamaterisedMessage = ParamaterisedMessage.Replace("@<TargetUser>", "@" + TargetUser.UserName); }
-                if (e.SenderUserName != null) { ParamaterisedMessage = ParamaterisedMessage.Replace("@<SenderUser>", "@" + e.SenderUserName); }
+                if (e!=null) if (e.SenderUserName != null) { ParamaterisedMessage = ParamaterisedMessage.Replace("@<SenderUser>", "@" + e.SenderUserName); }
                 else { ParamaterisedMessage = ParamaterisedMessage.Replace("@<SenderUser>", "@" + SenderUsername); }
-                BotInstance.TwitchBot.Client.SendMessage(e.ChannelName, ParamaterisedMessage);
             }
             else
             {
                 if (TargetUser != null) { ParamaterisedMessage = ParamaterisedMessage.Replace("@<TargetUser>", "<@" + TargetUser.ID + ">"); }
                 ParamaterisedMessage = ParamaterisedMessage.Replace("/me", "");
-                ParamaterisedMessage = ParamaterisedMessage.Replace("@<SenderUser>", "<@" + e.SenderID + ">");
-                await e.DiscordRaw.Channel.SendMessageAsync(ParamaterisedMessage);
+                if (e != null) ParamaterisedMessage = ParamaterisedMessage.Replace("@<SenderUser>", "<@" + e.SenderID + ">");
+                
             }
+            return ParamaterisedMessage;
         }
     }
 }

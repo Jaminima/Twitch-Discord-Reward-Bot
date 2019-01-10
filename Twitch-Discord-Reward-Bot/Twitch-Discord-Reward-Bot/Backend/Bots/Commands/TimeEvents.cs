@@ -20,14 +20,89 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         {
             while (true){
                 await Fish();
-                AutoMessage();
+                await AutoMessage();
                 RemoveDuels();
+                PerformRaffle();
                 System.Threading.Thread.Sleep(10000);
             }
         }
 
-        public Dictionary<DateTime,Duel> Duels = new Dictionary<DateTime, Duel> { };
+        public int RaffleNumber=0;
+        public List<Raffler> RaffleParticipants = new List<Raffler> { };
+        public DateTime LastRaffle = DateTime.MinValue;
+        public bool UserRaffleing(StandardisedUser User)
+        {
+            return RaffleParticipants.Where(x=>x.User.ID==User.ID).Count()!=0;
+        }
+        public void PerformRaffle()
+        {
+                if (BotInstance.CommandHandler.LiveCheck(BotInstance.CommandConfig["Raffle"]))
+                {
+                    int MinDelay = int.Parse(BotInstance.CommandConfig["Raffle"]["Delay"].ToString());
+                    if (((TimeSpan)(DateTime.Now - LastRaffle)).TotalSeconds >= MinDelay)
+                    {
+                        if (!RaffleRunning)
+                        {
+                            new Thread(async() => await RaffleThread()).Start();
+                        }
+                    }
+                }
+        }
 
+        public bool RaffleRunning = false;
+        public async Task RaffleThread()
+        {
+            RaffleRunning = true;
+            int RaffleSize = 0;
+            Newtonsoft.Json.Linq.JToken ChosenRaffle = null;
+            foreach (Newtonsoft.Json.Linq.JToken RaffleType in BotInstance.CommandConfig["Raffle"]["Sizes"])
+            {
+                RaffleSize += int.Parse(RaffleType["Frequency"].ToString());
+                if (RaffleSize >= RaffleNumber && ChosenRaffle==null) { ChosenRaffle = RaffleType; }
+            }
+            int RaffleReward = int.Parse(ChosenRaffle["Size"].ToString());
+            for (int i = 0; i < 4; i++)
+            {
+                String TimeLeft = (4-i)*15+" seconds";
+                if (BotInstance.CommandHandler.CommandEnabled(BotInstance.CommandConfig["Raffle"], MessageType.Twitch))
+                { await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["Raffle"]["Responses"]["LeadUp"].ToString(), BotInstance.CommandConfig["ChannelName"].ToString(), MessageType.Twitch,null, RaffleReward, -1,TimeLeft); }
+                Thread.Sleep(15000);
+            }
+            if (RaffleParticipants.Count != 0)
+            {
+                int TwitchWinners = 0, DiscordWinners=0;
+                int WinnerCount= int.Parse(ChosenRaffle["Winners"].ToString());
+                if (WinnerCount > RaffleParticipants.Count) { WinnerCount = RaffleParticipants.Count; }
+                for (int i=WinnerCount; WinnerCount > 0; WinnerCount--)
+                {
+                    int WinnerN = Init.Rnd.Next(0, RaffleParticipants.Count);
+                    Raffler Winner = RaffleParticipants[WinnerN];
+                    RaffleParticipants.RemoveAt(WinnerN);
+                    if (Winner.RequestedFrom == MessageType.Twitch)
+                    {
+                        TwitchWinners++;
+                        await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["Raffle"]["Responses"]["Winner"].ToString(), BotInstance.CommandConfig["ChannelName"].ToString(), MessageType.Twitch, Winner.User, RaffleReward);
+                    }
+                    else if (Winner.RequestedFrom == MessageType.Discord)
+                    {
+                        DiscordWinners++;
+                        await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["Raffle"]["Responses"]["Winner"].ToString(), BotInstance.CommandConfig["ChannelName"].ToString(), MessageType.Discord, Winner.User, RaffleReward);
+                    }
+                    Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank B = Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank.FromTwitchDiscord(Winner.RequestedFrom, BotInstance, Winner.User.ID);
+                    Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank.AdjustBalance(B, RaffleReward, "+");
+                }
+            }
+            else
+            {
+                if (BotInstance.CommandHandler.CommandEnabled(BotInstance.CommandConfig["Raffle"], MessageType.Twitch))
+                { await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["Raffle"]["Responses"]["NoOne"].ToString(), BotInstance.CommandConfig["ChannelName"].ToString(), MessageType.Twitch,null, int.Parse(ChosenRaffle["Size"].ToString())); }
+            }
+            RaffleNumber = (RaffleNumber + 1) % RaffleSize;
+            RaffleRunning = false;
+            LastRaffle = DateTime.Now;
+        }
+
+        public Dictionary<DateTime,Duel> Duels = new Dictionary<DateTime, Duel> { };
         public void RemoveDuels()
         {
             int RemoveAfter = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Duel"]["CancelAfter"].ToString());
@@ -45,7 +120,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 
         public Dictionary<int, DateTime> MessageHistory = new Dictionary<int, DateTime> { };
         public DateTime MessageLast = DateTime.MinValue;
-        public void AutoMessage()
+        public async Task AutoMessage()
         {
             if (BotInstance.CommandHandler.LiveCheck(BotInstance.CommandConfig["AutoMessage"]))
             {
@@ -64,7 +139,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         if (ShouldSend)
                         {
                             if (BotInstance.CommandHandler.CommandEnabled(BotInstance.CommandConfig["AutoMessage"], MessageType.Twitch))
-                            { BotInstance.TwitchBot.Client.SendMessage(BotInstance.CommandConfig["ChannelName"].ToString(), Items[i]["Body"].ToString()); }
+                            { await BotInstance.CommandHandler.SendMessage(Items[i]["Body"].ToString(),BotInstance.CommandConfig["ChannelName"].ToString(),MessageType.Twitch); }
                             MessageLast = DateTime.Now;
                             MessageHistory.Add(i, DateTime.Now);
                         }
@@ -97,6 +172,12 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 Fishermen.Remove(FishKey);
             }
         }
+    }
+
+    public class Raffler
+    {
+        public StandardisedUser User;
+        public MessageType RequestedFrom;
     }
 
     public class Duel

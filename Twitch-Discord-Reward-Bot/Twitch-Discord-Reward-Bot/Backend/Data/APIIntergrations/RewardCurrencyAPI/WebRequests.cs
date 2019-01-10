@@ -12,7 +12,9 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
     {
         public static ResponseObject GetRequest(string URL, List<KeyValuePair<string, string>> Headers = null)
         {
-            WebRequest Req = WebRequest.Create(Init.MasterConfig["API"]["WebAddress"] + ":" + Init.MasterConfig["API"]["Port"] + "/" + Init.MasterConfig["API"]["AddressPath"] + "/" + URL);
+            string URLStart = Init.MasterConfig["API"]["WebAddress"] + ":" + Init.MasterConfig["API"]["Port"] + "/";
+            if (Init.MasterConfig["API"]["AddressPath"].ToString() != "") { URLStart += Init.MasterConfig["API"]["AddressPath"] + "/"; }
+            WebRequest Req = WebRequest.Create( URLStart + URL);
             Req.Method = "GET";
             if (Headers != null)
             {
@@ -39,7 +41,9 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
 
         public static ResponseObject PostRequest(string URL, List<KeyValuePair<string, string>> Headers = null,bool Auth=false,Newtonsoft.Json.Linq.JToken Data = null)
         {
-            WebRequest Req = WebRequest.Create(Init.MasterConfig["API"]["WebAddress"] + ":" + Init.MasterConfig["API"]["Port"] + "/" + Init.MasterConfig["API"]["AddressPath"] + "/" + URL);
+            string URLStart = Init.MasterConfig["API"]["WebAddress"] + ":" + Init.MasterConfig["API"]["Port"] + "/";
+            if (Init.MasterConfig["API"]["AddressPath"].ToString() != "") { URLStart += Init.MasterConfig["API"]["AddressPath"] + "/"; }
+            WebRequest Req = WebRequest.Create( URLStart + URL);
             Req.Method = "POST";
             if (Headers != null)
             {
@@ -77,7 +81,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
         {
             if (((TimeSpan)(DateTime.Now - LastRefreshed)).TotalSeconds > 600)
             {
-                WebRequest Req = WebRequest.Create(Init.MasterConfig["API"]["WebAddress"] + ":" + Init.MasterConfig["API"]["Port"] + "/" + Init.MasterConfig["API"]["AddressPath"] + "/bot");
+                string URLStart = Init.MasterConfig["API"]["WebAddress"] + ":" + Init.MasterConfig["API"]["Port"] + "/";
+                WebRequest Req = WebRequest.Create(URLStart + "bot");
                 Req.Headers.Add("RefreshToken", Init.MasterConfig["API"]["RefreshToken"].ToString());
                 Req.Method = "POST";
                 Stream PostStream = Req.GetRequestStream();

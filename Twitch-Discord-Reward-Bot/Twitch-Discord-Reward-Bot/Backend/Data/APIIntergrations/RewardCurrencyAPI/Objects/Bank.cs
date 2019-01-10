@@ -21,9 +21,13 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
 
         public static Bank FromTwitchDiscord(Bots.StandardisedMessageRequest e, BotInstance BotInstance,string ID)
         {
+            return FromTwitchDiscord(e.MessageType, BotInstance, ID);
+        }
+        public static Bank FromTwitchDiscord(Bots.MessageType e, BotInstance BotInstance, string ID)
+        {
             List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("CurrencyID", BotInstance.Currency.ID.ToString()) };
-            if (e.MessageType == Bots.MessageType.Twitch) { Headers.Add(new KeyValuePair<string, string>("TwitchID", ID)); }
-            if (e.MessageType == Bots.MessageType.Discord) { Headers.Add(new KeyValuePair<string, string>("DiscordID", ID)); }
+            if (e == Bots.MessageType.Twitch) { Headers.Add(new KeyValuePair<string, string>("TwitchID", ID)); }
+            if (e == Bots.MessageType.Discord) { Headers.Add(new KeyValuePair<string, string>("DiscordID", ID)); }
             WebRequests.PostRequest("bank", Headers, true);
             ResponseObject RObj = WebRequests.GetRequest("bank", Headers);
             if (RObj.Code == 200)
