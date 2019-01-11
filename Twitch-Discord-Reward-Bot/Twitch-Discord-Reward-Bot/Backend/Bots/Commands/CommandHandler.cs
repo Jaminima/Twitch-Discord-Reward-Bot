@@ -341,7 +341,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                             {
                                                 Objects.Bank.AdjustBalance(Acceptor, TDuel.Value.ChangeBy, "+");
                                                 Objects.Bank.AdjustBalance(Creator, TDuel.Value.ChangeBy, "-");
-                                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Accepting"]["Responses"]["Win"].ToString(), e, TDuel.Value.Creator,TDuel.Value.ChangeBy);
+                                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Accepting"]["Responses"]["Win"].ToString(), e, TDuel.Value.Creator, TDuel.Value.ChangeBy);
                                             }
                                             if (Winner == 1)
                                             {
@@ -372,8 +372,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             }
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Denying"]["Responses"]["NotDueling"].ToString(), e); }
                         }
-                        else if (CommandEnabled(BotInstance.CommandConfig["Raffle"],e)&&
-                            JArrayContainsString(BotInstance.CommandConfig["Raffle"]["Joining"]["Commands"],Command))
+                        else if (CommandEnabled(BotInstance.CommandConfig["Raffle"], e) &&
+                            JArrayContainsString(BotInstance.CommandConfig["Raffle"]["Joining"]["Commands"], Command))
                         {
                             StandardisedUser U = new StandardisedUser();
                             U.ID = e.SenderID; U.UserName = e.SenderUserName;
@@ -388,6 +388,28 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             {
                                 await SendMessage(BotInstance.CommandConfig["Raffle"]["Joining"]["Responses"]["AlreadyRaffling"].ToString(), e);
                             }
+                        }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["SetTitle"],e)&&
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["SetTitle"]["Commands"], Command))
+                        {
+                            if (IsModerator(e))
+                            {
+                                string Title = e.MessageBody.Replace(e.SegmentedBody[0]+" ", "");
+                                Data.APIIntergrations.Twitch.UpdateChannelTitle(BotInstance,Title);
+                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["SetTitle"]["Responses"]["SetTitle"].ToString(), e, null, -1, -1, Title);
+                            }
+                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["Responses"]["NotMod"].ToString(), e); }
+                        }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["SetGame"], e) &&
+                           JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["SetGame"]["Commands"], Command))
+                        {
+                            if (IsModerator(e))
+                            {
+                                string Game = e.MessageBody.Replace(e.SegmentedBody[0] + " ", "");
+                                Data.APIIntergrations.Twitch.UpdateChannelGame(BotInstance, Game);
+                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["SetGame"]["Responses"]["SetGame"].ToString(), e, null, -1, -1, Game);
+                            }
+                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["Responses"]["NotMod"].ToString(), e); }
                         }
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"], e) &&
                             BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"]["Commands"][Command.ToLower()] != null)
@@ -458,6 +480,16 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             if (e == MessageType.Twitch)
             {
                 if (Command["TwitchEnabled"].ToString().ToLower() == "true") { return true; }
+            }
+            return false;
+        }
+
+        public bool IsModerator(StandardisedMessageRequest e)
+        {
+            if (e.MessageType == MessageType.Twitch) { return e.TwitchRaw.ChatMessage.IsModerator || e.TwitchRaw.ChatMessage.IsBroadcaster; }
+            else if (e.MessageType == MessageType.Discord)
+            {
+                return ((SocketGuildUser)e.DiscordRaw.Author).Roles.Where(x => x.Id.ToString() == BotInstance.CommandConfig["Discord"]["ModeratorRoleID"].ToString()).Count() != 0;
             }
             return false;
         }

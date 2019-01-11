@@ -11,8 +11,9 @@
     "Channels": [
       "528504610810232833"
     ],
-	"NotificationChannel":"528504610810232833",
-    "SubscriberRoleID": "531145863985233922"
+    "NotificationChannel": "528504610810232833",
+    "SubscriberRoleID": "531145863985233922",
+	"ModeratorRoleID":"528297729487798272"
   },
   "Emotes": [
     {
@@ -203,21 +204,31 @@
         }
       ]
     },
-	"Moderator":{
-		"Responses":{
-			"NotMod":"@<SenderUser> you are not a moderator"
-		},
-		"SetTitle":{
-			"TwitchEnabled": true,
-			"DiscordEnabled": false,
-			"Commands":[
-				"settitle"
-			],
-			"Response":{
-				"SetGame":"@<SenderUser> Set Title too @<OtherString>"
-			}
-		}
-	}
+    "Moderator": {
+      "Responses": {
+        "NotMod": "@<SenderUser> you are not a moderator"
+      },
+      "SetTitle": {
+        "TwitchEnabled": true,
+        "DiscordEnabled": true,
+        "Commands": [
+          "settitle"
+        ],
+        "Responses": {
+          "SetTitle": "@<SenderUser> Set stream title to @<OtherString>"
+        }
+      },
+      "SetGame": {
+        "TwitchEnabled": true,
+        "DiscordEnabled": true,
+        "Commands": [
+          "setgame"
+        ],
+        "Responses": {
+          "SetGame": "@<SenderUser> Set stream game to @<OtherString>"
+        }
+      }
+    }
   },
   "AutoMessage": {
     "TwitchEnabled": true,
@@ -231,45 +242,45 @@
       }
     ]
   },
-  "Raffle":{
-      "TwitchEnabled": true,
-      "DiscordEnabled": true,
-	  "RequireLive":false,
-	  "Triggers":{
-		"Delay":900,
-		"OnMinuteOfHour":[
-			0,
-			15,
-			30,
-			45
-		]
-	  },
-	  "Sizes":[
-		{
-			"Size":1000,
-			"Frequency":3,
-			"Winners":1
-		},
-		{
-			"Size":5000,
-			"Frequency":1,
-			"Winners":2
-		}
-	  ],
-	  "Responses":{
-		"LeadUp":"/me Raffle for @<Amount> @<CurrencyName> has started! You have @<OtherString> to type @<Prefix>join",
-		"Winner":"/me Raffle for @<Amount> @<CurrencyName> has finished and @<TargetUser> won @<Amount> @<CurrencyName>!!!",
-		"OtherWinner":"/me Raffle for @<Amount> @<CurrencyName> has finished and @<OtherString> won @<Amount> @<CurrencyName>!!!",
-		"NoOne":"/me Raffle for @<Amount> @<CurrencyName> was canceled as no one joined..."
-	  },
-	  "Joining":{
-		"Commands":[
-			"join"
-		],
-		"Responses":{
-			"Joined":"",
-			"AlreadyRaffling":""
-		}
-	  }
+  "Raffle": {
+    "TwitchEnabled": true,
+    "DiscordEnabled": true,
+    "RequireLive": false,
+    "Triggers": {
+      "Delay": 900,
+      "OnMinuteOfHour": [
+        0,
+        15,
+        30,
+        45
+      ]
+    },
+    "Sizes": [
+      {
+        "Size": 1000,
+        "Frequency": 3,
+        "Winners": 1
+      },
+      {
+        "Size": 5000,
+        "Frequency": 1,
+        "Winners": 2
+      }
+    ],
+    "Responses": {
+      "LeadUp": "/me Raffle for @<Amount> @<CurrencyName> has started! You have @<OtherString> to type @<Prefix>join",
+      "Winner": "/me Raffle for @<Amount> @<CurrencyName> has finished and @<TargetUser> won @<Amount> @<CurrencyName>!!!",
+      "OtherWinner": "/me Raffle for @<Amount> @<CurrencyName> has finished and @<OtherString> won @<Amount> @<CurrencyName>!!!",
+      "NoOne": "/me Raffle for @<Amount> @<CurrencyName> was canceled as no one joined..."
+    },
+    "Joining": {
+      "Commands": [
+        "join"
+      ],
+      "Responses": {
+        "Joined": "",
+        "AlreadyRaffling": ""
+      }
+    }
   }
 }

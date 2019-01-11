@@ -6,7 +6,8 @@
     },
     "API": {
       "ClientId": "",
-      "AccessToken": "",
+      "ClientSecret": "",
+      "RefreshToken": "",
       "AuthToken": ""
     }
   },
