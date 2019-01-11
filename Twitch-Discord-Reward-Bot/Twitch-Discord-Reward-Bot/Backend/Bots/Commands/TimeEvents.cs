@@ -61,16 +61,18 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 if (RaffleSize >= RaffleNumber && ChosenRaffle==null) { ChosenRaffle = RaffleType; }
             }
             int RaffleReward = int.Parse(ChosenRaffle["Size"].ToString());
+            RaffleParticipants = new List<Raffler> { };
             for (int i = 0; i < 4; i++)
             {
                 String TimeLeft = (4-i)*15+" seconds";
                 if (BotInstance.CommandHandler.CommandEnabled(BotInstance.CommandConfig["Raffle"], MessageType.Twitch))
                 { await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["Raffle"]["Responses"]["LeadUp"].ToString(), BotInstance.CommandConfig["ChannelName"].ToString(), MessageType.Twitch,null, RaffleReward, -1,TimeLeft); }
+                if (BotInstance.CommandHandler.CommandEnabled(BotInstance.CommandConfig["Raffle"], MessageType.Discord))
+                { await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["Raffle"]["Responses"]["LeadUp"].ToString(), BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(), MessageType.Discord, null, RaffleReward, -1, TimeLeft); }
                 Thread.Sleep(15000);
             }
             if (RaffleParticipants.Count != 0)
             {
-                int TwitchWinners = 0, DiscordWinners=0;
                 int WinnerCount= int.Parse(ChosenRaffle["Winners"].ToString());
                 if (WinnerCount > RaffleParticipants.Count) { WinnerCount = RaffleParticipants.Count; }
                 for (int i=WinnerCount; WinnerCount > 0; WinnerCount--)
@@ -80,13 +82,13 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                     RaffleParticipants.RemoveAt(WinnerN);
                     if (Winner.RequestedFrom == MessageType.Twitch)
                     {
-                        TwitchWinners++;
                         await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["Raffle"]["Responses"]["Winner"].ToString(), BotInstance.CommandConfig["ChannelName"].ToString(), MessageType.Twitch, Winner.User, RaffleReward);
+                        await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["Raffle"]["Responses"]["OtherWinner"].ToString(), BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(), MessageType.Discord, null, RaffleReward,-1,Winner.User.UserName);
                     }
                     else if (Winner.RequestedFrom == MessageType.Discord)
                     {
-                        DiscordWinners++;
-                        await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["Raffle"]["Responses"]["Winner"].ToString(), BotInstance.CommandConfig["ChannelName"].ToString(), MessageType.Discord, Winner.User, RaffleReward);
+                        await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["Raffle"]["Responses"]["Winner"].ToString(), BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(), MessageType.Discord, Winner.User, RaffleReward);
+                        await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["Raffle"]["Responses"]["OtherWinner"].ToString(), BotInstance.CommandConfig["ChannelName"].ToString(), MessageType.Twitch, null, RaffleReward, -1, Winner.User.UserName);
                     }
                     Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank B = Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank.FromTwitchDiscord(Winner.RequestedFrom, BotInstance, Winner.User.ID);
                     Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank.AdjustBalance(B, RaffleReward, "+");

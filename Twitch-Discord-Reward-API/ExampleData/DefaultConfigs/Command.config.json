@@ -9,9 +9,10 @@
     "TwitchMerging": true,
     "StatusMessage": "I am Sentient please help me!!!",
     "Channels": [
-      ""
+      "528504610810232833"
     ],
-    "SubscriberRoleID": ""
+	"NotificationChannel":"528504610810232833",
+    "SubscriberRoleID": "531145863985233922"
   },
   "Emotes": [
     {
@@ -234,6 +235,7 @@
 	  "Responses":{
 		"LeadUp":"/me Raffle for @<Amount> @<CurrencyName> has started! You have @<OtherString> to type @<Prefix>join",
 		"Winner":"/me Raffle for @<Amount> @<CurrencyName> has finished and @<TargetUser> won @<Amount> @<CurrencyName>!!!",
+		"OtherWinner":"/me Raffle for @<Amount> @<CurrencyName> has finished and @<OtherString> won @<Amount> @<CurrencyName>!!!",
 		"NoOne":"/me Raffle for @<Amount> @<CurrencyName> was canceled as no one joined..."
 	  },
 	  "Joining":{

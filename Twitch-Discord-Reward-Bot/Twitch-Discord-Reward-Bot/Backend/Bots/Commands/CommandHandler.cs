@@ -495,7 +495,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             }
             else
             {
-                //await e.DiscordRaw.Channel.SendMessageAsync(ParamaterisedMessage);
+                await ((ISocketMessageChannel)BotInstance.DiscordBot.Client.GetChannel(ulong.Parse(Channel))).SendMessageAsync(ParamaterisedMessage);
             }
         }
 
