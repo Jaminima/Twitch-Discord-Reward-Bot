@@ -202,7 +202,22 @@
           "Cost": 100
         }
       ]
-    }
+    },
+	"Moderator":{
+		"Responses":{
+			"NotMod":"@<SenderUser> you are not a moderator"
+		},
+		"SetTitle":{
+			"TwitchEnabled": true,
+			"DiscordEnabled": false,
+			"Commands":[
+				"settitle"
+			],
+			"Response":{
+				"SetGame":"@<SenderUser> Set Title too @<OtherString>"
+			}
+		}
+	}
   },
   "AutoMessage": {
     "TwitchEnabled": true,
