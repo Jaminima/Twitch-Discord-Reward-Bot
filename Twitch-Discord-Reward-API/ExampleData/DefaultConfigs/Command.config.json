@@ -206,6 +206,7 @@
   },
   "AutoMessage": {
     "TwitchEnabled": true,
+    "DiscordEnabled": false,
     "RequireLive": true,
     "MinimumDelay": 90,
     "Messages": [
@@ -219,7 +220,15 @@
       "TwitchEnabled": true,
       "DiscordEnabled": true,
 	  "RequireLive":false,
-	  "Delay":60,
+	  "Triggers":{
+		"Delay":900,
+		"OnMinuteOfHour":[
+			0,
+			15,
+			30,
+			45
+		]
+	  },
 	  "Sizes":[
 		{
 			"Size":1000,

@@ -153,6 +153,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         {
                             if (BotInstance.CommandHandler.CommandEnabled(BotInstance.CommandConfig["AutoMessage"], MessageType.Twitch))
                             { await BotInstance.CommandHandler.SendMessage(Items[i]["Body"].ToString(),BotInstance.CommandConfig["ChannelName"].ToString(),MessageType.Twitch); }
+                            if (BotInstance.CommandHandler.CommandEnabled(BotInstance.CommandConfig["AutoMessage"], MessageType.Discord))
+                            { await BotInstance.CommandHandler.SendMessage(Items[i]["Body"].ToString(), BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(), MessageType.Discord); }
                             MessageLast = DateTime.Now;
                             MessageHistory.Add(i, DateTime.Now);
                         }
