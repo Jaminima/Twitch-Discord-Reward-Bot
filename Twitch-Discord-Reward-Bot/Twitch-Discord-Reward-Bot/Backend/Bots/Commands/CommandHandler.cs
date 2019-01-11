@@ -310,7 +310,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                                 }
                                                 else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Responses"]["TooSmall"].ToString(), e, null, MinimumPayment); }
                                             }
-                                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["NumberParamaterInvalid"].ToString(), e); return; }
+                                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["NumberParamaterInvalid"].ToString(), e); }
                                         }
                                         else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
                                     }
@@ -408,6 +408,37 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 string Game = e.MessageBody.Replace(e.SegmentedBody[0] + " ", "");
                                 Data.APIIntergrations.Twitch.UpdateChannelGame(BotInstance, Game);
                                 await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["SetGame"]["Responses"]["SetGame"].ToString(), e, null, -1, -1, Game);
+                            }
+                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["Responses"]["NotMod"].ToString(), e); }
+                        }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["GiveCoin"],e)&&
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["GiveCoin"]["Commands"], Command))
+                        {
+                            if (IsModerator(e))
+                            {
+                                if (e.SegmentedBody.Length == 3)
+                                {
+                                    Objects.Bank B = Objects.Bank.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                    int ChangeBy = ValueFromMessageSegment(e.SegmentedBody[2],B);
+                                    if (ChangeBy != -1)
+                                    {
+                                        if (ChangeBy >= 0)
+                                        {
+                                            StandardisedUser S = null;
+                                            if (e.MessageType == MessageType.Twitch) { S = StandardisedUser.FromTwitchUsername(e.SegmentedBody[1], BotInstance); }
+                                            if (e.MessageType == MessageType.Discord) { S = StandardisedUser.FromDiscordMention(e.SegmentedBody[1], BotInstance); }
+                                            B = Objects.Bank.FromTwitchDiscord(e.MessageType, BotInstance, S.ID);
+                                            if (Objects.Bank.AdjustBalance(B, ChangeBy, "+"))
+                                            {
+                                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["GiveCoin"]["Responses"]["Gave"].ToString(), e, S, ChangeBy);
+                                            }
+                                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
+                                        }
+                                        else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["NumberParamaterNegative"].ToString(), e); }
+                                    }
+                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["NumberParamaterInvalid"].ToString(), e); }
+                                }
+                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["ParamaterCount"].ToString(), e); }
                             }
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["Responses"]["NotMod"].ToString(), e); }
                         }

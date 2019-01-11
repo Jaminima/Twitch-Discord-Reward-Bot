@@ -13,7 +13,7 @@
     ],
     "NotificationChannel": "528504610810232833",
     "SubscriberRoleID": "531145863985233922",
-	"ModeratorRoleID":"528297729487798272"
+    "ModeratorRoleID": "528297729487798272"
   },
   "Emotes": [
     {
@@ -204,6 +204,21 @@
         }
       ]
     },
+	"NightBot":{
+		"Request":{
+			"Cost": {
+				"Viewer": 500,
+				"Subscriber": 250
+			},
+			"Commands":[
+				"r",
+				"sr"
+			],
+			"Responses":{
+				"Requested":"@<SenderUser> Requested @<OtherString>"
+			}
+		}
+	},
     "Moderator": {
       "Responses": {
         "NotMod": "@<SenderUser> you are not a moderator"
@@ -227,6 +242,16 @@
         "Responses": {
           "SetGame": "@<SenderUser> Set stream game to @<OtherString>"
         }
+      },
+      "GiveCoin": {
+        "TwitchEnabled": true,
+        "DiscordEnabled": true,
+        "Commands": [
+          "give"
+        ],
+        "Responses": {
+          "Gave": "@<SenderUser> Gave @<TargetUser> @<Amount> @<CurrencyName>"
+        }
       }
     }
   },
@@ -245,7 +270,7 @@
   "Raffle": {
     "TwitchEnabled": true,
     "DiscordEnabled": true,
-    "RequireLive": false,
+    "RequireLive": true,
     "Triggers": {
       "Delay": 900,
       "OnMinuteOfHour": [
