@@ -37,13 +37,55 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
             }
         }
 
+        public static AccessToken GetAuthToken(BotInstance BotInstance)
+        {
+            if (BotInstance.AccessTokens.ContainsKey("Twitch"))
+            {
+                if (((TimeSpan)(BotInstance.AccessTokens["Twitch"].ExpiresAt - DateTime.Now)).TotalMinutes > 1)
+                {
+                    return BotInstance.AccessTokens["Twitch"];
+                }
+            }
+            WebRequest Req = WebRequest.Create("https://id.twitch.tv/oauth2/token");
+            byte[] PostData = Encoding.UTF8.GetBytes("client_id=" + BotInstance.LoginConfig["Twitch"]["API"]["ClientId"] +
+                "&client_secret=" + BotInstance.LoginConfig["Twitch"]["API"]["ClientSecret"] +
+                "&grant_type=refresh_token&redirect_uri=" + Init.MasterConfig["API"]["WebAddress"] + "/" + Init.MasterConfig["API"]["AddressPath"] + "/twitch/" + "&refresh_token=" + BotInstance.LoginConfig["Twitch"]["API"]["RefreshToken"]);
+            Req.Method = "POST";
+            Req.ContentType = "application/x-www-form-urlencoded";
+            Req.ContentLength = PostData.Length;
+            Stream PostStream = Req.GetRequestStream();
+            PostStream.Write(PostData, 0, PostData.Length);
+            PostStream.Flush();
+            PostStream.Close();
+            try
+            {
+                WebResponse Res = Req.GetResponse();
+                string D = new StreamReader(Res.GetResponseStream()).ReadToEnd();
+                Newtonsoft.Json.Linq.JObject JD = Newtonsoft.Json.Linq.JObject.Parse(D);
+                BotInstance.LoginConfig["Twitch"]["API"]["RefreshToken"] = JD["refresh_token"];
+                List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("CurrencyID", BotInstance.Currency.ID.ToString()) };
+                var R = RewardCurrencyAPI.WebRequests.PostRequest("currency", Headers, true, Newtonsoft.Json.Linq.JToken.Parse("{'LoginConfig':" + BotInstance.LoginConfig.ToString() + @"}"));
+
+                AccessToken Tk = new AccessToken(JD["access_token"].ToString(), int.Parse(JD["expires_in"].ToString()));
+                if (BotInstance.AccessTokens.ContainsKey("Twitch")) { BotInstance.AccessTokens["Twitch"] = Tk; }
+                else { BotInstance.AccessTokens.Add("Twitch", Tk); }
+
+                return BotInstance.AccessTokens["Twitch"];
+            }
+            catch (WebException E)
+            {
+                Console.WriteLine(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
+                return null;
+            }
+        }
+
         public static Newtonsoft.Json.Linq.JToken Request(BotInstance BotInstance,string URL,string Method="GET", string PostData=null)
         {
             try { 
                 WebRequest Req = WebRequest.Create(URL);
                 Req.Method = Method;
                 Req.Headers.Add("Client-ID", BotInstance.LoginConfig["Twitch"]["API"]["ClientId"].ToString());
-                Req.Headers.Add("Authorization", "OAuth " + BotInstance.LoginConfig["Twitch"]["API"]["AccessToken"].ToString());
+                Req.Headers.Add("Authorization", "OAuth " + GetAuthToken(BotInstance).Token);
                 if (PostData != null)
                 {
                     Byte[] BytePostData = Encoding.UTF8.GetBytes(PostData);
