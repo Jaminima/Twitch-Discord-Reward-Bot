@@ -36,6 +36,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         {
             try
             {
+                RewardForChatting(e);
                 #region "Commands"
                 if (e.SenderID != BotInstance.DiscordBot.Client.CurrentUser.Id.ToString())
                 {
@@ -530,6 +531,48 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 #endregion
             }
             catch (Exception E) { Console.WriteLine(E); }
+        }
+
+        public void RewardForChatting(StandardisedMessageRequest e)
+        {
+            if (BotInstance.TimeEvents != null)
+            {
+                IEnumerable<Viewer> Vs = BotInstance.TimeEvents.ViewerRewardTracking.Where(x => x.User.ID == e.SenderID);
+                if (Vs.Count() != 0)
+                {
+                    Viewer V = Vs.First();
+                    int TwitchDelay = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Chatting"]["Twitch"]["Interval"].ToString()),
+                        TwitchReward = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Chatting"]["Twitch"]["Reward"].ToString()),
+                        DiscordDelay = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Chatting"]["Discord"]["Interval"].ToString()),
+                        DiscordReward = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Chatting"]["Discord"]["Reward"].ToString());
+                    if (e.MessageType == MessageType.Twitch)
+                    {
+                        if (((TimeSpan)(DateTime.Now - V.LastTwitchMessage)).TotalSeconds >= TwitchDelay)
+                        {
+                            V.LastTwitchMessage = DateTime.Now;
+                            Objects.Bank B = Objects.Bank.FromTwitchDiscord(e.MessageType, BotInstance, e.SenderID);
+                            Objects.Bank.AdjustBalance(B, TwitchReward, "+");
+                        }
+                    }
+                    else if (e.MessageType == MessageType.Discord)
+                    {
+                        if (((TimeSpan)(DateTime.Now - V.LastTwitchMessage)).TotalSeconds >= DiscordDelay)
+                        {
+                            V.LastTwitchMessage = DateTime.Now;
+                            Objects.Bank B = Objects.Bank.FromTwitchDiscord(e.MessageType, BotInstance, e.SenderID);
+                            Objects.Bank.AdjustBalance(B, DiscordReward, "+");
+                        }
+                    }
+                }
+                else {
+                    Viewer V = new Viewer();
+                    StandardisedUser U = new StandardisedUser();
+                    U.ID = e.SenderID; U.UserName = e.SenderUserName;
+                    V.User = U;
+                    BotInstance.TimeEvents.ViewerRewardTracking.Add(V);
+                    RewardForChatting(e);
+                }
+            }
         }
 
         public StandardisedUser IDFromMessageSegment(string MessageSegment, StandardisedMessageRequest e)

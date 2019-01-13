@@ -28,7 +28,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             }
         }
 
-        List<Viewer> ViewerRewardTracking = new List<Viewer> { };
+        public List<Viewer> ViewerRewardTracking = new List<Viewer> { };
         void RewardForViewing()
         {
             Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Twitch.GetViewers(BotInstance);

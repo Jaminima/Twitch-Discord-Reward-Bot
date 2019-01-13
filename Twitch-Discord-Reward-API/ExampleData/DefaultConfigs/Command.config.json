@@ -335,5 +335,21 @@
         "AlreadyRaffling": ""
       }
     }
+  },
+  "AutoRewards": {
+    "Viewing": {
+      "Interval": 600,
+      "Reward": 1000
+    },
+    "Chatting": {
+      "Discord": {
+        "Interval": 600,
+        "Reward": 1000
+      },
+      "Twitch": {
+        "Interval": 600,
+        "Reward": 1000
+      }
+    }
   }
 }
