@@ -31,6 +31,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             new Thread(async () => await HandleThread(e)).Start();
         }
 
+        public Dictionary<string, string> SongRequestHistory = new Dictionary<string, string> { };
         async Task HandleThread(StandardisedMessageRequest e)
         {
             try
@@ -235,10 +236,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                     int Cost = ViewerCost;
                                     if (Self != null)
                                     {
-                                        if (e.MessageType == MessageType.Twitch)
-                                        { if (e.TwitchRaw.ChatMessage.IsSubscriber) { Cost = SubscriberCost; } }
-                                        if (e.MessageType == MessageType.Discord)
-                                        { if (((SocketGuildUser)e.DiscordRaw.Author).Roles.Where(x => x.Id.ToString() == BotInstance.CommandConfig["Discord"]["SubscriberRoleID"].ToString()).Count() != 0) { Cost = SubscriberCost; } }
+                                        if (IsSubscriber(e)) { Cost = SubscriberCost; }
                                         if (Self.Balance - Cost >= 0)
                                         {
                                             if (BotInstance.TimeEvents.Fishermen.Where(x => x.Value.e.SenderID == e.SenderID).Count() == 0)
@@ -389,6 +387,59 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 await SendMessage(BotInstance.CommandConfig["Raffle"]["Joining"]["Responses"]["AlreadyRaffling"].ToString(), e);
                             }
                         }
+                        #region "NightBot"
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"],e)&&
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Commands"], Command))
+                        {
+                            if (e.SegmentedBody.Length >= 2)
+                            {
+                                string Request = e.MessageBody.Replace(e.SegmentedBody[0] + " ", "");
+                                int Cost = int.Parse(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Cost"]["Viewer"].ToString()),
+                                    SubscriberCost = int.Parse(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Cost"]["Subscriber"].ToString());
+                                if (IsSubscriber(e)) { Cost = SubscriberCost; }
+                                Objects.Bank B = Objects.Bank.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                if (B.Balance >= Cost)
+                                {
+                                    Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Nightbot.RequestSong(BotInstance, Request);
+                                    if (JData["status"].ToString() == "200")
+                                    {
+                                        if (!SongRequestHistory.ContainsKey(e.SenderID)) { SongRequestHistory.Add(e.SenderID, JData["item"]["_id"].ToString()); }
+                                        else { SongRequestHistory[e.SenderID] = JData["item"]["_id"].ToString(); }
+                                        Objects.Bank.AdjustBalance(B, Cost, "-");
+                                        string MessageContent = JData["item"]["track"]["title"] + " by " + JData["item"]["track"]["artist"] + " -- " + JData["item"]["track"]["url"];
+                                        await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Responses"]["Requested"].ToString(), e, OtherString: MessageContent);
+                                    }
+                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
+                                }
+                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Responses"]["NotEnough"].ToString(), e); }
+                            }
+                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["ParamaterCount"].ToString(), e); }
+                        }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"],e)&&
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Cancel"]["Commands"],Command))
+                        {
+                            if (SongRequestHistory.ContainsKey(e.SenderID))
+                            {
+                                Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Nightbot.GetQueue(BotInstance);
+                                if (JData["status"].ToString() == "200")
+                                {
+                                    if (JData["queue"].Where(x=>x["_id"].ToString() == SongRequestHistory[e.SenderID]).Count() != 0)
+                                    {
+                                        JData = Data.APIIntergrations.Nightbot.RemoveID(BotInstance, SongRequestHistory[e.SenderID]);
+                                        if (JData["status"].ToString() == "200")
+                                        {
+                                            await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Cancel"]["Responses"]["CanceledSong"].ToString(), e);
+                                        }
+                                        else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
+                                    }
+                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Cancel"]["Responses"]["SongDoesntExist"].ToString(), e); }
+                                }
+                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
+                            }
+                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Cancel"]["Responses"]["NoSong"].ToString(), e); }
+                        }
+                        #endregion
+                        #region "Moderator"
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["SetTitle"],e)&&
                             JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["SetTitle"]["Commands"], Command))
                         {
@@ -442,6 +493,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             }
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["Responses"]["NotMod"].ToString(), e); }
                         }
+                        #endregion
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"], e) &&
                             BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"]["Commands"][Command.ToLower()] != null)
                         {
@@ -522,6 +574,15 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             {
                 return ((SocketGuildUser)e.DiscordRaw.Author).Roles.Where(x => x.Id.ToString() == BotInstance.CommandConfig["Discord"]["ModeratorRoleID"].ToString()).Count() != 0;
             }
+            return false;
+        }
+
+        public bool IsSubscriber(StandardisedMessageRequest e)
+        {
+            if (e.MessageType == MessageType.Twitch)
+            { if (e.TwitchRaw.ChatMessage.IsSubscriber) { return true; } }
+            if (e.MessageType == MessageType.Discord)
+            { if (((SocketGuildUser)e.DiscordRaw.Author).Roles.Where(x => x.Id.ToString() == BotInstance.CommandConfig["Discord"]["SubscriberRoleID"].ToString()).Count() != 0) { return true; } }
             return false;
         }
 

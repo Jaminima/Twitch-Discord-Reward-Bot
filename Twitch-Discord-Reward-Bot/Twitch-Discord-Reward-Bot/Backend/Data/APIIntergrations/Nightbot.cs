@@ -87,7 +87,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
 
         public static Newtonsoft.Json.Linq.JToken GetQueue(BotInstance BotInstance)
         {
-            return GenericExecute(BotInstance, "https://api.nightbot.tv/1/song_requests", "GET");
+            return GenericExecute(BotInstance, "https://api.nightbot.tv/1/song_requests/queue", "GET");
         }
 
         public static Newtonsoft.Json.Linq.JToken PauseSong(BotInstance BotInstance)
