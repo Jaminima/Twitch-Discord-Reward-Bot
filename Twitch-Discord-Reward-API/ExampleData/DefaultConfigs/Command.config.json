@@ -40,7 +40,9 @@
       "DiscordEnabled": true,
       "RequireLive": false,
       "Commands": {
-        "discord": "@<SenderUser> link"
+        "discord": "@<SenderUser> link",
+        "queue": "@<SenderUser> https://beta.nightbot.tv/t/@<ChannelName>/song_requests",
+        "playlist": "@<SenderUser> https://beta.nightbot.tv/t/@<ChannelName>/song_requests/playlist"
       }
     },
     "Balance": {
@@ -85,7 +87,7 @@
         "Win": "@<SenderUser> You have Won @<Amount> @<CurrencyName>",
         "Lose": "@<SenderUser> You have Lost @<Amount> @<CurrencyName>",
         "NotEnough": "@<SenderUser> You dont have enough @<CurrencyName>",
-        "TooSmall": "@<SenderUser> You must pay at least @<Amount> @<CurrencyName>"
+        "TooSmall": "@<SenderUser> You must gamble at least @<Amount> @<CurrencyName>"
       }
     },
     "Slots": {
@@ -114,7 +116,7 @@
         "Win": "@<SenderUser> You got @<OtherString> and Won @<Amount> @<CurrencyName>",
         "Lose": "@<SenderUser> You got @<OtherString> and Lost @<Amount> @<CurrencyName>",
         "NotEnough": "@<SenderUser> You dont have enough @<CurrencyName>",
-        "TooSmall": "@<SenderUser> You must pay at least @<Amount> @<CurrencyName>"
+        "TooSmall": "@<SenderUser> You must slot with at least @<Amount> @<CurrencyName>"
       }
     },
     "Fish": {
@@ -162,7 +164,7 @@
         "Started": "@<SenderUser> You have started a duel against @<TargetUser> for @<Amount> @<CurrencyName>, they can type @<Prefix>accept or @<Prefix>deny",
         "SelfNotEnough": "@<SenderUser> You dont have enough @<CurrencyName>",
         "OtherNotEnough": "@<SenderUser> @<TargetUser> doesnt have enough @<CurrencyName>",
-        "TooSmall": "@<SenderUser> You must pay at least @<Amount> @<CurrencyName>",
+        "TooSmall": "@<SenderUser> You must duel with at least @<Amount> @<CurrencyName>",
         "SelfDueling": "@<SenderUser> You are already dueling!",
         "OtherDueling": "@<SenderUser> @<TargetUser> is already dueling!"
       },
@@ -204,21 +206,47 @@
         }
       ]
     },
-	"NightBot":{
-		"Request":{
-			"Cost": {
-				"Viewer": 500,
-				"Subscriber": 250
-			},
-			"Commands":[
-				"r",
-				"sr"
-			],
-			"Responses":{
-				"Requested":"@<SenderUser> Requested @<OtherString>"
-			}
-		}
-	},
+    "NightBot": {
+      "TwitchEnabled": true,
+      "DiscordEnabled": true,
+      "Responses": {
+        "APIError": "@<SenderUser> The following issue occured: @<OtherString>"
+      },
+      "Current": {
+        "Responses": {
+          "CurrentlyPlaying": "@<SenderUser> Currently Playing @<OtherString>"
+        },
+        "Commands": [
+          "currentsong",
+          "songcurrent"
+        ]
+      },
+      "Cancel": {
+        "Commands": [
+          "cancelsong",
+          "songcancel"
+        ],
+        "Responses": {
+          "NoSong": "@<SenderUser> You dont have a song to cancel",
+          "SongDoesntExist": "@<SenderUser> The song you are trying to cancel is no longer in queue",
+          "CanceledSong": "@<SenderUser> Removed your last requested song from queue"
+        }
+      },
+      "Request": {
+        "Cost": {
+          "Viewer": 500,
+          "Subscriber": 250
+        },
+        "Commands": [
+          "r",
+          "sr"
+        ],
+        "Responses": {
+          "NotEnough": "@<SenderUser> You dont have enough @<CurrencyName>",
+          "Requested": "@<SenderUser> Requested @<OtherString>"
+        }
+      }
+    },
     "Moderator": {
       "Responses": {
         "NotMod": "@<SenderUser> you are not a moderator"
