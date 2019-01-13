@@ -36,6 +36,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         {
             try
             {
+                #region "Commands"
                 if (e.SenderID != BotInstance.DiscordBot.Client.CurrentUser.Id.ToString())
                 {
                     string Prefix = BotInstance.CommandConfig["Prefix"].ToString(),
@@ -526,6 +527,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         }
                     }
                 }
+                #endregion
             }
             catch (Exception E) { Console.WriteLine(E); }
         }

@@ -16,25 +16,62 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             new Thread(async () => await TimeThread()).Start();
         }
 
-        public async Task TimeThread()
+        async Task TimeThread()
         {
             while (true){
                 await Fish();
                 await AutoMessage();
                 RemoveDuels();
                 PerformRaffle();
+                RewardForViewing();
                 System.Threading.Thread.Sleep(10000);
             }
         }
 
-        public int RaffleNumber=0;
+        List<Viewer> ViewerRewardTracking = new List<Viewer> { };
+        void RewardForViewing()
+        {
+            Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Twitch.GetViewers(BotInstance);
+            int Reward = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Viewing"]["Reward"].ToString()),
+                Interval= int.Parse(BotInstance.CommandConfig["AutoRewards"]["Viewing"]["Interval"].ToString());
+            if (Interval < 300) { Interval = 300; Reward = (int)Math.Round((double)((Reward / Interval) * 300),0); }
+            IEnumerable<Newtonsoft.Json.Linq.JToken> Merged = JData["chatters"]["vips"].
+                Union(JData["chatters"]["moderators"]).
+                Union(JData["chatters"]["staff"]).
+                Union(JData["chatters"]["admins"]).
+                Union(JData["chatters"]["global_mods"]).
+                Union(JData["chatters"]["viewers"]);
+            foreach (Newtonsoft.Json.Linq.JToken Viewer in Merged)
+            {
+                StandardisedUser U = StandardisedUser.FromTwitchUsername(Viewer.ToString(), BotInstance);
+                if (ViewerRewardTracking.Where(x => x.User.ID == U.ID && ((TimeSpan)(DateTime.Now - x.LastwatchingReward)).TotalSeconds < Interval).Count() == 0)
+                {
+                    RewardUser(Reward, U, MessageType.Twitch);
+                    IEnumerable<Viewer> Vs = ViewerRewardTracking.Where(x => x.User.ID == U.ID);
+                    if (Vs.Count() != 0) { Vs.First().LastwatchingReward = DateTime.Now; }
+                    else
+                    {
+                        Viewer V = new Viewer();
+                        V.User = U; V.LastwatchingReward = DateTime.Now;
+                        ViewerRewardTracking.Add(V);
+                    }
+                }
+            }
+        }
+        void RewardUser(int Reward,StandardisedUser U,MessageType MessageType)
+        {
+            Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank B = Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank.FromTwitchDiscord(MessageType, BotInstance, U.ID);
+            Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank.AdjustBalance(B, Reward, "+");
+        }
+
+        int RaffleNumber=0;
         public List<Raffler> RaffleParticipants = new List<Raffler> { };
-        public DateTime LastRaffle = DateTime.MinValue;
+        DateTime LastRaffle = DateTime.MinValue;
         public bool UserRaffleing(StandardisedUser User)
         {
             return RaffleParticipants.Where(x=>x.User.ID==User.ID).Count()!=0;
         }
-        public void PerformRaffle()
+        void PerformRaffle()
         {
             if (BotInstance.CommandHandler.LiveCheck(BotInstance.CommandConfig["Raffle"]))
             {
@@ -58,8 +95,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             }
         }
 
-        public bool RaffleRunning = false;
-        public async Task RaffleThread()
+        bool RaffleRunning = false;
+        async Task RaffleThread()
         {
             RaffleRunning = true;
             int RaffleSize = 0;
@@ -131,8 +168,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             return Duels.Where(x => x.Value.Creator.ID == User.ID || x.Value.Acceptor.ID == User.ID).Count() != 0;
         }
 
-        public Dictionary<int, DateTime> MessageHistory = new Dictionary<int, DateTime> { };
-        public DateTime MessageLast = DateTime.MinValue;
+        Dictionary<int, DateTime> MessageHistory = new Dictionary<int, DateTime> { };
+        DateTime MessageLast = DateTime.MinValue;
         public async Task AutoMessage()
         {
             if (BotInstance.CommandHandler.LiveCheck(BotInstance.CommandConfig["AutoMessage"]))
@@ -187,6 +224,14 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 Fishermen.Remove(FishKey);
             }
         }
+    }
+
+    public class Viewer
+    {
+        public StandardisedUser User;
+        public DateTime LastwatchingReward=DateTime.MinValue, 
+            LastDiscordMessage = DateTime.MinValue, 
+            LastTwitchMessage = DateTime.MinValue;
     }
 
     public class Raffler
