@@ -21,7 +21,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
             WebRequest Req = WebRequest.Create("https://api.nightbot.tv/oauth2/token");
             byte[] PostData = Encoding.UTF8.GetBytes("client_id=" + BotInstance.LoginConfig["NightBot"]["ClientId"] +
                 "&client_secret=" + BotInstance.LoginConfig["NightBot"]["ClientSecret"] +
-                "&grant_type=refresh_token&redirect_uri="+Init.MasterConfig["API"]["WebAddress"] + "/" + Init.MasterConfig["API"]["AddressPath"] + "/nightbot/" + "&refresh_token=" + BotInstance.LoginConfig["NightBot"]["RefreshToken"]);
+                "&grant_type=refresh_token&redirect_uri="+Init.MasterConfig["Redirect"]["WebAddress"] + "/" + Init.MasterConfig["Redirect"]["AddressPath"] + "/nightbot/" + "&refresh_token=" + BotInstance.LoginConfig["NightBot"]["RefreshToken"]);
             Req.Method = "POST";
             Req.ContentType = "application/x-www-form-urlencoded";
             Req.ContentLength = PostData.Length;
@@ -60,7 +60,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
         {
             WebRequest Req = WebRequest.Create(URL);
             Req.Method = Method;
-            Req.Headers.Add("Authorization", "Bearer " + GetAuthToken(BotInstance));
+            Req.Headers.Add("Authorization", "Bearer " + GetAuthToken(BotInstance).Token);
             Req.ContentType = "application/x-www-form-urlencoded";
             if (Data != "")
             {

@@ -49,7 +49,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
             WebRequest Req = WebRequest.Create("https://id.twitch.tv/oauth2/token");
             byte[] PostData = Encoding.UTF8.GetBytes("client_id=" + BotInstance.LoginConfig["Twitch"]["API"]["ClientId"] +
                 "&client_secret=" + BotInstance.LoginConfig["Twitch"]["API"]["ClientSecret"] +
-                "&grant_type=refresh_token&redirect_uri=" + Init.MasterConfig["API"]["WebAddress"] + "/" + Init.MasterConfig["API"]["AddressPath"] + "/twitch/" + "&refresh_token=" + BotInstance.LoginConfig["Twitch"]["API"]["RefreshToken"]);
+                "&grant_type=refresh_token&redirect_uri=" + Init.MasterConfig["Redirect"]["WebAddress"] + "/" + Init.MasterConfig["Redirect"]["AddressPath"] + "/twitch/" + "&refresh_token=" + BotInstance.LoginConfig["Twitch"]["API"]["RefreshToken"]);
             Req.Method = "POST";
             Req.ContentType = "application/x-www-form-urlencoded";
             Req.ContentLength = PostData.Length;

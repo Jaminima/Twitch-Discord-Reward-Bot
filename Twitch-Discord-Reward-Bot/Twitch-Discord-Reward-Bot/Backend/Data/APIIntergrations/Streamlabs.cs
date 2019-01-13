@@ -21,7 +21,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
             WebRequest Req = WebRequest.Create("https://streamlabs.com/api/v1.0/token");
             byte[] PostData = Encoding.UTF8.GetBytes("client_id=" + BotInstance.LoginConfig["StreamLabs"]["ClientId"] +
                 "&client_secret=" + BotInstance.LoginConfig["StreamLabs"]["ClientSecret"] +
-                "&grant_type=refresh_token&redirect_uri=" + Init.MasterConfig["API"]["WebAddress"] + "/" + Init.MasterConfig["API"]["AddressPath"] + "/streamlabs/" + "&refresh_token=" + BotInstance.LoginConfig["StreamLabs"]["RefreshToken"]);
+                "&grant_type=refresh_token&redirect_uri=" + Init.MasterConfig["Redirect"]["WebAddress"] + "/" + Init.MasterConfig["Redirect"]["AddressPath"] + "/streamlabs/" + "&refresh_token=" + BotInstance.LoginConfig["StreamLabs"]["RefreshToken"]);
             Req.Method = "POST";
             Req.ContentType = "application/x-www-form-urlencoded";
             Req.ContentLength = PostData.Length;
