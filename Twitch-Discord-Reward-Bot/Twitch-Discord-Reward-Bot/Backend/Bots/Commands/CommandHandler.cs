@@ -48,6 +48,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                     if (e.SegmentedBody[0].StartsWith(Prefix) && !e.SegmentedBody[0].StartsWith(Prefix + Prefix))
                     {
                         Objects.Bank.MergeAccounts(e, BotInstance, e.SenderID);
+                        #region "Viewer"
                         if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Balance"], e) &&
                             JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Balance"]["Commands"], Command))
                         {
@@ -100,7 +101,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                             {
                                                 if (ChangeBy >= MinPayment)
                                                 {
-                                                
+
                                                     if (Self.Balance - ChangeBy >= 0)
                                                     {
                                                         if (Objects.Bank.AdjustBalance(Self, ChangeBy, "-"))
@@ -145,7 +146,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                         {
                                             if (ChangeBy >= MinPayment)
                                             {
-                                            
+
                                                 if (Self.Balance - ChangeBy >= 0)
                                                 {
                                                     string Operator;
@@ -188,7 +189,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                         {
                                             if (ChangeBy >= MinPayment)
                                             {
-                                            
+
                                                 if (Self.Balance - ChangeBy >= 0)
                                                 {
                                                     string Operator;
@@ -396,8 +397,19 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 await SendMessage(BotInstance.CommandConfig["Raffle"]["Joining"]["Responses"]["AlreadyRaffling"].ToString(), e);
                             }
                         }
+                        #endregion
                         #region "NightBot"
-                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"],e)&&
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e) &&
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Playlist"]["Commands"], Command))
+                        {
+                            await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Playlist"]["Response"].ToString(), e);
+                        }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e) &&
+                           JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Queue"]["Commands"], Command))
+                        {
+                            await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Queue"]["Response"].ToString(), e);
+                        }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e) &&
                             JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Commands"], Command))
                         {
                             if (e.SegmentedBody.Length >= 2)
@@ -424,15 +436,15 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             }
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["ParamaterCount"].ToString(), e); }
                         }
-                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"],e)&&
-                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Cancel"]["Commands"],Command))
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e) &&
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Cancel"]["Commands"], Command))
                         {
                             if (SongRequestHistory.ContainsKey(e.SenderID))
                             {
                                 Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Nightbot.GetQueue(BotInstance);
                                 if (JData["status"].ToString() == "200")
                                 {
-                                    if (JData["queue"].Where(x=>x["_id"].ToString() == SongRequestHistory[e.SenderID]).Count() != 0)
+                                    if (JData["queue"].Where(x => x["_id"].ToString() == SongRequestHistory[e.SenderID]).Count() != 0)
                                     {
                                         JData = Data.APIIntergrations.Nightbot.RemoveID(BotInstance, SongRequestHistory[e.SenderID]);
                                         if (JData["status"].ToString() == "200")
@@ -447,26 +459,26 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             }
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Cancel"]["Responses"]["NoSong"].ToString(), e); }
                         }
-                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e)&&
-                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Current"]["Commands"],Command))
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e) &&
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Current"]["Commands"], Command))
                         {
                             Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Nightbot.GetQueue(BotInstance);
                             if (JData["status"].ToString() == "200")
                             {
                                 string MessageContent = JData["_currentSong"]["track"]["title"] + " by " + JData["_currentSong"]["track"]["artist"] + " -- " + JData["_currentSong"]["track"]["url"];
-                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Current"]["Responses"]["CurrentlyPlaying"].ToString(), e,OtherString:MessageContent);
+                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Current"]["Responses"]["CurrentlyPlaying"].ToString(), e, OtherString: MessageContent);
                             }
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
                         }
                         #endregion
                         #region "Moderator"
-                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["SetTitle"],e)&&
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["SetTitle"], e) &&
                             JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["SetTitle"]["Commands"], Command))
                         {
                             if (IsModerator(e))
                             {
-                                string Title = e.MessageBody.Replace(e.SegmentedBody[0]+" ", "");
-                                Data.APIIntergrations.Twitch.UpdateChannelTitle(BotInstance,Title);
+                                string Title = e.MessageBody.Replace(e.SegmentedBody[0] + " ", "");
+                                Data.APIIntergrations.Twitch.UpdateChannelTitle(BotInstance, Title);
                                 await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["SetTitle"]["Responses"]["SetTitle"].ToString(), e, null, -1, -1, Title);
                             }
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["Responses"]["NotMod"].ToString(), e); }
@@ -482,7 +494,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             }
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["Responses"]["NotMod"].ToString(), e); }
                         }
-                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["GiveCoin"],e)&&
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["GiveCoin"], e) &&
                             JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["GiveCoin"]["Commands"], Command))
                         {
                             if (IsModerator(e))
@@ -490,7 +502,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 if (e.SegmentedBody.Length == 3)
                                 {
                                     Objects.Bank B = Objects.Bank.FromTwitchDiscord(e, BotInstance, e.SenderID);
-                                    int ChangeBy = ValueFromMessageSegment(e.SegmentedBody[2],B);
+                                    int ChangeBy = ValueFromMessageSegment(e.SegmentedBody[2], B);
                                     if (ChangeBy != -1)
                                     {
                                         if (ChangeBy >= 0)
@@ -512,6 +524,66 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["ParamaterCount"].ToString(), e); }
                             }
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["Responses"]["NotMod"].ToString(), e); }
+                        }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e)&&
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Pause"]["Commands"],Command))
+                        {
+                            if (IsModerator(e))
+                            {
+                                Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Nightbot.PauseSong(BotInstance);
+                                if (JData["status"].ToString() == "200")
+                                {
+                                    await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Pause"]["Response"].ToString(), e);
+                                }
+                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
+
+                            }
+                        }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e) &&
+                           JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Play"]["Commands"], Command))
+                        {
+                            if (IsModerator(e))
+                            {
+                                Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Nightbot.PlaySong(BotInstance);
+                                if (JData["status"].ToString() == "200")
+                                {
+                                    await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Play"]["Response"].ToString(), e);
+                                }
+                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
+
+                            }
+                        }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e) &&
+                           JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Skip"]["Commands"], Command))
+                        {
+                            if (IsModerator(e))
+                            {
+                                Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Nightbot.SkipSong(BotInstance);
+                                if (JData["status"].ToString() == "200")
+                                {
+                                    await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Skip"]["Response"].ToString(), e);
+                                }
+                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
+                            }
+                        }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e) &&
+                           JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Remove"]["Commands"], Command))
+                        {
+                            if (IsModerator(e))
+                            {
+                                if (e.SegmentedBody.Length == 2)
+                                {
+                                    try { int.Parse(e.SegmentedBody[1]); } catch { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["NumberParamaterInvalid"].ToString(), e); return; }
+                                    Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Nightbot.RemoveItem(BotInstance, int.Parse(e.SegmentedBody[1]));
+                                    if (JData["status"].ToString() == "200")
+                                    {
+                                        string MessageContent = JData["item"]["track"]["title"] + " by " + JData["item"]["track"]["artist"] + " -- " + JData["item"]["track"]["url"];
+                                        await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Remove"]["Response"].ToString(), e,OtherString:MessageContent);
+                                    }
+                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
+
+                                }
+                            }
                         }
                         #endregion
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"], e) &&
