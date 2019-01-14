@@ -34,7 +34,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
                 WebResponse Res = Req.GetResponse();
                 string D = new StreamReader(Res.GetResponseStream()).ReadToEnd();
                 Newtonsoft.Json.Linq.JObject JD = Newtonsoft.Json.Linq.JObject.Parse(D);
-                BotInstance.LoginConfig["NightBot"]["RefreshToken"] = JD["refresh_token"];
+                BotInstance.LoginConfig["StreamLabs"]["RefreshToken"] = JD["refresh_token"];
                 List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("CurrencyID", BotInstance.Currency.ID.ToString()) };
                 var R = RewardCurrencyAPI.WebRequests.PostRequest("currency", Headers, true, Newtonsoft.Json.Linq.JToken.Parse("{'LoginConfig':" + BotInstance.LoginConfig.ToString() + @"}"));
 
@@ -49,6 +49,40 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
                 Console.WriteLine(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
                 return null;
             }
+        }
+
+        public static Newtonsoft.Json.Linq.JToken GenericExecute(BotInstance BotInstance, string URL, string Data="", string Method="GET")
+        {
+            if (URL.Contains("?")) { URL += "&access_token=" + GetAuthToken(BotInstance).Token; }
+            else { URL += "?access_token=" + GetAuthToken(BotInstance).Token; }
+            WebRequest Req = WebRequest.Create(URL);
+            Req.Method = Method;
+            Req.ContentType = "application/x-www-form-urlencoded";
+            if (Data != "")
+            {
+                byte[] PostData = Encoding.UTF8.GetBytes(Data);
+                Req.ContentLength = PostData.Length;
+                Stream PostStream = Req.GetRequestStream();
+                PostStream.Write(PostData, 0, PostData.Length);
+                PostStream.Flush();
+                PostStream.Close();
+            }
+            try
+            {
+                WebResponse Res = Req.GetResponse();
+                string D = new StreamReader(Res.GetResponseStream()).ReadToEnd();
+                Newtonsoft.Json.Linq.JObject JD = Newtonsoft.Json.Linq.JObject.Parse(D);
+                return JD;
+            }
+            catch (WebException E)
+            {
+                return Newtonsoft.Json.Linq.JToken.Parse(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
+            }
+        }
+
+        public static Newtonsoft.Json.Linq.JToken GetDonations(BotInstance BotInstance)
+        {
+            return GenericExecute(BotInstance, "https://streamlabs.com/api/v1.0/donations?limit=100");
         }
     }
 }

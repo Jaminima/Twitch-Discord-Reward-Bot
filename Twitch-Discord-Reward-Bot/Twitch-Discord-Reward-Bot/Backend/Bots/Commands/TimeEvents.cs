@@ -24,17 +24,67 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 RemoveDuels();
                 PerformRaffle();
                 RewardForViewing();
+                await CheckForDonations();
                 System.Threading.Thread.Sleep(10000);
             }
         }
 
+        DateTime LastDonationCheck = DateTime.MinValue;
+        async Task CheckForDonations()
+        {
+            if (((TimeSpan)(DateTime.Now - LastDonationCheck)).TotalSeconds < 60) { return; }
+            LastDonationCheck = DateTime.Now;
+            Newtonsoft.Json.Linq.JToken NetData = Data.APIIntergrations.Streamlabs.GetDonations(BotInstance),
+                LocalData=Data.FileHandler.ReadJSON("./Data/DonationCache/"+BotInstance.Currency.ID+".json");
+            int DonationReward = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Donating"]["RewardPerWhole"].ToString());
+            if (LocalData != null)
+            {
+                if (NetData["data"][0]["donation_id"].ToString() != LocalData["data"][0]["donation_id"].ToString())
+                {
+                    for (int i = 0; i < LocalData["data"].Count(); i++)
+                    {
+                        if (LocalData["data"][0]["donation_id"].ToString() != NetData["data"][i]["donation_id"].ToString())
+                        {
+                            Newtonsoft.Json.Linq.JToken Donation = NetData["data"][i];
+                            await RewardDonator(Donation,DonationReward);
+                        }
+                    }
+                    Data.FileHandler.SaveJSON("./Data/DonationCache/" + BotInstance.Currency.ID + ".json", NetData);
+                }
+            }
+            else
+            {
+                foreach (Newtonsoft.Json.Linq.JToken Donation in NetData["data"])
+                {
+                    await RewardDonator(Donation,DonationReward);
+                }
+                Data.FileHandler.SaveJSON("./Data/DonationCache/" + BotInstance.Currency.ID + ".json",NetData);
+            }
+        }
+        async Task RewardDonator(Newtonsoft.Json.Linq.JToken Donation,int DonationReward)
+        {
+            int DonationAmount = (int)Math.Round(double.Parse(Donation["amount"].ToString()), 2),
+                AdjustedReward= (int)Math.Ceiling((double)DonationAmount * DonationReward);
+            StandardisedUser S = StandardisedUser.FromTwitchUsername(Donation["name"].ToString(), BotInstance);
+            if (S != null)
+            {
+                Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank B = Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank.FromTwitchDiscord(MessageType.Twitch, BotInstance, S.ID);
+                Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank.AdjustBalance(B, DonationAmount, "+");
+                await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["AutoRewards"]["Donating"]["Response"].ToString(),
+                    BotInstance.CommandConfig["ChannelName"].ToString(), MessageType.Twitch, S, AdjustedReward,-1,
+                    DonationAmount+" "+Donation["currency"].ToString());
+            }
+        }
+
         public List<Viewer> ViewerRewardTracking = new List<Viewer> { };
+        public DateTime LastViewerRewardCheck = DateTime.MinValue;
         void RewardForViewing()
         {
+            if (((TimeSpan)(DateTime.Now - LastViewerRewardCheck)).TotalSeconds < 300) { return; }
+            LastViewerRewardCheck = DateTime.Now;
             Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Twitch.GetViewers(BotInstance);
             int Reward = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Viewing"]["Reward"].ToString()),
                 Interval= int.Parse(BotInstance.CommandConfig["AutoRewards"]["Viewing"]["Interval"].ToString());
-            if (Interval < 300) { Interval = 300; Reward = (int)Math.Round((double)((Reward / Interval) * 300),0); }
             IEnumerable<Newtonsoft.Json.Linq.JToken> Merged = JData["chatters"]["vips"].
                 Union(JData["chatters"]["moderators"]).
                 Union(JData["chatters"]["staff"]).
