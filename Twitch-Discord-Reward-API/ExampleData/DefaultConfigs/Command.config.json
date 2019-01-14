@@ -383,6 +383,10 @@
     }
   },
   "AutoRewards": {
+    "Donating": {
+      "RewardPerWhole": 5000,
+      "Response": "@<TargetUser> Donated @<OtherString> and recived @<Amount> @<CurrencyName>"
+    },
     "Viewing": {
       "Interval": 600,
       "Reward": 1000
