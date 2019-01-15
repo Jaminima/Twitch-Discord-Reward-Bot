@@ -129,9 +129,10 @@ WHERE " + WhereStatment+@";
                     new OleDbParameter("TwitchID",this.TwitchID),
                     new OleDbParameter("Balance",this.Balance),
                     new OleDbParameter("Notifcations",this.LiveNotifcations),
+                    new OleDbParameter("WatchTime",this.WatchTime),
                     new OleDbParameter("ID",this.ID)
                 };
-                Init.SQLi.Execute(@"UPDATE Viewer SET Viewer.DiscordID = @DiscordID, Viewer.TwitchID = @TwitchID, Viewer.Balance = @Balance, Viewer.LiveNotifications = @Notifications
+                Init.SQLi.Execute(@"UPDATE Viewer SET Viewer.DiscordID = @DiscordID, Viewer.TwitchID = @TwitchID, Viewer.Balance = @Balance, Viewer.LiveNotifications = @Notifications, Viewer.WatchTime = @WatchTime
 WHERE(((Viewer.ViewerID) = @ID));
 ", Params);
                 return true;

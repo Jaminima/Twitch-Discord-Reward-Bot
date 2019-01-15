@@ -105,6 +105,35 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["ParamaterCount"].ToString(), e); }
                             }
                         }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["WatchTime"],e)&&
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["WatchTime"]["Commands"], Command))
+                        {
+                            if (e.SegmentedBody.Length == 1)
+                            {
+                                Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                if (B != null)
+                                {
+                                    string Duration = AgeString(TimeSpan.FromMinutes(B.WatchTime));
+                                    await SendMessage(BotInstance.CommandConfig["CommandSetup"]["WatchTime"]["Responses"]["Self"].ToString(), e, OtherString:Duration);
+                                }
+                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
+                            }
+                            else if (e.SegmentedBody.Length == 2)
+                            {
+                                StandardisedUser U = IDFromMessageSegment(e.SegmentedBody[1], e);
+                                if (U.ID != null)
+                                {
+                                    Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e, BotInstance, U.ID);
+                                    if (B != null)
+                                    {
+                                        string Duration = AgeString(TimeSpan.FromMinutes(B.WatchTime));
+                                        await SendMessage(BotInstance.CommandConfig["CommandSetup"]["WatchTime"]["Responses"]["Other"].ToString(), e, U, OtherString: Duration);
+                                    }
+                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
+                                }
+                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
+                            }
+                        }
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Pay"], e) &&
                             JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Pay"]["Commands"], Command))
                         {
@@ -727,6 +756,31 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             return false;
         }
 
+        public string AgeString(TimeSpan Span)
+        {
+            string Age = "";
+            int Years = (int)Math.Floor((decimal)Span.Days / 365);
+            int Months = (int)Math.Floor((decimal)(Span.Days - (Years * 365)) / 30);
+            int Days = Span.Days - ((Years * 365) + (Months * 30));
+
+            if (Years != 0) { if (Years == 1) { Age += Years + " Year"; } else { Age += Years + " Years"; } }
+
+            if (Months != 0 && Days == 0 && Span.Hours == 0&&Span.Minutes== 0 && Age != "") { Age += " and "; }
+            if (Months != 0) { if (Age != "") { Age += " "; } if (Months == 1) { Age += Months + " Month"; } else { Age += Months + " Months"; } }
+
+            if (Days != 0 && Span.Hours == 0&&Span.Minutes== 0 && Age != "") { Age += " and "; }
+            if (Days != 0) { if (Age != "") { Age += " "; } if (Days == 1) { Age += Days + " Day"; } else { Age += Days + " Days"; } }
+
+            if (Span.Hours != 0 && Span.Minutes == 0 && Age != "") { Age += " and "; }
+            if (Span.Hours != 0) { if (Age != "") { Age += " "; } if (Span.Hours == 1) { Age += Span.Hours + " Hour"; } else { Age += Span.Hours + " Hours"; } }
+
+
+            if (Span.Minutes != 0 && Age!="") { Age += " and "; }
+            if (Span.Minutes != 0) { if (Age != "") { Age += " "; } if (Span.Minutes == 1) { Age += Span.Minutes + " Minute"; } else { Age += Span.Minutes + " Minutes"; } }
+
+            return Age;
+        }
+
         public bool IsModerator(StandardisedMessageRequest e)
         {
             if (e.MessageType == MessageType.Twitch) { return e.TwitchRaw.ChatMessage.IsModerator || e.TwitchRaw.ChatMessage.IsBroadcaster; }
@@ -814,5 +868,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             }
             return ParamaterisedMessage;
         }
+
+        
     }
 }

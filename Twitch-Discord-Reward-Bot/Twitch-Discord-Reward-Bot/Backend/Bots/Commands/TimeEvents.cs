@@ -103,32 +103,27 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         public DateTime LastViewerRewardCheck = DateTime.MinValue;
         void RewardForViewing()
         {
-            if (((TimeSpan)(DateTime.Now - LastViewerRewardCheck)).TotalSeconds < 300) { return; }
+            if (((TimeSpan)(DateTime.Now - LastViewerRewardCheck)).TotalSeconds < 60) { return; }
             LastViewerRewardCheck = DateTime.Now;
             Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Twitch.GetViewers(BotInstance);
-            int Reward = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Viewing"]["Reward"].ToString()),
-                Interval= int.Parse(BotInstance.CommandConfig["AutoRewards"]["Viewing"]["Interval"].ToString());
+            int Reward = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Viewing"]["RewardPerMinute"].ToString());
             IEnumerable<Newtonsoft.Json.Linq.JToken> Merged = JData["chatters"]["vips"].
                 Union(JData["chatters"]["moderators"]).
                 Union(JData["chatters"]["staff"]).
                 Union(JData["chatters"]["admins"]).
                 Union(JData["chatters"]["global_mods"]).
                 Union(JData["chatters"]["viewers"]);
-            foreach (Newtonsoft.Json.Linq.JToken Viewer in Merged)
+            foreach (Newtonsoft.Json.Linq.JToken StreamViewer in Merged)
             {
-                StandardisedUser U = StandardisedUser.FromTwitchUsername(Viewer.ToString(), BotInstance);
-                if (ViewerRewardTracking.Where(x => x.User.ID == U.ID && ((TimeSpan)(DateTime.Now - x.LastwatchingReward)).TotalSeconds < Interval).Count() == 0)
-                {
-                    RewardUser(Reward, U, MessageType.Twitch);
-                    IEnumerable<Viewer> Vs = ViewerRewardTracking.Where(x => x.User.ID == U.ID);
-                    if (Vs.Count() != 0) { Vs.First().LastwatchingReward = DateTime.Now; }
-                    else
-                    {
-                        Viewer V = new Viewer();
-                        V.User = U; V.LastwatchingReward = DateTime.Now;
-                        ViewerRewardTracking.Add(V);
-                    }
-                }
+                StandardisedUser U = StandardisedUser.FromTwitchUsername(StreamViewer.ToString(), BotInstance);
+                Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer Viewer = Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromTwitchDiscord(MessageType.Twitch,BotInstance,U.ID);
+                Viewer.WatchTime += 1;
+                List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> {
+                    new KeyValuePair<string, string>("ID",Viewer.ID.ToString()),
+                    new KeyValuePair<string, string>("WatchTime",Viewer.WatchTime.ToString())
+                };
+                Data.APIIntergrations.RewardCurrencyAPI.WebRequests.PostRequest("viewer", Headers, true);
+                RewardUser(Reward, U, MessageType.Twitch);
             }
         }
         void RewardUser(int Reward,StandardisedUser U,MessageType MessageType)
@@ -302,8 +297,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
     public class Viewer
     {
         public StandardisedUser User;
-        public DateTime LastwatchingReward=DateTime.MinValue, 
-            LastDiscordMessage = DateTime.MinValue, 
+        public DateTime LastDiscordMessage = DateTime.MinValue, 
             LastTwitchMessage = DateTime.MinValue;
     }
 

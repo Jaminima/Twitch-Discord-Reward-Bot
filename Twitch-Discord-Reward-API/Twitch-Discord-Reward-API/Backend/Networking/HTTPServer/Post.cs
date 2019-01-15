@@ -24,7 +24,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
 
             if (Context.URLSegments[1] == "viewer")
             {
-                if ((Context.Headers.AllKeys.Contains("TwitchID") || Context.Headers.AllKeys.Contains("DiscordID") || Context.Headers.AllKeys.Contains("Notifications")) && Context.Headers.AllKeys.Contains("ID"))
+                if ((Context.Headers.AllKeys.Contains("TwitchID") || Context.Headers.AllKeys.Contains("DiscordID") || Context.Headers.AllKeys.Contains("Notifications") || Context.Headers.AllKeys.Contains("WatchTime")) && Context.Headers.AllKeys.Contains("ID"))
                 {
                     if (CorrespondingBot != null)
                     {
@@ -34,6 +34,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                             if (Context.Headers["DiscordID"] != null) { B.DiscordID = Context.Headers["DiscordID"]; }
                             if (Context.Headers["TwitchID"] != null) { B.TwitchID = Context.Headers["TwitchID"]; }
                             if (Context.Headers["Notifications"] != null) { B.LiveNotifcations = Context.Headers["Notifications"] == "True"; }
+                            if (Context.Headers["WatchTime"] != null) { B.WatchTime = int.Parse(Context.Headers["WatchTime"]); }
                             B.Update();
                         }
                         else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, This bot does not have permission to edit that Bank"; }
