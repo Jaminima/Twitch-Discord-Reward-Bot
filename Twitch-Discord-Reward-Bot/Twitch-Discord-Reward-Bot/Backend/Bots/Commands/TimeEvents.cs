@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord;
 
 namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 {
@@ -24,8 +25,30 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 RemoveDuels();
                 PerformRaffle();
                 RewardForViewing();
+                await LiveNotifications();
                 await CheckForDonations();
                 System.Threading.Thread.Sleep(10000);
+            }
+        }
+
+        bool IsLive = false;
+        async Task LiveNotifications()
+        {
+            if (BotInstance.CommandConfig["LiveNotifications"]["Enabled"].ToString() == "true") { 
+            bool NewIsLive = Data.APIIntergrations.Twitch.IsLive(BotInstance);
+                if (IsLive != NewIsLive && NewIsLive)
+                {
+                    foreach (Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer Viewer in Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromCurrency(BotInstance))
+                    {
+                        if (Viewer.LiveNotifcations)
+                        {
+                            if (Viewer.DiscordID != null)
+                            {
+                                await BotInstance.DiscordBot.Client.GetUser(ulong.Parse(Viewer.DiscordID)).SendMessageAsync(BotInstance.CommandHandler.MessageParser(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["Live"].ToString(), null, MessageType.Discord));
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -68,8 +91,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             StandardisedUser S = StandardisedUser.FromTwitchUsername(Donation["name"].ToString(), BotInstance);
             if (S != null)
             {
-                Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank B = Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank.FromTwitchDiscord(MessageType.Twitch, BotInstance, S.ID);
-                Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank.AdjustBalance(B, DonationAmount, "+");
+                Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer B = Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromTwitchDiscord(MessageType.Twitch, BotInstance, S.ID);
+                Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.AdjustBalance(B, DonationAmount, "+");
                 await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["AutoRewards"]["Donating"]["Response"].ToString(),
                     BotInstance.CommandConfig["ChannelName"].ToString(), MessageType.Twitch, S, AdjustedReward,-1,
                     DonationAmount+" "+Donation["currency"].ToString());
@@ -110,8 +133,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         }
         void RewardUser(int Reward,StandardisedUser U,MessageType MessageType)
         {
-            Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank B = Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank.FromTwitchDiscord(MessageType, BotInstance, U.ID);
-            Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank.AdjustBalance(B, Reward, "+");
+            Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer B = Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromTwitchDiscord(MessageType, BotInstance, U.ID);
+            Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.AdjustBalance(B, Reward, "+");
         }
 
         int RaffleNumber=0;
@@ -186,8 +209,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["Raffle"]["Responses"]["Winner"].ToString(), BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(), MessageType.Discord, Winner.User, RaffleReward);
                         await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["Raffle"]["Responses"]["OtherWinner"].ToString(), BotInstance.CommandConfig["ChannelName"].ToString(), MessageType.Twitch, null, RaffleReward, -1, Winner.User.UserName);
                     }
-                    Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank B = Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank.FromTwitchDiscord(Winner.RequestedFrom, BotInstance, Winner.User.ID);
-                    Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank.AdjustBalance(B, RaffleReward, "+");
+                    Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer B = Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromTwitchDiscord(Winner.RequestedFrom, BotInstance, Winner.User.ID);
+                    Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.AdjustBalance(B, RaffleReward, "+");
                 }
             }
             else
@@ -262,8 +285,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 foreach (Newtonsoft.Json.Linq.JToken Item in Items) { TotalChance += int.Parse(Item["Chance"].ToString()); }
                 ChosenChance = Init.Rnd.Next(0, TotalChance); TotalChance = 0;
                 foreach (Newtonsoft.Json.Linq.JToken Item in Items) { TotalChance += int.Parse(Item["Chance"].ToString()); if (TotalChance >= ChosenChance) { ChosenItem = Item; break; } }
-                Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank B = Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank.FromTwitchDiscord(Fisher.Value.e, Fisher.Value.BotInstance, Fisher.Value.e.SenderID);
-                if (Data.APIIntergrations.RewardCurrencyAPI.Objects.Bank.AdjustBalance(B, int.Parse(ChosenItem["Reward"].ToString()), "+"))
+                Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer B = Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromTwitchDiscord(Fisher.Value.e, Fisher.Value.BotInstance, Fisher.Value.e.SenderID);
+                if (Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.AdjustBalance(B, int.Parse(ChosenItem["Reward"].ToString()), "+"))
                 {
                     await Fisher.Value.BotInstance.CommandHandler.SendMessage(Fisher.Value.BotInstance.CommandConfig["CommandSetup"]["Fish"]["Responses"]["Finished"].ToString(), Fisher.Value.e,null,int.Parse(ChosenItem["Reward"].ToString()),-1, ChosenItem["Name"].ToString());
                     FishToRemove.Add(Fisher.Key);

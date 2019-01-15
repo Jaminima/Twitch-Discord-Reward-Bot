@@ -8,45 +8,59 @@ using System.IO;
 
 namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrencyAPI.Objects
 {
-    public class Bank:BaseObject
+    public class Viewer:BaseObject
     {
-        public int Balance;
+        public int Balance, WatchTime;
         public string TwitchID, DiscordID;
         public Currency Currency;
+        public bool LiveNotifcations;
 
-        public static Bank FromJson(Newtonsoft.Json.Linq.JToken Json)
+        public static Viewer FromJson(Newtonsoft.Json.Linq.JToken Json)
         {
-            return Json.ToObject<Bank>();
+            return Json.ToObject<Viewer>();
         }
 
-        public static Bank FromTwitchDiscord(Bots.StandardisedMessageRequest e, BotInstance BotInstance,string ID)
+        public static Viewer FromTwitchDiscord(Bots.StandardisedMessageRequest e, BotInstance BotInstance,string ID)
         {
             return FromTwitchDiscord(e.MessageType, BotInstance, ID);
         }
-        public static Bank FromTwitchDiscord(Bots.MessageType e, BotInstance BotInstance, string ID)
+        public static Viewer FromTwitchDiscord(Bots.MessageType e, BotInstance BotInstance, string ID)
         {
             List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("CurrencyID", BotInstance.Currency.ID.ToString()) };
             if (e == Bots.MessageType.Twitch) { Headers.Add(new KeyValuePair<string, string>("TwitchID", ID)); }
             if (e == Bots.MessageType.Discord) { Headers.Add(new KeyValuePair<string, string>("DiscordID", ID)); }
-            WebRequests.PostRequest("bank", Headers, true);
-            ResponseObject RObj = WebRequests.GetRequest("bank", Headers);
+            WebRequests.PostRequest("viewer", Headers, true);
+            ResponseObject RObj = WebRequests.GetRequest("viewer", Headers);
             if (RObj.Code == 200)
             {
-                Bank B = FromJson(RObj.Data);
+                Viewer B = FromJson(RObj.Data);
                 return B;
             }
             return null;
         }
 
-        public static bool AdjustBalance(Bank Bank, int Value, string Operator)
+        public static List<Viewer> FromCurrency(BotInstance BotInstance)
+        {
+            List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("CurrencyID", BotInstance.Currency.ID.ToString()) };
+            WebRequests.PostRequest("viewer", Headers, true);
+            ResponseObject RObj = WebRequests.GetRequest("viewer", Headers);
+            if (RObj.Code == 200)
+            {
+                List<Viewer> B = RObj.Data.ToObject<List<Viewer>>();
+                return B;
+            }
+            return null;
+        }
+
+        public static bool AdjustBalance(Viewer Bank, int Value, string Operator)
         {
             List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> {
                 new KeyValuePair<string, string>("ID", Bank.ID.ToString()),
                 new KeyValuePair<string, string>("Value",Value.ToString()),
                 new KeyValuePair<string, string>("Operator",Operator)
             };
-            WebRequests.PostRequest("bank", Headers, true);
-            ResponseObject RObj = WebRequests.GetRequest("bank", Headers);
+            WebRequests.PostRequest("viewer", Headers, true);
+            ResponseObject RObj = WebRequests.GetRequest("viewer", Headers);
             if (RObj.Code == 200)
             {
                 return true;
@@ -73,11 +87,11 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
                             if (Connection["type"].ToString() == "twitch")
                             {
                                 List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("CurrencyID", BotInstance.Currency.ID.ToString()), new KeyValuePair<string, string>("TwitchID", Connection["id"].ToString()) };
-                                ResponseObject RObj = WebRequests.GetRequest("bank", Headers);
+                                ResponseObject RObj = WebRequests.GetRequest("viewer", Headers);
                                 if (RObj.Code == 200)
                                 {
-                                    Bank Twitch = FromJson(RObj.Data);
-                                    Bank Discord = FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                    Viewer Twitch = FromJson(RObj.Data);
+                                    Viewer Discord = FromTwitchDiscord(e, BotInstance, e.SenderID);
                                     if (Twitch.DiscordID == "" && Discord.TwitchID == "")
                                     {
                                         AdjustBalance(Twitch, Twitch.Balance, "-");
@@ -87,20 +101,20 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
                                             new KeyValuePair<string, string>("DiscordID",ID),
                                             new KeyValuePair<string, string>("ID",Discord.ID.ToString())
                                         };
-                                        RObj = WebRequests.PostRequest("bank", Headers, true);
+                                        RObj = WebRequests.PostRequest("viewer", Headers, true);
                                         Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("ID", Twitch.ID.ToString()) };
-                                        RObj = WebRequests.PostRequest("bank", Headers, true);
+                                        RObj = WebRequests.PostRequest("viewer", Headers, true);
                                     }
                                 }
                                 else
                                 {
-                                    Bank Discord = FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                    Viewer Discord = FromTwitchDiscord(e, BotInstance, e.SenderID);
                                     Headers = new List<KeyValuePair<string, string>> {
                                         new KeyValuePair<string, string>("TwitchID", Connection["id"].ToString()),
                                         new KeyValuePair<string, string>("DiscordID",ID),
                                         new KeyValuePair<string, string>("ID",Discord.ID.ToString())
                                     };
-                                    RObj = WebRequests.PostRequest("bank", Headers, true);
+                                    RObj = WebRequests.PostRequest("viewer", Headers, true);
                                 }
                             }
                         }

@@ -47,16 +47,41 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 
                     if (e.SegmentedBody[0].StartsWith(Prefix) && !e.SegmentedBody[0].StartsWith(Prefix + Prefix))
                     {
-                        Objects.Bank.MergeAccounts(e, BotInstance, e.SenderID);
+                        Objects.Viewer.MergeAccounts(e, BotInstance, e.SenderID);
                         #region "Viewer"
-                        if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Balance"], e) &&
+                        #region "Notifications"
+                        if (CommandEnabled(BotInstance.CommandConfig["LiveNotifications"], e) &&
+                            JArrayContainsString(BotInstance.CommandConfig["LiveNotifications"]["Commands"], Command))
+                        {
+                            if (e.SegmentedBody.Length == 2)
+                            {
+                                Objects.Viewer V = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                if (e.SegmentedBody[1].ToLower() == "on")
+                                {
+                                    V.LiveNotifcations = true;
+                                    await SendMessage(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["On"].ToString(), e);
+                                }
+                                else if (e.SegmentedBody[1].ToLower() == "off")
+                                {
+                                    V.LiveNotifcations = false;
+                                    await SendMessage(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["Off"].ToString(), e);
+                                }
+                                List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> {
+                                    new KeyValuePair<string, string>("ID",V.ID.ToString()),
+                                    new KeyValuePair<string, string>("Notifications",V.LiveNotifcations.ToString())
+                                };
+                                Data.APIIntergrations.RewardCurrencyAPI.WebRequests.PostRequest("viewer", Headers, true);
+                            }
+                        }
+                        #endregion
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Balance"], e) &&
                             JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Balance"]["Commands"], Command))
                         {
                             if (LiveCheck(BotInstance.CommandConfig["CommandSetup"]["Balance"]))
                             {
                                 if (e.SegmentedBody.Length == 1)
                                 {
-                                    Objects.Bank B = Objects.Bank.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                    Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID);
                                     if (B != null)
                                     {
                                         await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Balance"]["Responses"]["OwnBalance"].ToString(), e, null, B.Balance);
@@ -68,7 +93,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                     StandardisedUser U = IDFromMessageSegment(e.SegmentedBody[1], e);
                                     if (U.ID != null)
                                     {
-                                        Objects.Bank B = Objects.Bank.FromTwitchDiscord(e, BotInstance, U.ID);
+                                        Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e, BotInstance, U.ID);
                                         if (B != null)
                                         {
                                             await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Balance"]["Responses"]["OtherBalance"].ToString(), e, U, B.Balance);
@@ -90,8 +115,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                     StandardisedUser U = IDFromMessageSegment(e.SegmentedBody[1], e);
                                     if (U.ID != null)
                                     {
-                                        Objects.Bank Self = Objects.Bank.FromTwitchDiscord(e, BotInstance, e.SenderID),
-                                            Other = Objects.Bank.FromTwitchDiscord(e, BotInstance, U.ID);
+                                        Objects.Viewer Self = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID),
+                                            Other = Objects.Viewer.FromTwitchDiscord(e, BotInstance, U.ID);
                                         int ChangeBy = ValueFromMessageSegment(e.SegmentedBody[2], Self),
                                             MinPayment = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Pay"]["MinimumPayment"].ToString());
                                         if (ChangeBy == -1) { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["NumberParamaterInvalid"].ToString(), e); return; }
@@ -104,9 +129,9 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 
                                                     if (Self.Balance - ChangeBy >= 0)
                                                     {
-                                                        if (Objects.Bank.AdjustBalance(Self, ChangeBy, "-"))
+                                                        if (Objects.Viewer.AdjustBalance(Self, ChangeBy, "-"))
                                                         {
-                                                            if (Objects.Bank.AdjustBalance(Other, ChangeBy, "+"))
+                                                            if (Objects.Viewer.AdjustBalance(Other, ChangeBy, "+"))
                                                             {
                                                                 await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Pay"]["Responses"]["Paid"].ToString(), e, U, ChangeBy);
                                                             }
@@ -134,7 +159,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             {
                                 if (e.SegmentedBody.Length == 2)
                                 {
-                                    Objects.Bank Self = Objects.Bank.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                    Objects.Viewer Self = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID);
                                     int ChangeBy = ValueFromMessageSegment(e.SegmentedBody[1], Self),
                                            MinPayment = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Gamble"]["MinimumPayment"].ToString()),
                                            WinChance = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Gamble"]["WinChance"].ToString()),
@@ -152,7 +177,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                                     string Operator;
                                                     if (Init.Rnd.Next(0, 100) <= WinChance) { Operator = "+"; ChangeBy *= WinMultiplyer; }
                                                     else { Operator = "-"; }
-                                                    if (Objects.Bank.AdjustBalance(Self, ChangeBy, Operator))
+                                                    if (Objects.Viewer.AdjustBalance(Self, ChangeBy, Operator))
                                                     {
                                                         if (Operator == "+") { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Gamble"]["Responses"]["Win"].ToString(), e, null, ChangeBy); }
                                                         else if (Operator == "-") { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Gamble"]["Responses"]["Lose"].ToString(), e, null, ChangeBy); }
@@ -177,7 +202,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             {
                                 if (e.SegmentedBody.Length == 2)
                                 {
-                                    Objects.Bank Self = Objects.Bank.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                    Objects.Viewer Self = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID);
                                     int ChangeBy = ValueFromMessageSegment(e.SegmentedBody[1], Self),
                                         MinPayment = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Slots"]["MinimumPayment"].ToString()),
                                         WinChance = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Slots"]["WinChance"].ToString()),
@@ -195,7 +220,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                                     string Operator;
                                                     if (Init.Rnd.Next(0, 100) <= WinChance) { Operator = "+"; ChangeBy *= WinMultiplyer; }
                                                     else { Operator = "-"; }
-                                                    if (Objects.Bank.AdjustBalance(Self, ChangeBy, Operator))
+                                                    if (Objects.Viewer.AdjustBalance(Self, ChangeBy, Operator))
                                                     {
                                                         Newtonsoft.Json.Linq.JToken EmoteSet = null;
                                                         if (e.MessageType == MessageType.Discord) { EmoteSet = BotInstance.CommandConfig["CommandSetup"]["Slots"]["Emotes"]["Discord"]; }
@@ -236,7 +261,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             {
                                 if (e.SegmentedBody.Length == 1)
                                 {
-                                    Objects.Bank Self = Objects.Bank.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                    Objects.Viewer Self = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID);
                                     int ViewerCost = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Fish"]["Cost"]["Viewer"].ToString()),
                                         SubscriberCost = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Fish"]["Cost"]["Subscriber"].ToString());
                                     int Cost = ViewerCost;
@@ -247,7 +272,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                         {
                                             if (BotInstance.TimeEvents.Fishermen.Where(x => x.Value.e.SenderID == e.SenderID).Count() == 0)
                                             {
-                                                if (Objects.Bank.AdjustBalance(Self, Cost, "-"))
+                                                if (Objects.Viewer.AdjustBalance(Self, Cost, "-"))
                                                 {
                                                     await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Fish"]["Responses"]["Started"].ToString(), e);
                                                     BotInstance.TimeEvents.Fishermen.Add(DateTime.Now, new Fisherman(e, BotInstance));
@@ -274,8 +299,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                     StandardisedUser Target = IDFromMessageSegment(e.SegmentedBody[1], e);
                                     if (Target != null)
                                     {
-                                        Objects.Bank Self = Objects.Bank.FromTwitchDiscord(e, BotInstance, e.SenderID),
-                                            TargetBank = Objects.Bank.FromTwitchDiscord(e, BotInstance, Target.ID);
+                                        Objects.Viewer Self = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID),
+                                            TargetBank = Objects.Viewer.FromTwitchDiscord(e, BotInstance, Target.ID);
                                         if (Self != null && TargetBank != null)
                                         {
                                             int ChangeBy = ValueFromMessageSegment(e.SegmentedBody[2], Self),
@@ -336,8 +361,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             {
                                 KeyValuePair<DateTime, Duel> TDuel = BotInstance.TimeEvents.Duels.Where(x => x.Value.Acceptor.ID == U.ID || x.Value.Creator.ID == U.ID).First();
                                 BotInstance.TimeEvents.Duels.Remove(TDuel.Key);
-                                Objects.Bank Acceptor = Objects.Bank.FromTwitchDiscord(e, BotInstance, TDuel.Value.Acceptor.ID),
-                                    Creator = Objects.Bank.FromTwitchDiscord(e, BotInstance, TDuel.Value.Creator.ID);
+                                Objects.Viewer Acceptor = Objects.Viewer.FromTwitchDiscord(e, BotInstance, TDuel.Value.Acceptor.ID),
+                                    Creator = Objects.Viewer.FromTwitchDiscord(e, BotInstance, TDuel.Value.Creator.ID);
                                 if (Acceptor != null && Creator != null)
                                 {
                                     if (TDuel.Value.ChangeBy <= Acceptor.Balance)
@@ -347,14 +372,14 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                             int Winner = Init.Rnd.Next(0, 2);
                                             if (Winner == 0)
                                             {
-                                                Objects.Bank.AdjustBalance(Acceptor, TDuel.Value.ChangeBy, "+");
-                                                Objects.Bank.AdjustBalance(Creator, TDuel.Value.ChangeBy, "-");
+                                                Objects.Viewer.AdjustBalance(Acceptor, TDuel.Value.ChangeBy, "+");
+                                                Objects.Viewer.AdjustBalance(Creator, TDuel.Value.ChangeBy, "-");
                                                 await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Accepting"]["Responses"]["Win"].ToString(), e, TDuel.Value.Creator, TDuel.Value.ChangeBy);
                                             }
                                             if (Winner == 1)
                                             {
-                                                Objects.Bank.AdjustBalance(Acceptor, TDuel.Value.ChangeBy, "-");
-                                                Objects.Bank.AdjustBalance(Creator, TDuel.Value.ChangeBy, "+");
+                                                Objects.Viewer.AdjustBalance(Acceptor, TDuel.Value.ChangeBy, "-");
+                                                Objects.Viewer.AdjustBalance(Creator, TDuel.Value.ChangeBy, "+");
                                                 await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Accepting"]["Responses"]["Lose"].ToString(), e, TDuel.Value.Creator, TDuel.Value.ChangeBy);
                                             }
                                         }
@@ -418,7 +443,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 int Cost = int.Parse(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Cost"]["Viewer"].ToString()),
                                     SubscriberCost = int.Parse(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Cost"]["Subscriber"].ToString());
                                 if (IsSubscriber(e)) { Cost = SubscriberCost; }
-                                Objects.Bank B = Objects.Bank.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID);
                                 if (B.Balance >= Cost)
                                 {
                                     Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Nightbot.RequestSong(BotInstance, Request);
@@ -426,7 +451,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                     {
                                         if (!SongRequestHistory.ContainsKey(e.SenderID)) { SongRequestHistory.Add(e.SenderID, JData["item"]["_id"].ToString()); }
                                         else { SongRequestHistory[e.SenderID] = JData["item"]["_id"].ToString(); }
-                                        Objects.Bank.AdjustBalance(B, Cost, "-");
+                                        Objects.Viewer.AdjustBalance(B, Cost, "-");
                                         string MessageContent = JData["item"]["track"]["title"] + " by " + JData["item"]["track"]["artist"] + " -- " + JData["item"]["track"]["url"];
                                         await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Responses"]["Requested"].ToString(), e, OtherString: MessageContent);
                                     }
@@ -501,7 +526,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             {
                                 if (e.SegmentedBody.Length == 3)
                                 {
-                                    Objects.Bank B = Objects.Bank.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                    Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID);
                                     int ChangeBy = ValueFromMessageSegment(e.SegmentedBody[2], B);
                                     if (ChangeBy != -1)
                                     {
@@ -510,8 +535,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                             StandardisedUser S = null;
                                             if (e.MessageType == MessageType.Twitch) { S = StandardisedUser.FromTwitchUsername(e.SegmentedBody[1], BotInstance); }
                                             if (e.MessageType == MessageType.Discord) { S = StandardisedUser.FromDiscordMention(e.SegmentedBody[1], BotInstance); }
-                                            B = Objects.Bank.FromTwitchDiscord(e.MessageType, BotInstance, S.ID);
-                                            if (Objects.Bank.AdjustBalance(B, ChangeBy, "+"))
+                                            B = Objects.Viewer.FromTwitchDiscord(e.MessageType, BotInstance, S.ID);
+                                            if (Objects.Viewer.AdjustBalance(B, ChangeBy, "+"))
                                             {
                                                 await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["GiveCoin"]["Responses"]["Gave"].ToString(), e, S, ChangeBy);
                                             }
@@ -622,8 +647,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         if (((TimeSpan)(DateTime.Now - V.LastTwitchMessage)).TotalSeconds >= TwitchDelay)
                         {
                             V.LastTwitchMessage = DateTime.Now;
-                            Objects.Bank B = Objects.Bank.FromTwitchDiscord(e.MessageType, BotInstance, e.SenderID);
-                            Objects.Bank.AdjustBalance(B, TwitchReward, "+");
+                            Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e.MessageType, BotInstance, e.SenderID);
+                            Objects.Viewer.AdjustBalance(B, TwitchReward, "+");
                         }
                     }
                     else if (e.MessageType == MessageType.Discord)
@@ -631,8 +656,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         if (((TimeSpan)(DateTime.Now - V.LastTwitchMessage)).TotalSeconds >= DiscordDelay)
                         {
                             V.LastTwitchMessage = DateTime.Now;
-                            Objects.Bank B = Objects.Bank.FromTwitchDiscord(e.MessageType, BotInstance, e.SenderID);
-                            Objects.Bank.AdjustBalance(B, DiscordReward, "+");
+                            Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e.MessageType, BotInstance, e.SenderID);
+                            Objects.Viewer.AdjustBalance(B, DiscordReward, "+");
                         }
                     }
                 }
@@ -661,7 +686,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             return null;
         }
 
-        public int ValueFromMessageSegment(string MessageSegment,Objects.Bank Bank)
+        public int ValueFromMessageSegment(string MessageSegment,Objects.Viewer Bank)
         {
             try { return int.Parse(MessageSegment); } catch { }
             if (MessageSegment.ToLower() == "all") { return Bank.Balance; }

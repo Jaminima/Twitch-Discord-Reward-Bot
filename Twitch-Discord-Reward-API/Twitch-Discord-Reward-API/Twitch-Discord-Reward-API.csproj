@@ -50,7 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Backend\Data\FileManager.cs" />
-    <Compile Include="Backend\Data\Objects\Bank.cs" />
+    <Compile Include="Backend\Data\Objects\Viewer.cs" />
     <Compile Include="Backend\Data\Objects\BaseObject.cs" />
     <Compile Include="Backend\Data\Objects\Bot.cs" />
     <Compile Include="Backend\Data\Objects\Currency.cs" />

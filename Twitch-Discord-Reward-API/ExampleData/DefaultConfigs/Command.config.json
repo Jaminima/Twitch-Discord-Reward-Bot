@@ -401,5 +401,20 @@
         "Reward": 1000
       }
     }
+  },
+  "LiveNotifications": {
+    "TwitchEnabled": true,
+    "DiscordEnabled": true,
+    "Enabled": true,
+    "Commands": [
+      "notifications",
+      "notification",
+      "live"
+    ],
+    "Responses": {
+      "Live": "The stream has started! https://twitch.tv/@<ChannelName>\nDisable these notifcations with `@<Prefix>notifications off`",
+      "Off": "@<SenderUser> You have turned live notifications off!",
+      "On": "@<SenderUser> You have turned live notifications on!"
+    }
   }
 }

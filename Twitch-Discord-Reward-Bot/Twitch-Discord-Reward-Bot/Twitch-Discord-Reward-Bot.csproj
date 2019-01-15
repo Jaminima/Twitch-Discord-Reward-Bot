@@ -265,7 +265,7 @@
     <Compile Include="Backend\Bots\Objects.cs" />
     <Compile Include="Backend\Data\APIIntergrations\Nightbot.cs" />
     <Compile Include="Backend\Data\APIIntergrations\Objects.cs" />
-    <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\Bank.cs" />
+    <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\Viewer.cs" />
     <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\BaseObject.cs" />
     <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\Bot.cs" />
     <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\Currency.cs" />
