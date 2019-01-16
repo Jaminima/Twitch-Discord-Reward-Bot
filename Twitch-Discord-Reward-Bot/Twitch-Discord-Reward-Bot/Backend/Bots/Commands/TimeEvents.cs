@@ -11,10 +11,17 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
     public class TimeEvents
     {
         BotInstance BotInstance;
+        Thread T;
         public void Start(BotInstance BotInstance)
         {
             this.BotInstance = BotInstance;
-            new Thread(async () => await TimeThread()).Start();
+            T=new Thread(async () => await TimeThread());
+            T.Start();
+        }
+
+        public void Stop()
+        {
+            T.Abort();
         }
 
         async Task TimeThread()

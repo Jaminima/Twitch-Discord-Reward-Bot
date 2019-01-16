@@ -24,12 +24,20 @@ namespace Twitch_Discord_Reward_Bot.Backend
                         Data.APIIntergrations.RewardCurrencyAPI.Objects.Currency C = Data.APIIntergrations.RewardCurrencyAPI.Objects.Currency.FromJson(Currency);
                         if (C.CommandConfig.Count() != 0 && C.LoginConfig.Count() != 0)
                         {
-                            if (!Instances.Keys.Contains(C.ID)) { Instances.Add(C.ID, new BotInstance(C)); }
-                            else
+                            if (C.CommandConfig["BotsEnabled"].ToString() == "True")
                             {
-                                Instances[C.ID].CommandConfig = C.CommandConfig;
-                                Instances[C.ID].LoginConfig = C.LoginConfig;
-                                Instances[C.ID].Currency = C;
+                                if (!Instances.Keys.Contains(C.ID)) { Instances.Add(C.ID, new BotInstance(C)); }
+                                else
+                                {
+                                    Instances[C.ID].CommandConfig = C.CommandConfig;
+                                    Instances[C.ID].LoginConfig = C.LoginConfig;
+                                    Instances[C.ID].Currency = C;
+                                    Instances[C.ID].Start();
+                                }
+                            }
+                            else if (Instances.Keys.Contains(C.ID))
+                            {
+                                Instances[C.ID].Stop();
                             }
                         }
                         else { Console.WriteLine("There was a error relating to currency configs"); }
@@ -49,18 +57,40 @@ namespace Twitch_Discord_Reward_Bot.Backend
         public Bots.Commands.TimeEvents TimeEvents;
         public Newtonsoft.Json.Linq.JToken CommandConfig, LoginConfig;
         public Dictionary<string, Data.APIIntergrations.AccessToken> AccessTokens = new Dictionary<string, Data.APIIntergrations.AccessToken> { };
+        bool Isrunning = false;
 
         public BotInstance(Data.APIIntergrations.RewardCurrencyAPI.Objects.Currency Currency)
         {
             this.Currency = Currency;
             this.CommandConfig = this.Currency.CommandConfig;
             this.LoginConfig = this.Currency.LoginConfig;
+            Start();
+        }
+
+        public void Start()
+        {
+            if (Isrunning) { return; }
+            Isrunning = true;
             this.CommandHandler = new Bots.Commands.CommandHandler(this);
             try { DiscordBot = new Backend.Bots.DiscordBot.Instance(this); } catch { }
             try { TwitchBot = new Backend.Bots.TwitchBot.Instance(this); } catch { }
             System.Threading.Thread.Sleep(5000);
             this.TimeEvents = new Bots.Commands.TimeEvents();
             this.TimeEvents.Start(this);
+        }
+
+        public void Stop()
+        {
+            if (!Isrunning) { return; }
+            Isrunning = false;
+            DiscordBot.Client.StopAsync();
+            TwitchBot.Client.Disconnect();
+            TimeEvents.Stop();
+            this.CommandHandler = null;
+            TimeEvents = null;
+            DiscordBot = null;
+            TwitchBot = null;
+            Console.WriteLine("Stopped " + Currency.ID + " Bots");
         }
     }
 }

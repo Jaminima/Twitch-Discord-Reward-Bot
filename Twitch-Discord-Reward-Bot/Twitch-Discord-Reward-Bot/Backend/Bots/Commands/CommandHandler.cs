@@ -519,8 +519,12 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Nightbot.GetQueue(BotInstance);
                             if (JData["status"].ToString() == "200")
                             {
-                                string MessageContent = JData["_currentSong"]["track"]["title"] + " by " + JData["_currentSong"]["track"]["artist"] + " -- " + JData["_currentSong"]["track"]["url"];
-                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Current"]["Responses"]["CurrentlyPlaying"].ToString(), e, OtherString: MessageContent);
+                                if (JData["_currentSong"].HasValues)
+                                {
+                                    string MessageContent = JData["_currentSong"]["track"]["title"] + " by " + JData["_currentSong"]["track"]["artist"] + " -- " + JData["_currentSong"]["track"]["url"];
+                                    await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Current"]["Responses"]["CurrentlyPlaying"].ToString(), e, OtherString: MessageContent);
+                                }
+                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Current"]["Responses"]["NotPlaying"].ToString(), e); }
                             }
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
                         }

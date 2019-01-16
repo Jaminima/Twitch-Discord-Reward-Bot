@@ -1,4 +1,5 @@
 {
+  "BotsEnabled": true,
   "CurrencyName": "Jam Coin",
   "CurrencyAcronym": "JC",
   "Prefix": "?",
@@ -237,7 +238,8 @@
       },
       "Current": {
         "Responses": {
-          "CurrentlyPlaying": "@<SenderUser> Currently Playing @<OtherString>"
+          "CurrentlyPlaying": "@<SenderUser> Currently Playing @<OtherString>",
+          "NotPlaying": "@<SenderUser> No song is being played at the moment"
         },
         "Commands": [
           "currentsong",
