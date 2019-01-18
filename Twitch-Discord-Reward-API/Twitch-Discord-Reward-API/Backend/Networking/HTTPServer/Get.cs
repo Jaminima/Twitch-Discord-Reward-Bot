@@ -13,6 +13,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
         {
             bool ErrorOccured = false;
 
+            // Check if TwitchID and DiscordID only compose of numbers
             if (Context.Headers.AllKeys.Contains("TwitchID"))
             {
                 if (!Checks.IsValidID(Context.Headers["TwitchID"])) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, TwitchID contains invalid characters"; return Context.ResponseObject; }
@@ -22,36 +23,36 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 if (!Checks.IsValidID(Context.Headers["DiscordID"])) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, DiscordID contains invalid characters"; return Context.ResponseObject; }
             }
 
-            if (Context.URLSegments[1] == "viewer")
+            if (Context.URLSegments[1] == "viewer")//Check the url path for viewer
             {
-                if (Context.Headers.AllKeys.Contains("ID"))
+                if (Context.Headers.AllKeys.Contains("ID")) // Get the viewer where header ID matches
                 {
                     try { int.Parse(Context.Headers["ID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
                     Data.Objects.Viewer B = Data.Objects.Viewer.FromID(int.Parse(Context.Headers["ID"]));
                     if (B != null) { Context.ResponseObject.Data = B.ToJson(); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not match an existing object"; ErrorOccured = true; }
                 }
-                else if ((Context.Headers.AllKeys.Contains("TwitchID") || Context.Headers.AllKeys.Contains("DiscordID"))&&Context.Headers.AllKeys.Contains("CurrencyID"))
+                else if ((Context.Headers.AllKeys.Contains("TwitchID") || Context.Headers.AllKeys.Contains("DiscordID"))&&Context.Headers.AllKeys.Contains("CurrencyID")) // Get the viewer where header (TwitchID and/or DiscordID) and CurrencyID matches
                 {
                     try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
                     Data.Objects.Viewer B = Data.Objects.Viewer.FromTwitchDiscord(Context.Headers["DiscordID"], Context.Headers["TwitchID"],int.Parse(Context.Headers["CurrencyID"]));
                     if (B != null) { Context.ResponseObject.Data = B.ToJson(); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, TwitchID and/or DiscordID does not match an existing object"; ErrorOccured = true; }
                 }
-                else if (Context.Headers.AllKeys.Contains("CurrencyID"))
+                else if (Context.Headers.AllKeys.Contains("CurrencyID")) // Get all viewers for the CurrencyID
                 {
                     try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
                     List<Data.Objects.Viewer> B = Data.Objects.Viewer.FromCurrency(int.Parse(Context.Headers["CurrencyID"]));
                     if (B.Count != 0) { Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(B); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, CurrencyID does not match an existing object"; ErrorOccured = true; }
                 }
-                else if (Context.Headers.AllKeys.Contains("TwitchID") || Context.Headers.AllKeys.Contains("DiscordID"))
+                else if (Context.Headers.AllKeys.Contains("TwitchID") || Context.Headers.AllKeys.Contains("DiscordID")) // Get all viewers for any currency where TwitchID and/or DiscordID matches
                 {
                     List<Data.Objects.Viewer> B = Data.Objects.Viewer.FromTwitchDiscord(Context.Headers["DiscordID"], Context.Headers["TwitchID"]);
                     if (B.Count != 0) { Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(B); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, TwitchID and/or DiscordID does not match an existing object"; ErrorOccured = true; }
                 }
-                else
+                else//Inform requestor that we dont have any infomation to work with
                 {
                     ErrorOccured = true;
                     Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, No operable Headers provided";
@@ -59,11 +60,11 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             }
             else if (Context.URLSegments[1] == "currency")
             {
-                if (Context.Headers.AllKeys.Contains("ID"))
+                if (Context.Headers.AllKeys.Contains("ID"))//Get Currency where ID matches
                 {
                     try { int.Parse(Context.Headers["ID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
                     Data.Objects.Currency C = Data.Objects.Currency.FromID(int.Parse(Context.Headers["ID"]));
-                    if (Context.Headers.AllKeys.Contains("AccessToken")) {
+                    if (Context.Headers.AllKeys.Contains("AccessToken")) { // If a valid accesstoken is provided, get private information
                         Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
                         if ( L != null) {
                             if (Data.Objects.Currency.FromLogin(L.ID).Find(x => x.ID == C.ID) != null) { C.LoadConfigs(true); }
@@ -72,14 +73,14 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     if (C != null) { Context.ResponseObject.Data = C.ToJson(); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not match an existing object"; ErrorOccured = true; }
                 }
-                else if (Context.Headers.AllKeys.Contains("LoginID"))
+                else if (Context.Headers.AllKeys.Contains("LoginID"))// Get all Currencies of the LoginID
                 {
                     try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed LoginID"; return Context.ResponseObject; }
                     List<Data.Objects.Currency> C = Data.Objects.Currency.FromLogin(int.Parse(Context.Headers["LoginID"]));
                     if (C.Count != 0) { Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(C); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, LoginID does not match an existing object"; ErrorOccured = true; }
                 }
-                else
+                else//Inform requestor that we dont have any infomation to work with
                 {
                     ErrorOccured = true;
                     Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, No operable Headers provided";
@@ -87,32 +88,32 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             }
             else if (Context.URLSegments[1] == "login")
             {
-                if (Context.Headers.AllKeys.Contains("ID"))
+                if (Context.Headers.AllKeys.Contains("ID"))//Get Login where ID matches
                 {
                     try { int.Parse(Context.Headers["ID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
                     Data.Objects.Login L = Data.Objects.Login.FromID(int.Parse(Context.Headers["ID"]));
                     if (L != null) { Context.ResponseObject.Data = L.ToJson(); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not match an existing object"; ErrorOccured = true; }
                 }
-                else if (Context.Headers.AllKeys.Contains("UserName"))
+                else if (Context.Headers.AllKeys.Contains("UserName"))//Get Login where UserName matches
                 {
                     Data.Objects.Login L = Data.Objects.Login.FromUserName(Context.Headers["UserName"]);
                     if (L != null) { Context.ResponseObject.Data = L.ToJson(); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, UserName does not match an existing object"; ErrorOccured = true; }
                 }
-                else if (Context.Headers.AllKeys.Contains("Email"))
+                else if (Context.Headers.AllKeys.Contains("Email"))//Get Login where Email matches
                 {
                     Data.Objects.Login L = Data.Objects.Login.FromEmail(Context.Headers["Email"]);
                     if (L != null) { Context.ResponseObject.Data = L.ToJson(); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Email does not match an existing object"; ErrorOccured = true; }
                 }
-                else if (Context.Headers.AllKeys.Contains("AccessToken"))
+                else if (Context.Headers.AllKeys.Contains("AccessToken"))//Get Login for AccessToken
                 {
                     Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
                     if (L != null) { L.HashedPassword = null; Context.ResponseObject.Data = L.ToJson(); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken does not match an existing object"; ErrorOccured = true; }
                 }
-                else
+                else//Inform requestor that we dont have any infomation to work with
                 {
                     ErrorOccured = true;
                     Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, No operable Headers provided";
@@ -120,11 +121,11 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             }
             else if (Context.URLSegments[1] == "bot")
             {
-                if (Context.Headers.AllKeys.Contains("ID"))
+                if (Context.Headers.AllKeys.Contains("ID"))//Get Bot where ID matches
                 {
                     bool WithSecretData = false;
                     try { int.Parse(Context.Headers["ID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
-                    if (Context.Headers.AllKeys.Contains("AccessToken"))
+                    if (Context.Headers.AllKeys.Contains("AccessToken"))// If a valid accesstoken is provided, get private information
                     {
                         Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
                         if (L != null)
@@ -136,21 +137,21 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     if (B != null) { Context.ResponseObject.Data = B.ToJson(); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not match an existing object"; ErrorOccured = true; }
                 }
-                else if (Context.Headers.AllKeys.Contains("LoginID"))
+                else if (Context.Headers.AllKeys.Contains("LoginID"))//Get all Bots of LoginID
                 {
                     try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed LoginID"; return Context.ResponseObject; }
                     List<Data.Objects.Bot> B = Data.Objects.Bot.FromLogin(int.Parse(Context.Headers["LoginID"]));
                     if (B.Count != 0) { Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(B); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, LoginID does not match an existing object"; ErrorOccured = true; }
                 }
-                else if (Context.Headers.AllKeys.Contains("CurrencyID"))
+                else if (Context.Headers.AllKeys.Contains("CurrencyID"))//Get all Bots of CurrencyID
                 {
                     try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
                     List<Data.Objects.Bot> B = Data.Objects.Bot.FromCurrency(int.Parse(Context.Headers["CurrencyID"]));
                     if (B.Count != 0) { Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(B); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, CurrencyID does not match an existing object"; ErrorOccured = true; }
                 }
-                else
+                else//Inform requestor that we dont have any infomation to work with
                 {
                     ErrorOccured = true;
                     Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, No operable Headers provided";
@@ -260,7 +261,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     Console.WriteLine(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
                 }
             }
-            else
+            else//Inform requestor that the url does not got anywhere
             {
                 Context.ResponseObject.Code = 404;
                 Context.ResponseObject.Message = "Not Found";
