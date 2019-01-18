@@ -5,7 +5,7 @@
   "Prefix": "?",
   "ChannelName": "jccjaminima",
   "InititalBalance": 5000000,
-  "MessageDelay": 10,
+  "MessageDelay": 5,
   "Discord": {
     "TwitchMerging": true,
     "StatusMessage": "I am Sentient please help me!!!",
@@ -418,13 +418,15 @@
     "TwitchEnabled": true,
     "DiscordEnabled": true,
     "Enabled": true,
+    "SendToDiscordNotificationChannel": true,
     "Commands": [
       "notifications",
       "notification",
       "live"
     ],
     "Responses": {
-      "Live": "The stream has started! https://twitch.tv/@<ChannelName>\nDisable these notifcations with `@<Prefix>notifications off`",
+      "LiveDM": "The stream has started! https://twitch.tv/@<ChannelName>\nDisable these notifcations with `@<Prefix>notifications off`",
+      "LiveNotification": "The stream has started! https://twitch.tv/@<ChannelName>",
       "Off": "@<SenderUser> You have turned live notifications off!",
       "On": "@<SenderUser> You have turned live notifications on!"
     }

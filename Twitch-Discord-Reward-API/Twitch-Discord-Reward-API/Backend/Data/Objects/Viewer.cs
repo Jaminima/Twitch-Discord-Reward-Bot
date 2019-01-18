@@ -50,8 +50,8 @@ WHERE (((Viewer.CurrencyID)=@CurrencyID));
             {
                 Viewer Viewer = new Viewer();
                 Viewer.ID = int.Parse(Item[0]);
-                Viewer.DiscordID = RData[0][1];
-                Viewer.TwitchID = RData[0][2];
+                Viewer.DiscordID = Item[1];
+                Viewer.TwitchID = Item[2];
                 Viewer.Balance = int.Parse(Item[3]);
                 Viewer.WatchTime = int.Parse(Item[5]);
                 Viewer.LiveNotifcations = Item[6] == "True";

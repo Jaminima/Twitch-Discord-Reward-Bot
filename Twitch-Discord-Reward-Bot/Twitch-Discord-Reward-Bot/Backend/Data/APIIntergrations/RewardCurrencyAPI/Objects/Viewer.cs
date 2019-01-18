@@ -42,11 +42,11 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
         public static List<Viewer> FromCurrency(BotInstance BotInstance)
         {
             List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("CurrencyID", BotInstance.Currency.ID.ToString()) };
-            WebRequests.PostRequest("viewer", Headers, true);
             ResponseObject RObj = WebRequests.GetRequest("viewer", Headers);
             if (RObj.Code == 200)
             {
-                List<Viewer> B = RObj.Data.ToObject<List<Viewer>>();
+                List<Viewer> B = new List<Viewer> { };
+                foreach (Newtonsoft.Json.Linq.JToken Item in RObj.Data) { B.Add(Item.ToObject<Viewer>()); }
                 return B;
             }
             return null;

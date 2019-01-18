@@ -43,10 +43,19 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                     string Prefix = BotInstance.CommandConfig["Prefix"].ToString(),
                         Command = e.SegmentedBody[0].Replace(Prefix, "").ToLower();
 
-                    if (e.MessageType == MessageType.Discord && BotInstance.CommandConfig["Discord"]["Channels"].Where(x => x.ToString() == e.ChannelID).Count() == 0) { return; }
+                    bool StopAfterNotifcations = false;
+                    if (e.MessageType == MessageType.Discord && BotInstance.CommandConfig["Discord"]["Channels"].Where(x => x.ToString() == e.ChannelID).Count() == 0)
+                    {
+                        if (e.DiscordRaw.Channel.GetType() == typeof(SocketDMChannel))
+                        {
+                            StopAfterNotifcations = true;
+                        }
+                        else { return; }
+                    }
 
                     if (e.SegmentedBody[0].StartsWith(Prefix) && !e.SegmentedBody[0].StartsWith(Prefix + Prefix))
                     {
+                        if (RateLimit(e)) { return; }
                         Objects.Viewer.MergeAccounts(e, BotInstance, e.SenderID);
                         #region "Viewer"
                         #region "Notifications"
@@ -74,6 +83,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             }
                         }
                         #endregion
+                        else if (StopAfterNotifcations) { return; }
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Balance"], e) &&
                             JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Balance"]["Commands"], Command))
                         {
@@ -661,6 +671,23 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 #endregion
             }
             catch (Exception E) { Console.WriteLine(E); }
+        }
+
+        Dictionary<string, DateTime> MessageHistory = new Dictionary<string, DateTime> { };
+        public bool RateLimit(StandardisedMessageRequest e)
+        {
+            int Delay = int.Parse(BotInstance.CommandConfig["MessageDelay"].ToString());
+            if (Delay < 3) { Delay = 3; }
+            if (MessageHistory.Where(x => x.Key == e.SenderID&&(((TimeSpan)(DateTime.Now-x.Value)).TotalSeconds<=Delay)).Count() != 0)
+            {
+                return true;
+            }
+            else
+            {
+                if (MessageHistory.Where(x => x.Key == e.SenderID).Count()==0) { MessageHistory.Add(e.SenderID, DateTime.Now); }
+                else { MessageHistory[e.SenderID] = DateTime.Now; }
+                return false;
+            }
         }
 
         public void RewardForChatting(StandardisedMessageRequest e)
