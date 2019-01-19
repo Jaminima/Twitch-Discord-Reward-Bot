@@ -51,13 +51,17 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
             }
         }
 
-        public static Newtonsoft.Json.Linq.JToken GenericExecute(BotInstance BotInstance, string URL, string Data="", string Method="GET")
+        public static Newtonsoft.Json.Linq.JToken GenericExecute(BotInstance BotInstance, string URL, string Data="", string Method="GET",bool URLAuth=false)
         {
-            if (URL.Contains("?")) { URL += "&access_token=" + GetAuthToken(BotInstance).Token; }
-            else { URL += "?access_token=" + GetAuthToken(BotInstance).Token; }
+            if (URLAuth)
+            {
+                if (URL.Contains("?")) { URL += "&access_token=" + GetAuthToken(BotInstance).Token; }
+                else { URL += "?access_token=" + GetAuthToken(BotInstance).Token; }
+            }
             WebRequest Req = WebRequest.Create(URL);
             Req.Method = Method;
             Req.ContentType = "application/x-www-form-urlencoded";
+            //Req.Timeout = 2000;
             if (Data != "")
             {
                 byte[] PostData = Encoding.UTF8.GetBytes(Data);
@@ -82,7 +86,12 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
 
         public static Newtonsoft.Json.Linq.JToken GetDonations(BotInstance BotInstance)
         {
-            return GenericExecute(BotInstance, "https://streamlabs.com/api/v1.0/donations?limit=100");
+            return GenericExecute(BotInstance, "https://streamlabs.com/api/v1.0/donations?limit=100",URLAuth:true);
+        }
+
+        public static Newtonsoft.Json.Linq.JToken PlayAlert(BotInstance BotInstance, string SoundURL)
+        {
+            return GenericExecute(BotInstance, "https://streamlabs.com/api/v1.0/alerts", "access_token="+ GetAuthToken(BotInstance).Token + "&type=merch&duration=0&message= &image_href=https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/TransparentPlaceholder.svg/240px-TransparentPlaceholder.svg.png&sound_href=" + SoundURL, Method:"POST");
         }
     }
 }

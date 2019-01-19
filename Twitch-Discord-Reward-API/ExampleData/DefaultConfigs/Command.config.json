@@ -192,15 +192,31 @@
     },
     "Alert": {
       "TwitchEnabled": true,
-      "DiscordEnabled": false,
+      "DiscordEnabled": true,
+      "RequireLive": false,
+      "Commands": [
+        "alert",
+        "redeem"
+      ],
+      "Responses": {
+        "APIError": "@<SenderUser> The following issue occured: @<OtherString>",
+        "NotEnough": "@<SenderUser> You dont have enough @<CurrencyName>",
+        "Requested": "@<SenderUser> Playing alert: @<OtherString>",
+        "InvalidAlert": "@<SenderUser> Cant find that alert"
+      },
       "CoolDown": {
         "Global": 60,
         "Individual": 120
       },
       "Alerts": [
         {
-          "Name": "",
-          "URL": "",
+          "Name": "nice job team",
+          "URL": "https://cdn.streamelements.com/uploads/c9541de6-4306-4c3b-ae2f-147a078f6d91.ogg",
+          "Cost": 100
+        },
+        {
+          "Name": "daddy",
+          "URL": "https://cdn.streamelements.com/uploads/8af75b0b-32f8-48b8-8641-6e86cb2c1506.ogg",
           "Cost": 100
         }
       ]
@@ -214,6 +230,18 @@
       "Responses": {
         "Self": "@<SenderUser> You have spent @<OtherString> watching",
         "Other": "@<SenderUser> @<TargetUser> Has spent @<OtherString> watching"
+      }
+    },
+    "UpTime": {
+      "TwitchEnabled": true,
+      "DiscordEnabled": true,
+      "Commands": [
+        "uptime"
+      ],
+      "Responses": {
+        "APIError": "@<SenderUser> An error ocurred while fetching the uptime",
+        "LiveFor": "@<SenderUser> Stream has been live for @<OtherString>",
+        "NotLive": "@<SenderUser> The Stream is not Live"
       }
     },
     "NightBot": {

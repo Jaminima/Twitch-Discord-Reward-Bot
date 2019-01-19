@@ -122,6 +122,11 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
             return Request(BotInstance, "https://api.twitch.tv/kraken/channels/" + GetChannel(BotInstance)["display_name"], "PUT", "channel[game]=" + NewGame.Replace(" ", "+"));
         }
 
+        public static Newtonsoft.Json.Linq.JToken GetStream(BotInstance BotInstance)
+        {
+            return Request(BotInstance, "https://api.twitch.tv/kraken/streams/" + GetChannel(BotInstance)["display_name"].ToString());
+        }
+
         public static Newtonsoft.Json.Linq.JToken GetViewers(BotInstance BotInstance)
         {
             WebRequest Req = WebRequest.Create("https://tmi.twitch.tv/group/user/" +BotInstance.CommandConfig["ChannelName"]+"/chatters");

@@ -461,6 +461,77 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 await SendMessage(BotInstance.CommandConfig["Raffle"]["Joining"]["Responses"]["AlreadyRaffling"].ToString(), e);
                             }
                         }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Alert"],e)&&
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Commands"], Command))
+                        {
+                            if (LiveCheck(BotInstance.CommandConfig["CommandSetup"]["Alert"]))
+                            {
+                                if (e.SegmentedBody.Length > 1)
+                                {
+                                    string AlertName = e.MessageBody.Replace(e.SegmentedBody[0]+" ", "");
+                                    Dictionary<int, int> MostSuitableAlert = new Dictionary<int, int> { };
+                                    foreach (string AlertNameParts in AlertName.Split(" ".ToCharArray()))
+                                    {
+                                        for (int iAlert=0;iAlert<BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"].Count();iAlert++)
+                                        {
+                                            Newtonsoft.Json.Linq.JToken TargetAlert = BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"][iAlert];
+                                            if (TargetAlert["Name"].ToString().Contains(AlertNameParts))
+                                            {
+                                                if (MostSuitableAlert.ContainsKey(iAlert)) { MostSuitableAlert[iAlert]++; }
+                                                else { MostSuitableAlert.Add(iAlert, 1); }
+                                            }
+                                        }
+                                    }
+                                    if (MostSuitableAlert.Count == 0) { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Responses"]["InvalidAlert"].ToString(), e); }
+                                    KeyValuePair<int, int> ChosenAlert = new KeyValuePair<int, int> (0,MostSuitableAlert[0]);
+                                    for (int i = 0; i < MostSuitableAlert.Count; i++) {
+                                        if (ChosenAlert.Value > MostSuitableAlert[i]) { ChosenAlert = new KeyValuePair<int, int> (i,MostSuitableAlert[i]); }
+                                        else if (ChosenAlert.Value == MostSuitableAlert[i])
+                                        {
+                                            if (BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"][i]["Name"].ToString().Split(" ".ToCharArray()).Length
+                                                < BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"][ChosenAlert.Key]["Name"].ToString().Split(" ".ToCharArray()).Length)
+                                            {
+                                                ChosenAlert= new KeyValuePair<int, int>(i, MostSuitableAlert[i]);
+                                            }
+                                        }
+                                    }
+                                    Newtonsoft.Json.Linq.JToken Alert = BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"][ChosenAlert.Key];
+                                    Objects.Viewer V = Objects.Viewer.FromTwitchDiscord(e,BotInstance,e.SenderID);
+                                    if (V != null)
+                                    {
+                                        int Cost = int.Parse(Alert["Cost"].ToString());
+                                        if (V.Balance >= Cost)
+                                        {
+                                            Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Streamlabs.PlayAlert(BotInstance, Alert["URL"].ToString());
+                                            if (JData["success"] != null)
+                                            {
+                                                Objects.Viewer.AdjustBalance(V, Cost, "-");
+                                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Responses"]["Requested"].ToString(), e, OtherString: Alert["Name"].ToString());
+                                            }
+                                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Respomses"]["APIError"].ToString(),e,OtherString:JData["message"].ToString()); }
+                                        }
+                                        else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Responses"]["NotEnough"].ToString(), e); }
+                                    }
+                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
+                                }
+                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["ParamaterCount"].ToString(), e); }
+                            }
+                        }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["UpTime"], e)&&
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["UpTime"]["Commands"],Command))
+                        {
+                            Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Twitch.GetStream(BotInstance);
+                            if (JData != null)
+                            {
+                                if (JData["stream"].HasValues)
+                                {
+                                    string Duration = AgeString(DateTime.Now-DateTime.Parse(JData["stream"]["created_at"].ToString()));
+                                    await SendMessage(BotInstance.CommandConfig["CommandSetup"]["UpTime"]["Responses"]["LiveFor"].ToString(), e,OtherString:Duration);
+                                }
+                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["UpTime"]["Responses"]["NotLive"].ToString(), e); }
+                            }
+                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["UpTime"]["Respomses"]["APIError"].ToString(), e); }
+                        }
                         #endregion
                         #region "NightBot"
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e) &&

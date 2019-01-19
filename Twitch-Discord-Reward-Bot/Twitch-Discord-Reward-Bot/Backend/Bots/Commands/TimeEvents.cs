@@ -45,16 +45,20 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 bool NewIsLive = Data.APIIntergrations.Twitch.IsLive(BotInstance);
                 if (IsLive != NewIsLive && NewIsLive)
                 {
-                    foreach (Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer Viewer in Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromCurrency(BotInstance).Where(x=>x.LiveNotifcations))
+                    IsLive = NewIsLive;
+                    if (NewIsLive)
                     {
-                        if (Viewer.DiscordID != "")
+                        foreach (Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer Viewer in Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromCurrency(BotInstance).Where(x=>x.LiveNotifcations))
                         {
-                            await BotInstance.DiscordBot.Client.GetUser(ulong.Parse(Viewer.DiscordID)).SendMessageAsync(BotInstance.CommandHandler.MessageParser(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["LiveDM"].ToString(), null, MessageType.Discord));
+                            if (Viewer.DiscordID != "")
+                            {
+                                await BotInstance.DiscordBot.Client.GetUser(ulong.Parse(Viewer.DiscordID)).SendMessageAsync(BotInstance.CommandHandler.MessageParser(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["LiveDM"].ToString(), null, MessageType.Discord));
+                            }
                         }
-                    }
-                    if (BotInstance.CommandConfig["LiveNotifications"]["SendToDiscordNotificationChannel"].ToString() == "True")
-                    {
-                        await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["LiveNotification"].ToString(),BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(),MessageType.Discord);
+                        if (BotInstance.CommandConfig["LiveNotifications"]["SendToDiscordNotificationChannel"].ToString() == "True")
+                        {
+                            await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["LiveNotification"].ToString(),BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(),MessageType.Discord);
+                        }
                     }
                 }
             }
