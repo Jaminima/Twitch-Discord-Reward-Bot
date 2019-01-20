@@ -890,6 +890,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             if (Span.Minutes != 0 && Age!="") { Age += " and "; }
             if (Span.Minutes != 0) { if (Age != "") { Age += " "; } if (Span.Minutes == 1) { Age += Span.Minutes + " Minute"; } else { Age += Span.Minutes + " Minutes"; } }
 
+            if (Age == "") { Age = "0 Minutes"; }
             return Age;
         }
 

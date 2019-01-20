@@ -101,7 +101,7 @@ WHERE " + WhereStatment+@";
 
         public bool Save()
         {
-            if (FromTwitchDiscord(this.DiscordID,this.TwitchID).Find(x => x.Currency.ID == this.Currency.ID) == null)
+            if (FromTwitchDiscord(this.DiscordID,this.TwitchID,this.Currency.ID) == null)
             {
                 List<OleDbParameter> Params = new List<OleDbParameter> {
                     new OleDbParameter("Balance",this.Balance),

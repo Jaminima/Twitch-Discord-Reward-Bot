@@ -82,6 +82,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
             if (((TimeSpan)(DateTime.Now - LastRefreshed)).TotalSeconds > 600)
             {
                 string URLStart = Init.MasterConfig["API"]["WebAddress"] + ":" + Init.MasterConfig["API"]["Port"] + "/";
+                if (Init.MasterConfig["API"]["AddressPath"].ToString() != "") { URLStart += Init.MasterConfig["API"]["AddressPath"] + "/"; }
                 WebRequest Req = WebRequest.Create(URLStart + "bot");
                 Req.Headers.Add("RefreshToken", Init.MasterConfig["API"]["RefreshToken"].ToString());
                 Req.Method = "POST";

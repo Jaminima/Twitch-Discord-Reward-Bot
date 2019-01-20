@@ -42,7 +42,7 @@ namespace Twitch_Discord_Reward_Bot.Backend
                         }
                         else { Console.WriteLine("There was a error relating to currency configs"); }
                     }
-                    System.Threading.Thread.Sleep(120000);
+                    System.Threading.Thread.Sleep(300000);
                 }
             }
         }
