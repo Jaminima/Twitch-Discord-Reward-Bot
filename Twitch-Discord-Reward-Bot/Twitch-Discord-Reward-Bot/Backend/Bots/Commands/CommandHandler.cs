@@ -532,6 +532,16 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             }
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["UpTime"]["Respomses"]["APIError"].ToString(), e); }
                         }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["LatestVid"],e)&&
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["LatestVid"]["Commands"], Command))
+                        {
+                            string Video = Data.APIIntergrations.Youtube.LatestVid(BotInstance);
+                            if (Video != null)
+                            {
+                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["LatestVid"]["Responses"]["LatestVid"].ToString(), e, OtherString: Video);
+                            }
+                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["LatestVid"]["Responses"]["APIError"].ToString(), e); }
+                        }
                         #endregion
                         #region "NightBot"
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e) &&

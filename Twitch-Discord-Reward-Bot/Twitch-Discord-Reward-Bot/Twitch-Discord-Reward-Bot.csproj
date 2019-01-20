@@ -274,6 +274,7 @@
     <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\WebRequests.cs" />
     <Compile Include="Backend\Data\APIIntergrations\Streamlabs.cs" />
     <Compile Include="Backend\Data\APIIntergrations\Twitch.cs" />
+    <Compile Include="Backend\Data\APIIntergrations\Youtube.cs" />
     <Compile Include="Backend\Data\FileHandler.cs" />
     <Compile Include="Backend\Init.cs" />
     <Compile Include="Backend\Bots\TwitchBot\Instance.cs" />

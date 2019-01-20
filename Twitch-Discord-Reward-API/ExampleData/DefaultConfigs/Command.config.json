@@ -244,6 +244,17 @@
         "NotLive": "@<SenderUser> The Stream is not Live"
       }
     },
+    "LatestVid": {
+      "TwitchEnabled": true,
+      "DiscordEnabled": true,
+      "Commands": [
+        "latestvid"
+      ],
+      "Responses": {
+        "APIError": "@<SenderUser> An error ocurred while fetching the latest video",
+        "LatestVid": "@<SenderUser> @<OtherString>"
+      }
+    },
     "NightBot": {
       "TwitchEnabled": true,
       "DiscordEnabled": true,
