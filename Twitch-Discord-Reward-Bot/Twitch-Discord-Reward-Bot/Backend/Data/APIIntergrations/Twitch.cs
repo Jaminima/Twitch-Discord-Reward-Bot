@@ -110,21 +110,21 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
 
         public static Newtonsoft.Json.Linq.JToken GetChannel(BotInstance BotInstance)
         {
-            return Request(BotInstance, "https://api.twitch.tv/kraken/channel");
+            return Request(BotInstance, "https://api.twitch.tv/kraken/channels/" + BotInstance.CommandConfig["ChannelName"].ToString());
         }
 
         public static Newtonsoft.Json.Linq.JToken UpdateChannelTitle(BotInstance BotInstance,string NewTitle)
         {
-            return Request(BotInstance, "https://api.twitch.tv/kraken/channels/" + GetChannel(BotInstance)["display_name"], "PUT", "channel[status]="+NewTitle.Replace(" ","+"));
+            return Request(BotInstance, "https://api.twitch.tv/kraken/channels/" + BotInstance.CommandConfig["ChannelName"].ToString(), "PUT", "channel[status]="+NewTitle.Replace(" ","+"));
         }
         public static Newtonsoft.Json.Linq.JToken UpdateChannelGame(BotInstance BotInstance, string NewGame)
         {
-            return Request(BotInstance, "https://api.twitch.tv/kraken/channels/" + GetChannel(BotInstance)["display_name"], "PUT", "channel[game]=" + NewGame.Replace(" ", "+"));
+            return Request(BotInstance, "https://api.twitch.tv/kraken/channels/" + BotInstance.CommandConfig["ChannelName"].ToString(), "PUT", "channel[game]=" + NewGame.Replace(" ", "+"));
         }
 
         public static Newtonsoft.Json.Linq.JToken GetStream(BotInstance BotInstance)
         {
-            return Request(BotInstance, "https://api.twitch.tv/kraken/streams/" + GetChannel(BotInstance)["display_name"].ToString());
+            return Request(BotInstance, "https://api.twitch.tv/kraken/streams/" + BotInstance.CommandConfig["ChannelName"].ToString().ToString());
         }
 
         public static Newtonsoft.Json.Linq.JToken GetViewers(BotInstance BotInstance)
