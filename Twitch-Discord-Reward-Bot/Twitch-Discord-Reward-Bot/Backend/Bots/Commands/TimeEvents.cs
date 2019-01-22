@@ -43,21 +43,29 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         {
             if (BotInstance.CommandConfig["LiveNotifications"]["Enabled"].ToString() == "True") { 
                 bool NewIsLive = Data.APIIntergrations.Twitch.IsLive(BotInstance);
-                if (IsLive != NewIsLive && NewIsLive)
+                if (IsLive != NewIsLive)
                 {
                     IsLive = NewIsLive;
                     if (NewIsLive)
                     {
-                        foreach (Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer Viewer in Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromCurrency(BotInstance).Where(x=>x.LiveNotifcations))
-                        {
-                            if (Viewer.DiscordID != "")
-                            {
-                                await BotInstance.DiscordBot.Client.GetUser(ulong.Parse(Viewer.DiscordID)).SendMessageAsync(BotInstance.CommandHandler.MessageParser(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["LiveDM"].ToString(), null, MessageType.Discord));
-                            }
+                        Newtonsoft.Json.Linq.JToken StreamLocal = Data.FileHandler.ReadJSON("./Data/Streams.json");
+                        string StreamCurrent= Data.APIIntergrations.Twitch.GetStreamHelix(BotInstance)["data"][0]["id"].ToString();
+                        if (BotInstance.CommandHandler.JArrayContainsString(StreamLocal, StreamCurrent)) { return; }
+                        else {
+                            List<String> StreamList = StreamLocal.ToObject<List<string>>();
+                            StreamList.Add(StreamCurrent);
+                            Data.FileHandler.SaveJSON("./Data/Streams.json", Newtonsoft.Json.Linq.JToken.FromObject(StreamList));
                         }
-                        if (BotInstance.CommandConfig["LiveNotifications"]["SendToDiscordNotificationChannel"].ToString() == "True")
+                        foreach (Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer Viewer in Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromCurrency(BotInstance).Where(x => x.LiveNotifcations))
                         {
-                            await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["LiveNotification"].ToString(),BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(),MessageType.Discord);
+                                if (Viewer.DiscordID != "")
+                                {
+                                    await BotInstance.DiscordBot.Client.GetUser(ulong.Parse(Viewer.DiscordID)).SendMessageAsync(BotInstance.CommandHandler.MessageParser(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["LiveDM"].ToString(), null, MessageType.Discord));
+                                }
+                            if (BotInstance.CommandConfig["LiveNotifications"]["SendToDiscordNotificationChannel"].ToString() == "True")
+                            {
+                                await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["LiveNotification"].ToString(), BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(), MessageType.Discord);
+                            }
                         }
                     }
                 }
@@ -130,14 +138,19 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             foreach (Newtonsoft.Json.Linq.JToken StreamViewer in Merged)
             {
                 StandardisedUser U = StandardisedUser.FromTwitchUsername(StreamViewer.ToString(), BotInstance);
-                Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer Viewer = Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromTwitchDiscord(MessageType.Twitch,BotInstance,U.ID);
-                Viewer.WatchTime += 1;
-                List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> {
-                    new KeyValuePair<string, string>("ID",Viewer.ID.ToString()),
-                    new KeyValuePair<string, string>("WatchTime",Viewer.WatchTime.ToString())
-                };
-                Data.APIIntergrations.RewardCurrencyAPI.WebRequests.PostRequest("viewer", Headers, true);
-                RewardUser(Reward, U, MessageType.Twitch);
+                if (U != null) {
+                    Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer Viewer = Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromTwitchDiscord(MessageType.Twitch, BotInstance, U.ID);
+                    if (Viewer != null)
+                    {
+                        Viewer.WatchTime += 1;
+                        List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> {
+                            new KeyValuePair<string, string>("ID",Viewer.ID.ToString()),
+                            new KeyValuePair<string, string>("WatchTime",Viewer.WatchTime.ToString())
+                        };
+                        Data.APIIntergrations.RewardCurrencyAPI.WebRequests.PostRequest("viewer", Headers, true);
+                        RewardUser(Reward, U, MessageType.Twitch);
+                    }
+                }
             }
         }
         void RewardUser(int Reward,StandardisedUser U,MessageType MessageType)
@@ -282,7 +295,9 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             if (BotInstance.CommandHandler.CommandEnabled(BotInstance.CommandConfig["AutoMessage"], MessageType.Discord))
                             { await BotInstance.CommandHandler.SendMessage(Items[i]["Body"].ToString(), BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(), MessageType.Discord); }
                             MessageLast = DateTime.Now;
-                            MessageHistory.Add(i, DateTime.Now);
+                            if (!MessageHistory.ContainsKey(i)) { MessageHistory.Add(i, DateTime.Now); }
+                            else { MessageHistory[i] = DateTime.Now; }
+                            return;
                         }
                     }
                 }

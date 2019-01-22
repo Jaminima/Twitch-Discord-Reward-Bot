@@ -93,6 +93,7 @@ FROM [Currency];");
         {
             if (FromID(this.ID) != null)
             {
+                System.IO.Directory.Delete("./Data/CurrencyConfigs/" + this.ID,true);
                 List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("ID", this.ID) };
                 Init.SQLi.Execute(@"DELETE FROM [Currency]
 WHERE (((Currency.CurrencyID)=@ID));

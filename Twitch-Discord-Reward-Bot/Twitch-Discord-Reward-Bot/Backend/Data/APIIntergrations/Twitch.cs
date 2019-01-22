@@ -17,8 +17,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
             if (((TimeSpan)(DateTime.Now - LastLiveCheck)).TotalSeconds < 15) { return Islive; }
             try
             {
-                Newtonsoft.Json.Linq.JToken JD = Request(BotInstance, "https://api.twitch.tv/helix/streams?user_login=" + BotInstance.CommandConfig["ChannelName"]);
-                LastLiveCheck = DateTime.Now;
+                Newtonsoft.Json.Linq.JToken JD = GetStreamHelix(BotInstance);
                 if (JD["data"].Count() != 0)
                 {
                     if (JD["data"][0]["type"].ToString() == "live")
@@ -27,6 +26,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
                         return true;
                     }
                 }
+                LastLiveCheck = DateTime.Now;
                 Islive = false;
                 return false;
             }
@@ -36,6 +36,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
                 return false;
             }
         }
+
+        
 
         public static AccessToken GetAuthToken(BotInstance BotInstance)
         {
@@ -106,6 +108,11 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
                 Console.WriteLine(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
                 return null;
             }
+        }
+
+        public static Newtonsoft.Json.Linq.JToken GetStreamHelix(BotInstance BotInstance)
+        {
+            return Request(BotInstance, "https://api.twitch.tv/helix/streams?user_login=" + BotInstance.CommandConfig["ChannelName"]);
         }
 
         public static Newtonsoft.Json.Linq.JToken GetChannel(BotInstance BotInstance)

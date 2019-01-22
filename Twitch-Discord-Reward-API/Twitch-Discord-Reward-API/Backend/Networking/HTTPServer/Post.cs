@@ -148,7 +148,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         if (L != null)
                         {
                             if (Backend.Init.ScryptEncoder.Compare(Context.Headers["Password"],L.HashedPassword)) { L.UpdateToken(); L.HashedPassword = null; Context.ResponseObject.Data = L.ToJson(); }
-                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, HashedPassword does not match"; }
+                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Password does not match"; }
                         }
                         else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, UserName does not correspond to an existing user"; }
                     }
@@ -158,7 +158,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         if (L != null)
                         {
                             if (Backend.Init.ScryptEncoder.Compare(Context.Headers["Password"], L.HashedPassword)) { L.UpdateToken(); L.HashedPassword = null; Context.ResponseObject.Data = L.ToJson(); }
-                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, HashedPassword does not match"; }
+                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Password does not match"; }
                         }
                         else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Email does not correspond to an existing user"; }
                     }

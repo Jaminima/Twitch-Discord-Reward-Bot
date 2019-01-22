@@ -659,12 +659,20 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                             StandardisedUser S = null;
                                             if (e.MessageType == MessageType.Twitch) { S = StandardisedUser.FromTwitchUsername(e.SegmentedBody[1], BotInstance); }
                                             if (e.MessageType == MessageType.Discord) { S = StandardisedUser.FromDiscordMention(e.SegmentedBody[1], BotInstance); }
-                                            B = Objects.Viewer.FromTwitchDiscord(e.MessageType, BotInstance, S.ID);
-                                            if (Objects.Viewer.AdjustBalance(B, ChangeBy, "+"))
+                                            if (S != null)
                                             {
-                                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["GiveCoin"]["Responses"]["Gave"].ToString(), e, S, ChangeBy);
+                                                B = Objects.Viewer.FromTwitchDiscord(e.MessageType, BotInstance, S.ID);
+                                                if (B != null)
+                                                {
+                                                    if (Objects.Viewer.AdjustBalance(B, ChangeBy, "+"))
+                                                    {
+                                                        await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["GiveCoin"]["Responses"]["Gave"].ToString(), e, S, ChangeBy);
+                                                    }
+                                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
+                                                }
+                                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["LatestVid"]["Responses"]["APIError"].ToString(), e); }
                                             }
-                                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
+                                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["LatestVid"]["Responses"]["CannotFindUser"].ToString(), e); }
                                         }
                                         else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["NumberParamaterNegative"].ToString(), e); }
                                     }
@@ -789,7 +797,10 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         {
                             V.LastTwitchMessage = DateTime.Now;
                             Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e.MessageType, BotInstance, e.SenderID);
-                            Objects.Viewer.AdjustBalance(B, TwitchReward, "+");
+                            if (B != null)
+                            {
+                                Objects.Viewer.AdjustBalance(B, TwitchReward, "+");
+                            }
                         }
                     }
                     else if (e.MessageType == MessageType.Discord)
@@ -798,7 +809,10 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         {
                             V.LastTwitchMessage = DateTime.Now;
                             Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e.MessageType, BotInstance, e.SenderID);
-                            Objects.Viewer.AdjustBalance(B, DiscordReward, "+");
+                            if (B != null)
+                            {
+                                Objects.Viewer.AdjustBalance(B, DiscordReward, "+");
+                            }
                         }
                     }
                 }

@@ -122,9 +122,9 @@ WHERE " + WhereStatment+@";
 
         public bool Update()
         {
-            if (FromID(this.ID) != null)
+            if (FromID(this.ID) != null) 
             {
-                List <OleDbParameter> Params = new List<OleDbParameter> {
+                List<OleDbParameter> Params = new List<OleDbParameter> {
                     new OleDbParameter("DiscordID",this.DiscordID),
                     new OleDbParameter("TwitchID",this.TwitchID),
                     new OleDbParameter("Balance",this.Balance),

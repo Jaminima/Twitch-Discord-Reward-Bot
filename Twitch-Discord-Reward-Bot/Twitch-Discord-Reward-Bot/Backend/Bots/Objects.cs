@@ -67,7 +67,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots
                 U.UserName = UserName;
                 return U;
             }
-            catch { FromTwitchUsername(MessageSegment, BotInstance, Depth++); }
+            catch { return null; FromTwitchUsername(MessageSegment, BotInstance, Depth+1); }
             return null;
         }
 
