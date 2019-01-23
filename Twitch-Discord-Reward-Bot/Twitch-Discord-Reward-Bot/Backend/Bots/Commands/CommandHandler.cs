@@ -57,6 +57,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                     {
                         bool CommandWasValid = true;
                         if (CheckRateLimit(e)) { return; }
+                        else { UpdateRateLimit(e); }
                         Objects.Viewer.MergeAccounts(e, BotInstance, e.SenderID);
                         #region "Viewer"
                         #region "Notifications"
@@ -760,7 +761,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 await SendMessage(BotInstance.CommandConfig["CommandSetup"]["FallbackMessage"]["Response"].ToString(), e);
                             }
                         }
-                        if (CommandWasValid) { UpdateRateLimit(e); }
+                        if (!CommandWasValid) { RevertRateLimit(e); }
                     }
                 }
                 #endregion
@@ -769,6 +770,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         }
 
         Dictionary<string, DateTime> MessageHistory = new Dictionary<string, DateTime> { };
+        Dictionary<string, DateTime> PreviousMessageHistory = new Dictionary<string, DateTime> { };
         public bool CheckRateLimit(StandardisedMessageRequest e)
         {
             int Delay = int.Parse(BotInstance.CommandConfig["MessageDelay"].ToString());
@@ -778,7 +780,18 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         public void UpdateRateLimit(StandardisedMessageRequest e)
         {
             if (MessageHistory.Where(x => x.Key == e.SenderID).Count() == 0) { MessageHistory.Add(e.SenderID, DateTime.Now); }
-            else { MessageHistory[e.SenderID] = DateTime.Now; }
+            else {
+                if (PreviousMessageHistory.Where(x => x.Key == e.SenderID).Count() != 0) { PreviousMessageHistory[e.SenderID] = MessageHistory[e.SenderID]; }
+                else { PreviousMessageHistory.Add(e.SenderID, MessageHistory[e.SenderID]); }
+                MessageHistory[e.SenderID] = DateTime.Now;
+            }
+        }
+        public void RevertRateLimit(StandardisedMessageRequest e)
+        {
+            if (PreviousMessageHistory.Where(x => x.Key == e.SenderID).Count() == 0)
+            { MessageHistory[e.SenderID] = PreviousMessageHistory[e.SenderID]; }
+            else
+            { MessageHistory[e.SenderID] = DateTime.MinValue; }
         }
 
         public void RewardForChatting(StandardisedMessageRequest e)
