@@ -27,13 +27,17 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         async Task TimeThread()
         {
             while (true){
-                await Fish();
-                await AutoMessage();
-                RemoveDuels();
-                PerformRaffle();
-                RewardForViewing();
-                await LiveNotifications();
-                await CheckForDonations();
+                try
+                {
+                    await Fish();
+                    await AutoMessage();
+                    RemoveDuels();
+                    PerformRaffle();
+                    RewardForViewing();
+                    await LiveNotifications();
+                    await CheckForDonations();
+                }
+                catch (Exception E) { Console.WriteLine(E); }
                 System.Threading.Thread.Sleep(10000);
             }
         }

@@ -55,7 +55,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 
                     if (e.SegmentedBody[0].StartsWith(Prefix) && !e.SegmentedBody[0].StartsWith(Prefix + Prefix))
                     {
-                        if (RateLimit(e)) { return; }
+                        bool CommandWasValid = true;
+                        if (CheckRateLimit(e)) { return; }
                         Objects.Viewer.MergeAccounts(e, BotInstance, e.SenderID);
                         #region "Viewer"
                         #region "Notifications"
@@ -751,10 +752,15 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 await SendMessage(BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"]["Commands"][Command.ToLower()].ToString(), e);
                             }
                         }
-                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["FallbackMessage"], e))
+                        else 
                         {
-                            await SendMessage(BotInstance.CommandConfig["CommandSetup"]["FallbackMessage"]["Response"].ToString(), e);
+                            CommandWasValid = false;
+                            if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["FallbackMessage"], e))
+                            {
+                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["FallbackMessage"]["Response"].ToString(), e);
+                            }
                         }
+                        if (CommandWasValid) { UpdateRateLimit(e); }
                     }
                 }
                 #endregion
@@ -763,20 +769,16 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         }
 
         Dictionary<string, DateTime> MessageHistory = new Dictionary<string, DateTime> { };
-        public bool RateLimit(StandardisedMessageRequest e)
+        public bool CheckRateLimit(StandardisedMessageRequest e)
         {
             int Delay = int.Parse(BotInstance.CommandConfig["MessageDelay"].ToString());
             if (Delay < 3) { Delay = 3; }
-            if (MessageHistory.Where(x => x.Key == e.SenderID&&(((TimeSpan)(DateTime.Now-x.Value)).TotalSeconds<=Delay)).Count() != 0)
-            {
-                return true;
-            }
-            else
-            {
-                if (MessageHistory.Where(x => x.Key == e.SenderID).Count()==0) { MessageHistory.Add(e.SenderID, DateTime.Now); }
-                else { MessageHistory[e.SenderID] = DateTime.Now; }
-                return false;
-            }
+            return MessageHistory.Where(x => x.Key == e.SenderID && (((TimeSpan)(DateTime.Now - x.Value)).TotalSeconds <= Delay)).Count() != 0;
+        }
+        public void UpdateRateLimit(StandardisedMessageRequest e)
+        {
+            if (MessageHistory.Where(x => x.Key == e.SenderID).Count() == 0) { MessageHistory.Add(e.SenderID, DateTime.Now); }
+            else { MessageHistory[e.SenderID] = DateTime.Now; }
         }
 
         public void RewardForChatting(StandardisedMessageRequest e)
