@@ -195,7 +195,22 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     L.UserName = Context.Headers["UserName"];
                     if (Data.Objects.Login.FromEmail(L.Email) == null && Data.Objects.Login.FromUserName(L.UserName) == null)
                     {
-                        L.HashedPassword = Backend.Init.ScryptEncoder.Encode(Context.Headers["Password"]);
+                        string RawPassword = Context.Headers["Password"];
+                        if (RawPassword.Length < 8) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Password too short"; return Context.ResponseObject; }
+                        bool HasNumeric = false, HasCapital = false, HasSpecial = false;
+                        Char[] LowerSet = "abcdefghijklmnopqrstuvwxyz".ToCharArray(),
+                            UpperSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray(),
+                            NumberSet = "0123456789".ToCharArray();
+                        foreach (Char C in RawPassword)
+                        {
+                            if (UpperSet.Contains(C)) { HasCapital = true; }
+                            else if (NumberSet.Contains(C)) { HasNumeric = true; }
+                            else if (!LowerSet.Contains(C)) { HasSpecial = true; }
+                        }
+                        if (!HasCapital) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Password requires a Capital letter"; return Context.ResponseObject; }
+                        if (!HasNumeric) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Password requires a Numeric character"; return Context.ResponseObject; }
+                        if (!HasSpecial) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Password requires a Special character"; return Context.ResponseObject; }
+                        L.HashedPassword = Backend.Init.ScryptEncoder.Encode(RawPassword);
                         L.Save();
                     }
                     else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, User already exists"; }
@@ -218,13 +233,13 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     }
                     else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Refresh Token does not correspond to a bot"; }
                 }
-                else if (Context.Headers.AllKeys.Contains("AccessToken") && Context.Headers.AllKeys.Contains("InviteCode") && Context.Headers.AllKeys.Contains("CurrencyID"))
+                else if (Context.Headers.AllKeys.Contains("AccessToken") && Context.Headers.AllKeys.Contains("CurrencyID") && Context.Headers.AllKeys.Contains("BotID"))
                 {
                     try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
                     Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
                     if (L != null)
                     {
-                        Data.Objects.Bot B = Data.Objects.Bot.FromInviteCode(Context.Headers["InviteCode"]);
+                        Data.Objects.Bot B = Data.Objects.Bot.FromID(int.Parse(Context.Headers["BotID"]));
                         if (B != null)
                         {
                             if (B.Currency == null)
@@ -245,6 +260,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     if (L != null)
                     {
                         Data.Objects.Bot B = new Data.Objects.Bot();
+                        if (Context.Headers.AllKeys.Contains("BotName")) { B.BotName = Context.Headers["BotName"]; }
                         B.OwnerLogin = Data.Objects.Login.FromID(L.ID);
                         B.Save();
                         B = Data.Objects.Bot.FromLogin(L.ID, true).Last();

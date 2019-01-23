@@ -10,7 +10,7 @@ namespace Twitch_Discord_Reward_API.Backend.Data.Objects
     public class Bot : BaseObject
     {
         public Currency Currency;
-        public string AccessToken, RefreshToken;
+        public string AccessToken, RefreshToken, BotName;
         public DateTime TokenRefreshDateTime;
         public Login OwnerLogin;
         public bool IsSuperBot=false;
@@ -23,7 +23,11 @@ namespace Twitch_Discord_Reward_API.Backend.Data.Objects
         public static Bot FromID(int ID,bool WithSecretData=false)
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("ID",ID) };
+<<<<<<< Updated upstream
             List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID,  Bots.IsSuperBot
+=======
+            List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.IsSuperBot, Bots.BotName
+>>>>>>> Stashed changes
 FROM Bots
 WHERE (((Bots.BotID)=@ID));
 ", Params);
@@ -37,6 +41,10 @@ WHERE (((Bots.BotID)=@ID));
                 Bot.TokenRefreshDateTime = DateTime.Parse(RData[0][3]);
                 Bot.RefreshToken = RData[0][4];
             }
+<<<<<<< Updated upstream
+=======
+            Bot.BotName = RData[0][7];
+>>>>>>> Stashed changes
             Bot.IsSuperBot = RData[0][6] == "True";
             Bot.OwnerLogin = Login.FromID(int.Parse(RData[0][5]));
             return Bot;
@@ -45,7 +53,11 @@ WHERE (((Bots.BotID)=@ID));
         public static List<Bot> FromLogin(int LoginID, bool WithSecretData = false)
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("LoginID",LoginID) };
+<<<<<<< Updated upstream
             List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID,  Bots.IsSuperBot
+=======
+            List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.IsSuperBot, Bots.BotName
+>>>>>>> Stashed changes
 FROM Bots
 WHERE (((Bots.LoginID)=@LoginID));
 ", Params);
@@ -57,11 +69,19 @@ WHERE (((Bots.LoginID)=@LoginID));
                 if (Item[1] != "") { Bot.Currency = Currency.FromID(int.Parse(Item[1])); }
                 if (WithSecretData)
                 {
+<<<<<<< Updated upstream
                     Bot.AccessToken = RData[0][2];
                     Bot.TokenRefreshDateTime = DateTime.Parse(RData[0][3]);
                     Bot.RefreshToken = RData[0][4];
                     Bot.IsSuperBot = RData[0][6] == "True";
+=======
+                    Bot.AccessToken = Item[2];
+                    Bot.TokenRefreshDateTime = DateTime.Parse(Item[3]);
+                    Bot.RefreshToken = Item[4];
+                    Bot.IsSuperBot = Item[6] == "True";
+>>>>>>> Stashed changes
                 }
+                Bot.BotName = Item[7];
                 Bots.Add(Bot);
             }
             return Bots;
@@ -70,7 +90,11 @@ WHERE (((Bots.LoginID)=@LoginID));
         public static List<Bot> FromCurrency(int CurrencyID,bool WithSecretData = false)
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("CurrencyID",CurrencyID) };
+<<<<<<< Updated upstream
             List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID,  Bots.IsSuperBot
+=======
+            List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.IsSuperBot, Bots.BotName
+>>>>>>> Stashed changes
 FROM Bots
 WHERE (((Bots.CurrencyID)=@CurrencyID));
 ", Params);
@@ -80,7 +104,8 @@ WHERE (((Bots.CurrencyID)=@CurrencyID));
                 Bot Bot = new Bot();
                 Bot.ID = int.Parse(Item[0]);
                 Bot.OwnerLogin = Login.FromID(int.Parse(Item[5]));
-                Bot.IsSuperBot = Item[7] == "True";
+                Bot.IsSuperBot = Item[6] == "True";
+                Bot.BotName = Item[7];
                 Bots.Add(Bot);
             }
             return Bots;
@@ -89,7 +114,11 @@ WHERE (((Bots.CurrencyID)=@CurrencyID));
         public static Bot FromAccessToken(string AccessToken)
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("AccessToken", AccessToken) };
+<<<<<<< Updated upstream
             List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID,  Bots.IsSuperBot
+=======
+            List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.IsSuperBot, Bots.BotName
+>>>>>>> Stashed changes
 FROM Bots
 WHERE ((Bots.AccessToken)=@AccessToken);
 ", Params);
@@ -102,6 +131,10 @@ WHERE ((Bots.AccessToken)=@AccessToken);
             Bot.RefreshToken = RData[0][4];
             Bot.OwnerLogin = Login.FromID(int.Parse(RData[0][5]));
             Bot.IsSuperBot = RData[0][6] == "True";
+<<<<<<< Updated upstream
+=======
+            Bot.BotName = RData[0][7];
+>>>>>>> Stashed changes
 
             if ((int)((TimeSpan)(DateTime.Now - Bot.TokenRefreshDateTime)).TotalMinutes < 10) { return Bot; }
             else { return null; }
@@ -110,7 +143,11 @@ WHERE ((Bots.AccessToken)=@AccessToken);
         public static Bot FromRefreshToken(string RefreshToken)
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("RefreshToken", RefreshToken) };
+<<<<<<< Updated upstream
             List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID,  Bots.IsSuperBot
+=======
+            List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.IsSuperBot, Bots.BotName
+>>>>>>> Stashed changes
 FROM Bots
 WHERE ((Bots.RefreshToken)=@RefreshToken);
 ", Params);
@@ -123,10 +160,15 @@ WHERE ((Bots.RefreshToken)=@RefreshToken);
             Bot.RefreshToken = RData[0][4];
             Bot.OwnerLogin = Login.FromID(int.Parse(RData[0][5]));
             Bot.IsSuperBot = RData[0][6] == "True";
+<<<<<<< Updated upstream
+=======
+            Bot.BotName = RData[0][7];
+>>>>>>> Stashed changes
 
             return Bot;
         }
 
+<<<<<<< Updated upstream
         public static Bot FromInviteCode(string InviteCode)
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("FromInviteCode", InviteCode) };
@@ -143,6 +185,8 @@ WHERE ((Bots.InviteCode)=@InviteCode);
             return Bot;
         }
 
+=======
+>>>>>>> Stashed changes
         public bool Save()
         {
             this.AccessToken = Networking.TokenSystem.CreateToken(32);
@@ -150,11 +194,17 @@ WHERE ((Bots.InviteCode)=@InviteCode);
             this.TokenRefreshDateTime = DateTime.Now;
             List<OleDbParameter> Params = new List<OleDbParameter> {
                 new OleDbParameter("LoginID",this.OwnerLogin.ID),
-                new OleDbParameter("AccessToken",this.AccessToken),
-                new OleDbParameter("RefreshToken",this.RefreshToken),
+                new OleDbParameter("AccessToken",Init.ScryptEncoder.Encode(this.AccessToken)),
+                new OleDbParameter("RefreshToken",Init.ScryptEncoder.Encode(this.RefreshToken)),
                 new OleDbParameter("TokenRefreshDateTime",this.TokenRefreshDateTime.ToString()),
+<<<<<<< Updated upstream
             };
             Init.SQLi.Execute(@"INSERT INTO Bots (CurrencyID, LoginID, AccessToken, RefreshToken, TokenRefreshDateTime) VALUES (NULL, @LoginID, @AccessToken, @RefreshToken, @TokenRefreshDateTime)", Params);
+=======
+                new OleDbParameter("BotName",this.BotName)
+            };
+            Init.SQLi.Execute(@"INSERT INTO Bots (CurrencyID, LoginID, AccessToken, RefreshToken, TokenRefreshDateTime, BotName) VALUES (NULL, @LoginID, @AccessToken, @RefreshToken, @TokenRefreshDateTime, @BotName)", Params);
+>>>>>>> Stashed changes
             return true;
         }
 
@@ -183,10 +233,9 @@ WHERE (((Bots.BotID) = @ID));
                 this.RefreshToken = Networking.TokenSystem.CreateToken(64);
                 List<OleDbParameter> Params = new List<OleDbParameter>
                 {
-                    new OleDbParameter("AccessToken",this.AccessToken),
+                    new OleDbParameter("AccessToken",Init.ScryptEncoder.Encode(this.AccessToken)),
                     new OleDbParameter("TokenRefreshDateTime",this.TokenRefreshDateTime.ToString()),
-                    new OleDbParameter("RefreshToken",this.RefreshToken),
-                    new OleDbParameter("ID",this.ID)
+                    new OleDbParameter("RefreshToken",Init.ScryptEncoder.Encode(this.RefreshToken))
                 };
                 Init.SQLi.Execute(@"UPDATE Bots SET Bots.AccessToken = @AccessToken, Bots.TokenRefreshDateTime = @TokenRefreshDateTime, Bots.RefreshToken = @RefreshToken
 WHERE (((Bots.BotID) = @ID));
