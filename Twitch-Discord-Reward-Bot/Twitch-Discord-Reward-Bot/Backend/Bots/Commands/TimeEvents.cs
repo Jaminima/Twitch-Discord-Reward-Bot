@@ -80,13 +80,14 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         async Task CheckForDonations()
         {
             if (((TimeSpan)(DateTime.Now - LastDonationCheck)).TotalSeconds < 60) { return; }
+            if (!Data.APIIntergrations.Twitch.IsLive(BotInstance) && BotInstance.CommandConfig["AutoRewards"]["Donating"]["RequireLive"].ToString() == "True") { return; }
             LastDonationCheck = DateTime.Now;
             Newtonsoft.Json.Linq.JToken NetData = Data.APIIntergrations.Streamlabs.GetDonations(BotInstance),
                 LocalData=Data.FileHandler.ReadJSON("./Data/DonationCache/"+BotInstance.Currency.ID+".json");
             int DonationReward = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Donating"]["RewardPerWhole"].ToString());
             if (LocalData != null)
             {
-                if (NetData != null) { return; }
+                if (NetData == null) { return; }
                 if (NetData["data"][0]["donation_id"].ToString() != LocalData["data"][0]["donation_id"].ToString())
                 {
                     for (int i = 0; i < LocalData["data"].Count(); i++)

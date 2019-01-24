@@ -10,11 +10,12 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.TwitchBot
 {
     public class Instance:BaseObject
     {
+        public Events Events;
         public Instance(BotInstance BotInstance):base(BotInstance)
         {
+            Events = new Events(BotInstance);
             StartBot();
         }
-
 
         public TwitchClient Client;
         void StartBot()
@@ -26,6 +27,9 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.TwitchBot
             Client = new TwitchClient();
             Client.Initialize(BotDetails,BotInstance.CommandConfig["ChannelName"].ToString());
             Client.OnMessageReceived += BotInstance.CommandHandler.Handle;
+            Client.OnNewSubscriber += Events.Subbed;
+            Client.OnReSubscriber += Events.ReSubbed;
+            Client.OnGiftedSubscription += Events.SubGifted;
             Client.Connect();
             Console.WriteLine("Started Twitch Bot for Currency: " + BotInstance.Currency.ID);
         }

@@ -575,7 +575,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                         else { SongRequestHistory[e.SenderID] = JData["item"]["_id"].ToString(); }
                                         Objects.Viewer.AdjustBalance(B, Cost, "-");
                                         string MessageContent = JData["item"]["track"]["title"] + " by " + JData["item"]["track"]["artist"] + " -- " + JData["item"]["track"]["url"];
-                                        await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Responses"]["Requested"].ToString(), e, OtherString: MessageContent);
+                                        await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Responses"]["Requested"].ToString(), e,Amount: int.Parse(JData["item"]["_position"].ToString()), OtherString: MessageContent);
                                     }
                                     else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
                                 }
@@ -695,8 +695,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                     await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Pause"]["Response"].ToString(), e);
                                 }
                                 else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
-
                             }
+                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["Responses"]["NotMod"].ToString(), e); }
                         }
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e) &&
                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Play"]["Commands"], Command))
@@ -709,8 +709,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                     await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Play"]["Response"].ToString(), e);
                                 }
                                 else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
-
                             }
+                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["Responses"]["NotMod"].ToString(), e); }
                         }
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e) &&
                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Skip"]["Commands"], Command))
@@ -724,6 +724,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 }
                                 else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
                             }
+                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["Responses"]["NotMod"].ToString(), e); }
                         }
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e) &&
                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Remove"]["Commands"], Command))
@@ -740,9 +741,28 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                         await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Remove"]["Response"].ToString(), e,OtherString:MessageContent);
                                     }
                                     else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
-
                                 }
                             }
+                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["Responses"]["NotMod"].ToString(), e); }
+                        }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e) &&
+                          JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Volume"]["Commands"], Command))
+                        {
+                            if (IsModerator(e))
+                            {
+                                if (e.SegmentedBody.Length == 2)
+                                {
+                                    try { int.Parse(e.SegmentedBody[1]); } catch { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["NumberParamaterInvalid"].ToString(), e); return; }
+                                    int Volume = int.Parse(e.SegmentedBody[1]);
+                                    Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Nightbot.SetVolume(BotInstance, Volume);
+                                    if (JData["status"].ToString() == "200")
+                                    {
+                                        await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Volume"]["Response"].ToString(), e, Amount: Volume);
+                                    }
+                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
+                                }
+                            }
+                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["Responses"]["NotMod"].ToString(), e); }
                         }
                         #endregion
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"], e) &&

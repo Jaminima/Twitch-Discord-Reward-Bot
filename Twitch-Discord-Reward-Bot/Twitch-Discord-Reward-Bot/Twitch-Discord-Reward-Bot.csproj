@@ -263,6 +263,7 @@
     <Compile Include="Backend\Bots\Commands\TimeEvents.cs" />
     <Compile Include="Backend\Bots\DiscordBot\Instance.cs" />
     <Compile Include="Backend\Bots\Objects.cs" />
+    <Compile Include="Backend\Bots\TwitchBot\Events.cs" />
     <Compile Include="Backend\Data\APIIntergrations\Nightbot.cs" />
     <Compile Include="Backend\Data\APIIntergrations\Objects.cs" />
     <Compile Include="Backend\Data\APIIntergrations\RewardCurrencyAPI\Objects\Viewer.cs" />

@@ -1,32 +1,157 @@
 {
-  "BotsEnabled": true,
-  "CurrencyName": "Jam Coin",
+  "BotsEnabled": false,
+  "CurrencyName": "JamCoin",
   "CurrencyAcronym": "JC",
-  "Prefix": "?",
+  "Prefix": "!",
   "ChannelName": "jccjaminima",
-  "InititalBalance": 5000000,
-  "MessageDelay": 5,
+  "InititalBalance": 250,
+  "MessageDelay": 3,
   "Discord": {
     "TwitchMerging": true,
-    "StatusMessage": "I am Sentient please help me!!!",
+    "StatusMessage": "!help",
     "Channels": [
-      "528504610810232833"
+      "277493158777061376"
     ],
-    "NotificationChannel": "528504610810232833",
-    "SubscriberRoleID": "531145863985233922",
-    "ModeratorRoleID": "528297729487798272"
+    "NotificationChannel": "277493158777061376",
+    "SubscriberRoleID": "445021512383070218",
+    "ModeratorRoleID": "238144531613220864"
   },
   "Emotes": [
     {
-      "Name": "SexyMan",
-      "Discord": "<:SexyMan:532292716629852169>",
-      "Twitch": "DansGame"
+      "Name": "harbonCOZY",
+      "Twitch": "harbonCOZY",
+      "Discord": "<:harbonCOZY:533802016053526564>"
+    },
+    {
+      "Name": "harbonPLS",
+      "Discord": "<a:harbonPLS:523102844279062528>",
+      "Twitch": "harbonPLS"
+    },
+    {
+      "Name": "harbonLICENCE",
+      "Discord": "<:harbonLICENCE:512576176003219467>",
+      "Twitch": "harbonLICENCE"
+    },
+    {
+      "Name": "harbonTREE",
+      "Discord": "<:harbonTREE:493211902864785408>",
+      "Twitch": "harbonTREE"
+    },
+    {
+      "Name": "harbonLOVE",
+      "Discord": "<:harbonLOVE:511970257619910656>",
+      "Twitch": "harbonLOVE"
+    },
+    {
+      "Name": "harbonSLEEPER",
+      "Discord": "<:harbonSLEEPER:424759846663880706>",
+      "Twitch": "harbonSLEEPER"
+    },
+    {
+      "Name": "harbonDOC",
+      "Discord": "<:harbonDOC:486210248059912194>",
+      "Twitch": "harbonDOC"
+    },
+    {
+      "Name": "harbonSOCIETY",
+      "Discord": "<:harbonSOCIETY:438742417466720276>",
+      "Twitch": "harbonSOCIETY"
+    },
+    {
+      "Name": "harbonCITO",
+      "Discord": "<:harbonCITO:438851118601207848>",
+      "Twitch": "harbonCITO"
+    },
+    {
+      "Name": "harbonPRIDE",
+      "Discord": "<:harbonPRIDE:454823016468185088>",
+      "Twitch": "harbonPRIDE"
+    },
+    {
+      "Name": "harbonHANDS",
+      "Discord": "<:harbonHANDS:533803073227849729>",
+      "Twitch": "harbonHANDS"
+    },
+    {
+      "Name": "harbonHANDSUP",
+      "Discord": "<:harbonHANDSUP:459593207366418433>",
+      "Twitch": "harbonHANDSUP"
+    },
+    {
+      "Name": "harbonHOP",
+      "Discord": "<a:harbonHOP:462407475358990337>",
+      "Twitch": "harbonHOP"
+    },
+    {
+      "Name": "harbonPRIME",
+      "Discord": "<:harbonPRIME:472163710673223680>",
+      "Twitch": "harbonPRIME"
+    },
+    {
+      "Name": "harbonYIKES",
+      "Discord": "<:harbonYIKES:474430847202623488>",
+      "Twitch": "harbonYIKES"
+    },
+    {
+      "Name": "harbonHYPER",
+      "Discord": "<:harbonHYPER:474430939460534272>",
+      "Twitch": "harbonHYPER"
+    },
+    {
+      "Name": "harbonLURK",
+      "Discord": "<a:harbonLURK:519485200368009216>",
+      "Twitch": "harbonLURK"
+    },
+    {
+      "Name": "harbonBLESS",
+      "Discord": "<:harbonBLESS:475268142898085889>",
+      "Twitch": "harbonBLESS"
+    },
+    {
+      "Name": "harbonA",
+      "Discord": "<:harbonA:486210663866171403>",
+      "Twitch": "harbonA"
+    },
+    {
+      "Name": "harbonMEGA1",
+      "Discord": "<:harbonMEGA1:475198231610130432>",
+      "Twitch": "harbonMEGA1"
+    },
+    {
+      "Name": "harbonMEGA2",
+      "Discord": "<:harbonMEGA2:475198230934716426>",
+      "Twitch": "harbonMEGA2"
+    },
+    {
+      "Name": "harbonMEGA3",
+      "Discord": "<:harbonMEGA3:475198229668036649>",
+      "Twitch": "harbonMEGA3"
+    },
+    {
+      "Name": "harbonMEGA4",
+      "Discord": "<:harbonMEGA4:475198230221684738>",
+      "Twitch": "harbonMEGA4"
+    },
+    {
+      "Name": "pick",
+      "Discord": "",
+      "Twitch": ":pick:"
+    },
+    {
+      "Name": "harbonT",
+      "Discord": "<:harbonT:504976474604830730>",
+      "Twitch": "harbonT"
+    },
+    {
+      "Name": "harbonHOMELESS",
+      "Discord": "<:harbonHOMELESS:530457152653885441>",
+      "Twitch": "harbonHOMELESS"
     }
   ],
   "CommandSetup": {
     "FallbackMessage": {
-      "TwitchEnabled": true,
-      "DiscordEnabled": true,
+      "TwitchEnabled": false,
+      "DiscordEnabled": false,
       "Response": "@<SenderUser> What on earth are you trying to do? @<SexyMan>"
     },
     "ErrorResponses": {
@@ -41,7 +166,12 @@
       "DiscordEnabled": true,
       "RequireLive": false,
       "Commands": {
-        "discord": "@<SenderUser> link"
+        "discord": "@<SenderUser> https://discord.gg/EkKSPMV",
+        "merch": "@<SenderUser> https://teespring.com/en-GB/stores/harbonator-merch - for NA shipping: https://teespring.com/en-GB/stores/harbonator-merch-na-edition",
+        "twitter": "@<SenderUser> https://twitter.com/TheHarbonator",
+        "youtube": "@<SenderUser> https://www.youtube.com/user/TheHarbonator",
+        "snapchat": "@<SenderUser> https://www.snapchat.com/add/harbonator",
+        "minecraft": "@<SenderUser> https://youtu.be/yNEk-N4V6ZY"
       }
     },
     "Balance": {
@@ -50,7 +180,9 @@
       "RequireLive": false,
       "Commands": [
         "bal",
-        "balance"
+        "balance",
+        "owc",
+        "owlcoin"
       ],
       "Responses": {
         "OwnBalance": "@<SenderUser> You have @<Amount> @<CurrencyName>",
@@ -76,7 +208,7 @@
       "DiscordEnabled": true,
       "RequireLive": false,
       "MinimumPayment": 100,
-      "WinChance": 45,
+      "WinChance": 40,
       "WinMultiplyer": 1,
       "Commands": [
         "gamble",
@@ -120,14 +252,14 @@
     },
     "Fish": {
       "TwitchEnabled": true,
-      "DiscordEnabled": true,
+      "DiscordEnabled": false,
       "RequireLive": true,
       "Commands": [
         "fish"
       ],
       "Responses": {
-        "Started": "@<SenderUser> You started fishing!",
-        "Finished": "@<SenderUser> You got a @<OtherString> Worth @<Amount> @<CurrencyName>",
+        "Started": "@<SenderUser> You started fishing! :fishing_pole_and_fish: @<harbonT>",
+        "Finished": "@<SenderUser> You got @<OtherString> Worth @<Amount> @<CurrencyName>",
         "NotEnough": "@<SenderUser> You dont have enough @<CurrencyName>",
         "AlreadyFishing": "@<SenderUser> You are already fishing!"
       },
@@ -139,14 +271,64 @@
       "MaxTime": 300,
       "Items": [
         {
-          "Name": "Box of Fish",
-          "Chance": 50,
+          "Chance": 10,
+          "Name": "Chest o' Owlcoin",
           "Reward": 500
         },
         {
-          "Name": "Sock",
-          "Chance": 100,
-          "Reward": 5
+          "Chance": 15,
+          "Name": "Wallet",
+          "Reward": 250
+        },
+        {
+          "Chance": 5,
+          "Name": "@<harbonT> Relic",
+          "Reward": 1000
+        },
+        {
+          "Chance": 10,
+          "Name": "Dead Nan",
+          "Reward": 0
+        },
+        {
+          "Chance": 5,
+          "Name": "@<harbonTREE> leaf",
+          "Reward": 5000
+        },
+        {
+          "Chance": 15,
+          "Name": "@<harbonDOC> prototype Glasses",
+          "Reward": 750
+        },
+        {
+          "Chance": 10,
+          "Name": "Twitch Prime Subscription",
+          "Reward": 1000
+        },
+        {
+          "Chance": 10,
+          "Name": "Single OwlCoin",
+          "Reward": 1
+        },
+        {
+          "Chance": 5,
+          "Name": "Soggy Wank Sock",
+          "Reward": 0
+        },
+        {
+          "Chance": 5,
+          "Name": "Hot Gamer Girl",
+          "Reward": 2500
+        },
+        {
+          "Chance": 10,
+          "Name": "Can of Tango",
+          "Reward": 500
+        },
+        {
+          "Chance": 1,
+          "Name": "Prime Ad",
+          "Reward": 25000
         }
       ]
     },
@@ -218,6 +400,41 @@
           "Name": "daddy",
           "URL": "https://cdn.streamelements.com/uploads/8af75b0b-32f8-48b8-8641-6e86cb2c1506.ogg",
           "Cost": 100
+        },
+        {
+          "Name": "what about diamonds",
+          "URL": "https://cdn.streamelements.com/uploads/f248e432-e4b5-4f52-85cb-c6d517d38bbd.ogg",
+          "Cost": 100
+        },
+        {
+          "Name": "hot cum everywhere",
+          "URL": "https://cdn.streamelements.com/uploads/1bcb2eb6-d692-415f-847c-4697cb326299.ogg",
+          "Cost": 100
+        },
+        {
+          "Name": "yeah",
+          "URL": "https://cdn.streamelements.com/uploads/c60362fa-bf7d-47d0-9aa2-7d7315d30044.ogg",
+          "Cost": 100
+        },
+        {
+          "Name": "giggles",
+          "URL": "https://cdn.streamelements.com/uploads/6bfb89ba-0ff2-4c58-ab63-a07d4a34c51e.mp3",
+          "Cost": 100
+        },
+        {
+          "Name": "slaves",
+          "URL": "https://cdn.streamelements.com/uploads/adc85888-65cb-4e6e-9486-0f44dab96457.mp3",
+          "Cost": 100
+        },
+        {
+          "Name": "reeeeeeeeeeeee",
+          "URL": "https://cdn.streamelements.com/uploads/d8e32099-d2f2-420f-846d-f49d70b9a278.wav",
+          "Cost": 100
+        },
+        {
+          "Name": "monkey noises",
+          "URL": "https://cdn.streamelements.com/uploads/d8faabe7-7f12-4a38-8616-a34b5e151fd1.ogg",
+          "Cost": 100
         }
       ]
     },
@@ -257,7 +474,7 @@
     },
     "NightBot": {
       "TwitchEnabled": true,
-      "DiscordEnabled": true,
+      "DiscordEnabled": false,
       "Responses": {
         "APIError": "@<SenderUser> The following issue occured: @<OtherString>"
       },
@@ -307,7 +524,7 @@
         ],
         "Responses": {
           "NotEnough": "@<SenderUser> You dont have enough @<CurrencyName>",
-          "Requested": "@<SenderUser> Requested @<OtherString>"
+          "Requested": "@<SenderUser> Requested @<OtherString> in position @<Amount>"
         }
       },
       "Moderator": {
@@ -341,6 +558,14 @@
             "songremove",
             "removesong",
             "remove"
+          ]
+        },
+        "Volume": {
+          "Response": "@<SenderUser> Set volume to @<Amount>",
+          "Commands": [
+            "songvolume",
+            "volumesong",
+            "volume"
           ]
         }
       }
@@ -388,14 +613,30 @@
     "MinimumDelay": 90,
     "Messages": [
       {
-        "Body": "I Want To Die",
-        "Delay": 600
+        "Body": "@<harbonPLS> @<harbonCOZY> @<harbonLICENCE> @<harbonTREE> @<harbonLOVE> @<harbonSLEEPER> @<harbonDOC> @<harbonSOCIETY> @<harbonCITO> @<harbonPRIDE> @<harbonHANDS> @<harbonHANDSUP> @<harbonHOP> @<harbonPRIME> @<harbonYIKES> @<harbonHOMELESS> @<harbonHYPER> @<harbonLURK> @<harbonA> @<harbonMEGA1> @<harbonMEGA2> @<harbonMEGA3> @<harbonMEGA4>",
+        "Delay": 1200
+      },
+      {
+        "Body": "Amazon prime allows you to subscribe to the Harbonator for FREE. 1. Click here and link your account: https://twitch.amazon.com/prime 2. Click the subscribe button and select your Amazon Prime as payment method. Its is that simple to support your favourite streamer :))))).",
+        "Delay": 2700
+      },
+      {
+        "Body": "@<pick> @<harbonT> Don't mind me, just mining some Owlcoin @<pick> @<harbonT>",
+        "Delay": 3600
+      },
+      {
+        "Body": "If you clip a good play or a stupid moment please post it in my discords #twitch_chat_and_clips channel.",
+        "Delay": 3000
+      },
+      {
+        "Body": "Consider getting the BTTV and FrankerFaceZ plugins to be able to see extra emotes!",
+        "Delay": 2400
       }
     ]
   },
   "Raffle": {
     "TwitchEnabled": true,
-    "DiscordEnabled": true,
+    "DiscordEnabled": false,
     "RequireLive": true,
     "Triggers": {
       "Delay": 900,
@@ -420,8 +661,8 @@
     ],
     "Responses": {
       "LeadUp": "/me Raffle for @<Amount> @<CurrencyName> has started! You have @<OtherString> to type @<Prefix>join",
-      "Winner": "/me Raffle for @<Amount> @<CurrencyName> has finished and @<TargetUser> won @<Amount> @<CurrencyName>!!!",
-      "OtherWinner": "/me Raffle for @<Amount> @<CurrencyName> has finished and @<OtherString> won @<Amount> @<CurrencyName>!!!",
+      "Winner": "/me Raffle for @<Amount> @<CurrencyName> has finished and @<TargetUser> won!!!",
+      "OtherWinner": "/me Raffle for @<Amount> @<CurrencyName> has finished and @<OtherString> won!!!",
       "NoOne": "/me Raffle for @<Amount> @<CurrencyName> was canceled as no one joined..."
     },
     "Joining": {
@@ -436,28 +677,42 @@
   },
   "AutoRewards": {
     "Donating": {
+      "RequireLive": true,
       "RewardPerWhole": 5000,
       "Response": "@<TargetUser> Donated @<OtherString> and recived @<Amount> @<CurrencyName>"
     },
     "Viewing": {
-      "RewardPerMinute": 1000
+      "RewardPerMinute": 30
     },
     "Chatting": {
       "Discord": {
         "Interval": 600,
-        "Reward": 1000
+        "Reward": 100
       },
       "Twitch": {
         "Interval": 600,
-        "Reward": 1000
+        "Reward": 100
       }
+    },
+    "DiscordSubNotifications": false,
+    "NewSub": {
+      "Reward": 5000,
+      "Response": "@<TargetUser> Subbed and received @<Amount> @<CurrenyName>"
+    },
+    "ReSub": {
+      "Reward": 5000,
+      "Response": "@<TargetUser> Resubbed and received @<Amount> @<CurrenyName>"
+    },
+    "GiftSub": {
+      "Reward": 5000,
+      "Response": "@<TargetUser> Gifted a sub to @<OtherString> and received @<Amount> @<CurrenyName>"
     }
   },
   "LiveNotifications": {
     "TwitchEnabled": true,
     "DiscordEnabled": true,
     "Enabled": true,
-    "SendToDiscordNotificationChannel": true,
+    "SendToDiscordNotificationChannel": false,
     "Commands": [
       "notifications",
       "notification",
