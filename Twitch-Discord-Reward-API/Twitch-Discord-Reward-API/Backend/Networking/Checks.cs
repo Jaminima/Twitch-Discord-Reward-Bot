@@ -69,8 +69,9 @@ namespace Twitch_Discord_Reward_API.Backend.Networking
                 if (C.ToString() == "@") { AtCount++; }
                 else if (!NumberSet.Contains(C) && !LowerSet.Contains(C) && !UpperSet.Contains(C)&&C.ToString()!=".") { return false; }
             }
+            if (AtCount != 1) { return false; }
             if (!Email.Split("@".ToCharArray())[1].Contains(".")) { return false; }
-            return AtCount == 1;
+            return true;
         }
 
         public static bool JSONLayoutCompare(Newtonsoft.Json.Linq.JToken Layout, Newtonsoft.Json.Linq.JToken Data)
