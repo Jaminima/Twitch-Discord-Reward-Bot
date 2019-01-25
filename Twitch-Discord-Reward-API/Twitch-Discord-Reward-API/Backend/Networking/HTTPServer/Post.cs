@@ -193,23 +193,13 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     Backend.Data.Objects.Login L = new Data.Objects.Login();
                     L.Email = Context.Headers["Email"];
                     L.UserName = Context.Headers["UserName"];
+                    if (L.UserName != null) { if (!Checks.IsAlphaNumericString(L.UserName)) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Username is not AlphaNumeric"; return Context.ResponseObject; } }
+                    if (L.Email != null) { if (!Checks.IsValidEmail(L.Email)) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Email is not valid"; return Context.ResponseObject; } }
                     if (Data.Objects.Login.FromEmail(L.Email) == null && Data.Objects.Login.FromUserName(L.UserName) == null)
                     {
                         string RawPassword = Context.Headers["Password"];
                         if (RawPassword.Length < 8) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Password too short"; return Context.ResponseObject; }
-                        bool HasNumeric = false, HasCapital = false, HasSpecial = false;
-                        Char[] LowerSet = "abcdefghijklmnopqrstuvwxyz".ToCharArray(),
-                            UpperSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray(),
-                            NumberSet = "0123456789".ToCharArray();
-                        foreach (Char C in RawPassword)
-                        {
-                            if (UpperSet.Contains(C)) { HasCapital = true; }
-                            else if (NumberSet.Contains(C)) { HasNumeric = true; }
-                            else if (!LowerSet.Contains(C)) { HasSpecial = true; }
-                        }
-                        if (!HasCapital) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Password requires a Capital letter"; return Context.ResponseObject; }
-                        if (!HasNumeric) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Password requires a Numeric character"; return Context.ResponseObject; }
-                        if (!HasSpecial) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Password requires a Special character"; return Context.ResponseObject; }
+                        if (!Checks.IsValidPassword(RawPassword)) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Password requires at least 1 Capital, 1 Number, 1 Special"; return Context.ResponseObject; }
                         L.HashedPassword = Backend.Init.ScryptEncoder.Encode(RawPassword);
                         L.Save();
                     }
@@ -260,7 +250,10 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     if (L != null)
                     {
                         Data.Objects.Bot B = new Data.Objects.Bot();
-                        if (Context.Headers.AllKeys.Contains("BotName")) { B.BotName = Context.Headers["BotName"]; }
+                        if (Context.Headers.AllKeys.Contains("BotName")) {
+                            B.BotName = Context.Headers["BotName"];
+                            if (!Checks.IsAlphaNumericString(B.BotName)) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, BotName is not AlphaNumeric"; return Context.ResponseObject; }
+                        }
                         B.OwnerLogin = Data.Objects.Login.FromID(L.ID);
                         B.Save();
                         B = Data.Objects.Bot.FromLogin(L.ID, true).Last();
