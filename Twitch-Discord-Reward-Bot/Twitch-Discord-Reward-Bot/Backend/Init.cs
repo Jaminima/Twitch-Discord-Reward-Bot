@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace Twitch_Discord_Reward_Bot.Backend
 {
@@ -57,19 +57,20 @@ namespace Twitch_Discord_Reward_Bot.Backend
         public Bots.Commands.TimeEvents TimeEvents;
         public Newtonsoft.Json.Linq.JToken CommandConfig, LoginConfig;
         public Dictionary<string, Data.APIIntergrations.AccessToken> AccessTokens = new Dictionary<string, Data.APIIntergrations.AccessToken> { };
-        bool Isrunning = false;
+        public bool Isrunning = false;
 
         public BotInstance(Data.APIIntergrations.RewardCurrencyAPI.Objects.Currency Currency)
         {
             this.Currency = Currency;
             this.CommandConfig = this.Currency.CommandConfig;
             this.LoginConfig = this.Currency.LoginConfig;
+            new Thread(() => CheckBotsAlive()).Start();
             Start();
         }
 
         public void Start()
         {
-            if (Isrunning) { return; }
+            if (Isrunning) { CheckBotsAlive(); return; }
             Isrunning = true;
             this.CommandHandler = new Bots.Commands.CommandHandler(this);
             try { DiscordBot = new Backend.Bots.DiscordBot.Instance(this); } catch { }
@@ -77,6 +78,19 @@ namespace Twitch_Discord_Reward_Bot.Backend
             System.Threading.Thread.Sleep(5000);
             this.TimeEvents = new Bots.Commands.TimeEvents();
             this.TimeEvents.Start(this);
+        }
+
+        public void CheckBotsAlive()
+        {
+            while (true)
+            {
+                Thread.Sleep(10000);
+                if (Isrunning)
+                {
+                    if (!TwitchBot.Client.IsConnected) { TwitchBot.Client.Connect(); }
+                    if (DiscordBot.Client.ConnectionState == Discord.ConnectionState.Disconnected) { DiscordBot.Client.StartAsync(); }
+                }
+            }
         }
 
         public void Stop()

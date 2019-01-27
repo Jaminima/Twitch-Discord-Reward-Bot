@@ -484,16 +484,16 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                             }
                                         }
                                     }
-                                    if (MostSuitableAlert.Count == 0) { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Responses"]["InvalidAlert"].ToString(), e); }
-                                    KeyValuePair<int, int> ChosenAlert = new KeyValuePair<int, int> (0,MostSuitableAlert[0]);
-                                    for (int i = 0; i < MostSuitableAlert.Count; i++) {
-                                        if (ChosenAlert.Value > MostSuitableAlert[i]) { ChosenAlert = new KeyValuePair<int, int> (i,MostSuitableAlert[i]); }
-                                        else if (ChosenAlert.Value == MostSuitableAlert[i])
+                                    if (MostSuitableAlert.Count == 0) { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Responses"]["InvalidAlert"].ToString(), e); return; }
+                                    KeyValuePair<int, int> ChosenAlert = new KeyValuePair<int, int> (0,MostSuitableAlert.First().Value);
+                                    foreach (int Key in MostSuitableAlert.Keys) {
+                                        if (ChosenAlert.Value > MostSuitableAlert[Key]) { ChosenAlert = new KeyValuePair<int, int> (Key, MostSuitableAlert[Key]); }
+                                        else if (ChosenAlert.Value == MostSuitableAlert[Key])
                                         {
-                                            if (BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"][i]["Name"].ToString().Split(" ".ToCharArray()).Length
+                                            if (BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"][Key]["Name"].ToString().Split(" ".ToCharArray()).Length
                                                 < BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"][ChosenAlert.Key]["Name"].ToString().Split(" ".ToCharArray()).Length)
                                             {
-                                                ChosenAlert= new KeyValuePair<int, int>(i, MostSuitableAlert[i]);
+                                                ChosenAlert= new KeyValuePair<int, int>(Key, MostSuitableAlert[Key]);
                                             }
                                         }
                                     }

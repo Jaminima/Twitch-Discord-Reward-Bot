@@ -97,6 +97,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             Newtonsoft.Json.Linq.JToken Donation = NetData["data"][i];
                             await RewardDonator(Donation,DonationReward);
                         }
+                        else { break; }
                     }
                     Data.FileHandler.SaveJSON("./Data/DonationCache/" + BotInstance.Currency.ID + ".json", NetData);
                 }
