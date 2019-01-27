@@ -59,8 +59,9 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
                 new KeyValuePair<string, string>("Value",Value.ToString()),
                 new KeyValuePair<string, string>("Operator",Operator)
             };
-            WebRequests.PostRequest("viewer", Headers, true);
-            ResponseObject RObj = WebRequests.GetRequest("viewer", Headers);
+            ResponseObject RObj = WebRequests.PostRequest("viewer", Headers, true);
+            if (Operator == "+") { Bank.Balance += Value; }
+            else if (Operator == "-") { Bank.Balance -= Value; }
             if (RObj.Code == 200)
             {
                 return true;
@@ -74,6 +75,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
             {
                 if (e.MessageType == Bots.MessageType.Discord)
                 {
+                    if (e.Viewer.TwitchID != "") { return false; }
                     try
                     {
                         WebRequest Req = WebRequest.Create("https://discordapp.com/api/v6/users/" + ID + "/profile");
@@ -86,34 +88,19 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
                         {
                             if (Connection["type"].ToString() == "twitch")
                             {
-                                List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("CurrencyID", BotInstance.Currency.ID.ToString()), new KeyValuePair<string, string>("TwitchID", Connection["id"].ToString()) };
-                                ResponseObject RObj = WebRequests.GetRequest("viewer", Headers);
-                                if (RObj.Code == 200)
+                                Viewer Twitch = FromTwitchDiscord(Bots.MessageType.Twitch, BotInstance, Connection["id"].ToString());
+                                Viewer Discord = e.Viewer;
+                                if (Twitch.DiscordID == "" && Discord.TwitchID == "")
                                 {
-                                    Viewer Twitch = FromJson(RObj.Data);
-                                    Viewer Discord = FromTwitchDiscord(e, BotInstance, e.SenderID);
-                                    if (Twitch.DiscordID == "" && Discord.TwitchID == "")
-                                    {
-                                        AdjustBalance(Twitch, Twitch.Balance, "-");
-                                        AdjustBalance(Discord, Twitch.Balance, "+");
-                                        Headers = new List<KeyValuePair<string, string>> {
+                                    AdjustBalance(Twitch, Twitch.Balance, "-");
+                                    AdjustBalance(Discord, Twitch.Balance, "+");
+                                    List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> {
                                             new KeyValuePair<string, string>("TwitchID", Connection["id"].ToString()),
                                             new KeyValuePair<string, string>("DiscordID",ID),
                                             new KeyValuePair<string, string>("ID",Discord.ID.ToString())
                                         };
-                                        RObj = WebRequests.PostRequest("viewer", Headers, true);
-                                        Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("ID", Twitch.ID.ToString()) };
-                                        RObj = WebRequests.PostRequest("viewer", Headers, true);
-                                    }
-                                }
-                                else
-                                {
-                                    Viewer Discord = FromTwitchDiscord(e, BotInstance, e.SenderID);
-                                    Headers = new List<KeyValuePair<string, string>> {
-                                        new KeyValuePair<string, string>("TwitchID", Connection["id"].ToString()),
-                                        new KeyValuePair<string, string>("DiscordID",ID),
-                                        new KeyValuePair<string, string>("ID",Discord.ID.ToString())
-                                    };
+                                    ResponseObject RObj = WebRequests.PostRequest("viewer", Headers, true);
+                                    Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("ID", Twitch.ID.ToString()) };
                                     RObj = WebRequests.PostRequest("viewer", Headers, true);
                                 }
                             }

@@ -19,11 +19,11 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 
         public void Handle(object sender, OnMessageReceivedArgs e)
         {
-            Handle(sender, StandardisedMessageRequest.FromTwitch(e));
+            if (e.ChatMessage.Username != BotInstance.TwitchBot.Client.TwitchUsername) { Handle(sender, StandardisedMessageRequest.FromTwitch(e, BotInstance)); }
         }
         public async Task Handle(SocketMessage e)
         {
-            Handle(null, StandardisedMessageRequest.FromDiscord(e));
+            if (e.Author.Id != BotInstance.DiscordBot.Client.CurrentUser.Id) { Handle(null, StandardisedMessageRequest.FromDiscord(e, BotInstance)); }
         }
 
         public void Handle(object sender, StandardisedMessageRequest e)
@@ -66,7 +66,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         {
                             if (e.SegmentedBody.Length == 2)
                             {
-                                Objects.Viewer V = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                Objects.Viewer V = e.Viewer;
                                 if (e.SegmentedBody[1].ToLower() == "on")
                                 {
                                     V.LiveNotifcations = true;
@@ -93,10 +93,9 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             {
                                 if (e.SegmentedBody.Length == 1)
                                 {
-                                    Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID);
-                                    if (B != null)
+                                    if (e.Viewer != null)
                                     {
-                                        await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Balance"]["Responses"]["OwnBalance"].ToString(), e, null, B.Balance);
+                                        await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Balance"]["Responses"]["OwnBalance"].ToString(), e, null, e.Viewer.Balance);
                                     }
                                     else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
                                 }
@@ -122,10 +121,9 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         {
                             if (e.SegmentedBody.Length == 1)
                             {
-                                Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID);
-                                if (B != null)
+                                if (e.Viewer != null)
                                 {
-                                    string Duration = AgeString(TimeSpan.FromMinutes(B.WatchTime));
+                                    string Duration = AgeString(TimeSpan.FromMinutes(e.Viewer.WatchTime));
                                     await SendMessage(BotInstance.CommandConfig["CommandSetup"]["WatchTime"]["Responses"]["Self"].ToString(), e, OtherString:Duration);
                                 }
                                 else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
@@ -156,7 +154,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                     StandardisedUser U = IDFromMessageSegment(e.SegmentedBody[1], e);
                                     if (U.ID != null)
                                     {
-                                        Objects.Viewer Self = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID),
+                                        Objects.Viewer Self = e.Viewer,
                                             Other = Objects.Viewer.FromTwitchDiscord(e, BotInstance, U.ID);
                                         int ChangeBy = ValueFromMessageSegment(e.SegmentedBody[2], Self),
                                             MinPayment = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Pay"]["MinimumPayment"].ToString());
@@ -200,7 +198,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             {
                                 if (e.SegmentedBody.Length == 2)
                                 {
-                                    Objects.Viewer Self = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                    Objects.Viewer Self = e.Viewer;
                                     int ChangeBy = ValueFromMessageSegment(e.SegmentedBody[1], Self),
                                            MinPayment = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Gamble"]["MinimumPayment"].ToString()),
                                            WinChance = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Gamble"]["WinChance"].ToString()),
@@ -243,7 +241,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             {
                                 if (e.SegmentedBody.Length == 2)
                                 {
-                                    Objects.Viewer Self = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                    Objects.Viewer Self = e.Viewer;
                                     int ChangeBy = ValueFromMessageSegment(e.SegmentedBody[1], Self),
                                         MinPayment = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Slots"]["MinimumPayment"].ToString()),
                                         WinChance = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Slots"]["WinChance"].ToString()),
@@ -302,7 +300,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             {
                                 if (e.SegmentedBody.Length == 1)
                                 {
-                                    Objects.Viewer Self = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                    Objects.Viewer Self = e.Viewer;
                                     int ViewerCost = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Fish"]["Cost"]["Viewer"].ToString()),
                                         SubscriberCost = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Fish"]["Cost"]["Subscriber"].ToString());
                                     int Cost = ViewerCost;
@@ -340,7 +338,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                     StandardisedUser Target = IDFromMessageSegment(e.SegmentedBody[1], e);
                                     if (Target != null)
                                     {
-                                        Objects.Viewer Self = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID),
+                                        Objects.Viewer Self = e.Viewer,
                                             TargetBank = Objects.Viewer.FromTwitchDiscord(e, BotInstance, Target.ID);
                                         if (Self != null && TargetBank != null)
                                         {
@@ -396,50 +394,50 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Duel"], e) &&
                             JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Accepting"]["Commands"], Command))
                         {
-                            StandardisedUser U = new StandardisedUser();
-                            U.ID = e.SenderID; U.UserName = e.SenderUserName;
-                            if (BotInstance.TimeEvents.UserDueling(U))
+                            if (BotInstance.TimeEvents.UserDueling(e.User))
                             {
-                                KeyValuePair<DateTime, Duel> TDuel = BotInstance.TimeEvents.Duels.Where(x => x.Value.Acceptor.ID == U.ID || x.Value.Creator.ID == U.ID).First();
-                                BotInstance.TimeEvents.Duels.Remove(TDuel.Key);
-                                Objects.Viewer Acceptor = Objects.Viewer.FromTwitchDiscord(e, BotInstance, TDuel.Value.Acceptor.ID),
-                                    Creator = Objects.Viewer.FromTwitchDiscord(e, BotInstance, TDuel.Value.Creator.ID);
-                                if (Acceptor != null && Creator != null)
+                                KeyValuePair<DateTime, Duel> TDuel = BotInstance.TimeEvents.Duels.Where(x => x.Value.Acceptor.ID == e.User.ID || x.Value.Creator.ID == e.User.ID).First();
+                                if (TDuel.Value.Acceptor.ID == e.User.ID)
                                 {
-                                    if (TDuel.Value.ChangeBy <= Acceptor.Balance)
+                                    BotInstance.TimeEvents.Duels.Remove(TDuel.Key);
+                                    Objects.Viewer Acceptor = e.Viewer,
+                                        Creator = Objects.Viewer.FromTwitchDiscord(e, BotInstance, TDuel.Value.Creator.ID);
+                                    if (Acceptor != null && Creator != null)
                                     {
-                                        if (TDuel.Value.ChangeBy <= Creator.Balance)
+                                        if (TDuel.Value.ChangeBy <= Acceptor.Balance)
                                         {
-                                            int Winner = Init.Rnd.Next(0, 2);
-                                            if (Winner == 0)
+                                            if (TDuel.Value.ChangeBy <= Creator.Balance)
                                             {
-                                                Objects.Viewer.AdjustBalance(Acceptor, TDuel.Value.ChangeBy, "+");
-                                                Objects.Viewer.AdjustBalance(Creator, TDuel.Value.ChangeBy, "-");
-                                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Accepting"]["Responses"]["Win"].ToString(), e, TDuel.Value.Creator, TDuel.Value.ChangeBy);
+                                                int Winner = Init.Rnd.Next(0, 2);
+                                                if (Winner == 0)
+                                                {
+                                                    Objects.Viewer.AdjustBalance(Acceptor, TDuel.Value.ChangeBy, "+");
+                                                    Objects.Viewer.AdjustBalance(Creator, TDuel.Value.ChangeBy, "-");
+                                                    await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Accepting"]["Responses"]["Win"].ToString(), e, TDuel.Value.Creator, TDuel.Value.ChangeBy);
+                                                }
+                                                if (Winner == 1)
+                                                {
+                                                    Objects.Viewer.AdjustBalance(Acceptor, TDuel.Value.ChangeBy, "-");
+                                                    Objects.Viewer.AdjustBalance(Creator, TDuel.Value.ChangeBy, "+");
+                                                    await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Accepting"]["Responses"]["Lose"].ToString(), e, TDuel.Value.Creator, TDuel.Value.ChangeBy);
+                                                }
                                             }
-                                            if (Winner == 1)
-                                            {
-                                                Objects.Viewer.AdjustBalance(Acceptor, TDuel.Value.ChangeBy, "-");
-                                                Objects.Viewer.AdjustBalance(Creator, TDuel.Value.ChangeBy, "+");
-                                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Accepting"]["Responses"]["Lose"].ToString(), e, TDuel.Value.Creator, TDuel.Value.ChangeBy);
-                                            }
+                                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Accepting"]["Responses"]["OtherNotEnough"].ToString(), e, TDuel.Value.Creator); }
                                         }
-                                        else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Accepting"]["Responses"]["OtherNotEnough"].ToString(), e, TDuel.Value.Creator); }
+                                        else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Accepting"]["Responses"]["SelfNotEnough"].ToString(), e); }
                                     }
-                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Accepting"]["Responses"]["SelfNotEnough"].ToString(), e); }
+                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
                                 }
-                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
+                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Accepting"]["Responses"]["SelfAccept"].ToString(), e); }
                             }
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Accepting"]["Responses"]["NotDueling"].ToString(), e); }
                         }
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Duel"], e) &&
                             JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Denying"]["Commands"], Command))
                         {
-                            StandardisedUser U = new StandardisedUser();
-                            U.ID = e.SenderID; U.UserName = e.SenderUserName;
-                            if (BotInstance.TimeEvents.UserDueling(U))
+                            if (BotInstance.TimeEvents.UserDueling(e.User))
                             {
-                                KeyValuePair<DateTime, Duel> TDuel = BotInstance.TimeEvents.Duels.Where(x => x.Value.Acceptor.ID == U.ID || x.Value.Creator.ID == U.ID).First();
+                                KeyValuePair<DateTime, Duel> TDuel = BotInstance.TimeEvents.Duels.Where(x => x.Value.Acceptor.ID == e.User.ID || x.Value.Creator.ID == e.User.ID).First();
                                 BotInstance.TimeEvents.Duels.Remove(TDuel.Key);
                                 if (e.SenderID == TDuel.Value.Acceptor.ID) { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Denying"]["Responses"]["Canceled"].ToString(), e, TDuel.Value.Creator); }
                                 if (e.SenderID == TDuel.Value.Creator.ID) { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Duel"]["Denying"]["Responses"]["Canceled"].ToString(), e, TDuel.Value.Acceptor); }
@@ -449,12 +447,10 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         else if (CommandEnabled(BotInstance.CommandConfig["Raffle"], e) &&
                             JArrayContainsString(BotInstance.CommandConfig["Raffle"]["Joining"]["Commands"], Command))
                         {
-                            StandardisedUser U = new StandardisedUser();
-                            U.ID = e.SenderID; U.UserName = e.SenderUserName;
-                            if (!BotInstance.TimeEvents.UserRaffleing(U))
+                            if (!BotInstance.TimeEvents.UserRaffleing(e.User))
                             {
                                 Raffler R = new Raffler();
-                                R.User = U; R.RequestedFrom = e.MessageType;
+                                R.User = e.User; R.RequestedFrom = e.MessageType;
                                 BotInstance.TimeEvents.RaffleParticipants.Add(R);
                                 if (BotInstance.CommandConfig["Raffle"]["Joining"]["Responses"]["Joined"].ToString() != "") { await SendMessage(BotInstance.CommandConfig["Raffle"]["Joining"]["Responses"]["Joined"].ToString(), e); }
                             }
@@ -498,7 +494,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                         }
                                     }
                                     Newtonsoft.Json.Linq.JToken Alert = BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"][ChosenAlert.Key];
-                                    Objects.Viewer V = Objects.Viewer.FromTwitchDiscord(e,BotInstance,e.SenderID);
+                                    Objects.Viewer V = e.Viewer;
                                     if (V != null)
                                     {
                                         int Cost = int.Parse(Alert["Cost"].ToString());
@@ -565,7 +561,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 int Cost = int.Parse(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Cost"]["Viewer"].ToString()),
                                     SubscriberCost = int.Parse(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Cost"]["Subscriber"].ToString());
                                 if (IsSubscriber(e)) { Cost = SubscriberCost; }
-                                Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                Objects.Viewer B = e.Viewer;
                                 if (B.Balance >= Cost)
                                 {
                                     Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Nightbot.RequestSong(BotInstance, Request);
@@ -596,6 +592,10 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                         JData = Data.APIIntergrations.Nightbot.RemoveID(BotInstance, SongRequestHistory[e.SenderID]);
                                         if (JData["status"].ToString() == "200")
                                         {
+                                            int Cost = int.Parse(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Cost"]["Viewer"].ToString()),
+                                                SubscriberCost = int.Parse(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Cost"]["Subscriber"].ToString());
+                                            if (IsSubscriber(e)) { Cost = SubscriberCost; }
+                                            Objects.Viewer.AdjustBalance(e.Viewer, Cost, "-");
                                             await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Cancel"]["Responses"]["CanceledSong"].ToString(), e);
                                         }
                                         else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
@@ -652,7 +652,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             {
                                 if (e.SegmentedBody.Length == 3)
                                 {
-                                    Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e, BotInstance, e.SenderID);
+                                    Objects.Viewer B = e.Viewer;
                                     int ChangeBy = ValueFromMessageSegment(e.SegmentedBody[2], B);
                                     if (ChangeBy != -1)
                                     {
@@ -831,10 +831,9 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         if (((TimeSpan)(DateTime.Now - V.LastTwitchMessage)).TotalSeconds >= TwitchDelay)
                         {
                             V.LastTwitchMessage = DateTime.Now;
-                            Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e.MessageType, BotInstance, e.SenderID);
-                            if (B != null)
+                            if (e.Viewer != null)
                             {
-                                Objects.Viewer.AdjustBalance(B, TwitchReward, "+");
+                                Objects.Viewer.AdjustBalance(e.Viewer, TwitchReward, "+");
                             }
                         }
                     }
@@ -843,10 +842,9 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         if (((TimeSpan)(DateTime.Now - V.LastTwitchMessage)).TotalSeconds >= DiscordDelay)
                         {
                             V.LastTwitchMessage = DateTime.Now;
-                            Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e.MessageType, BotInstance, e.SenderID);
-                            if (B != null)
+                            if (e.Viewer != null)
                             {
-                                Objects.Viewer.AdjustBalance(B, DiscordReward, "+");
+                                Objects.Viewer.AdjustBalance(e.Viewer, DiscordReward, "+");
                             }
                         }
                     }
@@ -854,8 +852,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 else {
                     Viewer V = new Viewer();
                     StandardisedUser U = new StandardisedUser();
-                    U.ID = e.SenderID; U.UserName = e.SenderUserName;
-                    V.User = U;
+                    V.User = e.User;
                     BotInstance.TimeEvents.ViewerRewardTracking.Add(V);
                     RewardForChatting(e);
                 }

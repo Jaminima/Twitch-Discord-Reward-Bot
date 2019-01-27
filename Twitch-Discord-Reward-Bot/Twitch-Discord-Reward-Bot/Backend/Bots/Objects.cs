@@ -17,8 +17,10 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots
         public MessageType MessageType;
         public OnMessageReceivedArgs TwitchRaw;
         public SocketMessage DiscordRaw;
+        public StandardisedUser User;
+        public Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer Viewer;
 
-        public static StandardisedMessageRequest FromTwitch(OnMessageReceivedArgs e)
+        public static StandardisedMessageRequest FromTwitch(OnMessageReceivedArgs e,BotInstance BotInstance)
         {
             StandardisedMessageRequest S = new StandardisedMessageRequest();
             S.MessageBody = e.ChatMessage.Message;
@@ -28,10 +30,14 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots
             S.SenderUserName = e.ChatMessage.Username;
             S.TwitchRaw = e;
             S.ChannelName = e.ChatMessage.Channel;
+            S.User = new StandardisedUser();
+            S.User.ID = S.SenderID;
+            S.User.UserName = S.SenderUserName;
+            S.Viewer = Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromTwitchDiscord(S,BotInstance,S.User.ID);
             return S;
         }
 
-        public static StandardisedMessageRequest FromDiscord(SocketMessage e)
+        public static StandardisedMessageRequest FromDiscord(SocketMessage e, BotInstance BotInstance)
         {
             StandardisedMessageRequest S = new StandardisedMessageRequest();
             S.MessageBody = e.Content;
@@ -42,6 +48,10 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots
             S.DiscordRaw = e;
             S.ChannelID = e.Channel.Id.ToString();
             S.ChannelName = e.Channel.Name;
+            S.User = new StandardisedUser();
+            S.User.ID = S.SenderID;
+            S.User.UserName = S.SenderUserName;
+            S.Viewer = Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromTwitchDiscord(S, BotInstance, S.User.ID);
             return S;
         }
     }
