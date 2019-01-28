@@ -1,5 +1,5 @@
 {
-  "BotsEnabled": false,
+  "BotsEnabled": true,
   "CurrencyName": "JamCoin",
   "CurrencyAcronym": "JC",
   "Prefix": "!",
@@ -10,11 +10,11 @@
     "TwitchMerging": true,
     "StatusMessage": "!help",
     "Channels": [
-      "277493158777061376"
+      ""
     ],
-    "NotificationChannel": "277493158777061376",
-    "SubscriberRoleID": "445021512383070218",
-    "ModeratorRoleID": "238144531613220864"
+    "NotificationChannel": "",
+    "SubscriberRoleID": "",
+    "ModeratorRoleID": ""
   },
   "Emotes": [
     {
@@ -171,7 +171,8 @@
         "twitter": "@<SenderUser> https://twitter.com/TheHarbonator",
         "youtube": "@<SenderUser> https://www.youtube.com/user/TheHarbonator",
         "snapchat": "@<SenderUser> https://www.snapchat.com/add/harbonator",
-        "minecraft": "@<SenderUser> https://youtu.be/yNEk-N4V6ZY"
+        "minecraft": "@<SenderUser> https://youtu.be/yNEk-N4V6ZY",
+        "poll": "@<SenderUser> https://strawpoll.com/khdbb4z5"
       }
     },
     "Balance": {
@@ -357,6 +358,7 @@
           "NotDueling": "@<SenderUser> You are not dueling",
           "SelfNotEnough": "@<SenderUser> You dont have enough @<CurrencyName> , hence the duel has been canceled",
           "OtherNotEnough": "@<SenderUser> @<TargetUser> doesnt have enough @<CurrencyName> , hence the duel has been canceled",
+          "SelfAccept": "@<SenderUser> You cant accept your own duel!",
           "Win": "@<SenderUser> You have Won @<Amount> @<CurrencyName> against @<TargetUser>",
           "Lose": "@<SenderUser> You have Lost @<Amount> @<CurrencyName> against @<TargetUser>"
         }

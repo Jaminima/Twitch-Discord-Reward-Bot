@@ -153,8 +153,8 @@ WHERE ((Bots.InviteCode)=@InviteCode);
             this.TokenRefreshDateTime = DateTime.Now;
             List<OleDbParameter> Params = new List<OleDbParameter> {
                 new OleDbParameter("LoginID",this.OwnerLogin.ID),
-                new OleDbParameter("AccessToken",Init.ScryptEncoder.Encode(this.AccessToken)),
-                new OleDbParameter("RefreshToken",Init.ScryptEncoder.Encode(this.RefreshToken)),
+                new OleDbParameter("AccessToken",this.AccessToken),
+                new OleDbParameter("RefreshToken",this.RefreshToken),
                 new OleDbParameter("TokenRefreshDateTime",this.TokenRefreshDateTime.ToString()),
                 new OleDbParameter("BotName",this.BotName)
             };
@@ -187,9 +187,10 @@ WHERE (((Bots.BotID) = @ID));
                 this.RefreshToken = Networking.TokenSystem.CreateToken(64);
                 List<OleDbParameter> Params = new List<OleDbParameter>
                 {
-                    new OleDbParameter("AccessToken",Init.ScryptEncoder.Encode(this.AccessToken)),
+                    new OleDbParameter("AccessToken",this.AccessToken),
                     new OleDbParameter("TokenRefreshDateTime",this.TokenRefreshDateTime.ToString()),
-                    new OleDbParameter("RefreshToken",Init.ScryptEncoder.Encode(this.RefreshToken))
+                    new OleDbParameter("RefreshToken",this.RefreshToken),
+                    new OleDbParameter("ID",this.ID)
                 };
                 Init.SQLi.Execute(@"UPDATE Bots SET Bots.AccessToken = @AccessToken, Bots.TokenRefreshDateTime = @TokenRefreshDateTime, Bots.RefreshToken = @RefreshToken
 WHERE (((Bots.BotID) = @ID));
@@ -205,7 +206,7 @@ WHERE (((Bots.BotID) = @ID));
             {
                 List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("ID", this.ID) };
                 Init.SQLi.Execute(@"DELETE FROM Bots
-WHERE (((Bots.BankID)=@ID));
+WHERE (((Bots.BotID)=@ID));
 ", Params);
             }
         }

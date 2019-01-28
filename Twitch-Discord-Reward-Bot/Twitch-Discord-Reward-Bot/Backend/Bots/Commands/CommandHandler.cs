@@ -102,7 +102,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 else if (e.SegmentedBody.Length == 2)
                                 {
                                     StandardisedUser U = IDFromMessageSegment(e.SegmentedBody[1], e);
-                                    if (U.ID != null)
+                                    if (U != null)
                                     {
                                         Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e, BotInstance, U.ID);
                                         if (B != null)
@@ -131,7 +131,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             else if (e.SegmentedBody.Length == 2)
                             {
                                 StandardisedUser U = IDFromMessageSegment(e.SegmentedBody[1], e);
-                                if (U.ID != null)
+                                if (U != null)
                                 {
                                     Objects.Viewer B = Objects.Viewer.FromTwitchDiscord(e, BotInstance, U.ID);
                                     if (B != null)
