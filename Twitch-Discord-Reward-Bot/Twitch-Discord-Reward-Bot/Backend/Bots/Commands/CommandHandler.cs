@@ -628,7 +628,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         {
                             if (IsModerator(e))
                             {
-                                string Title = e.MessageBody.Replace(e.SegmentedBody[0] + " ", "");
+                                string Title = e.MessageBody.Replace(e.SegmentedBody[0] + " ", "").Replace(e.SegmentedBody[0],"");
                                 Data.APIIntergrations.Twitch.UpdateChannelTitle(BotInstance, Title);
                                 await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["SetTitle"]["Responses"]["SetTitle"].ToString(), e, null, -1, -1, Title);
                             }
@@ -639,7 +639,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         {
                             if (IsModerator(e))
                             {
-                                string Game = e.MessageBody.Replace(e.SegmentedBody[0] + " ", "");
+                                string Game = e.MessageBody.Replace(e.SegmentedBody[0] + " ", "").Replace(e.SegmentedBody[0], "");
                                 Data.APIIntergrations.Twitch.UpdateChannelGame(BotInstance, Game);
                                 await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["SetGame"]["Responses"]["SetGame"].ToString(), e, null, -1, -1, Game);
                             }
@@ -764,6 +764,42 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             }
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["Responses"]["NotMod"].ToString(), e); }
                         }
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["DontReward"], e)&&
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["DontReward"]["Commands"],Command))
+                        {
+                            if (IsModerator(e))
+                            {
+                                if (e.SegmentedBody.Length == 3)
+                                {
+                                    StandardisedUser Target = IDFromMessageSegment(e.SegmentedBody[1], e);
+                                    if (Target != null)
+                                    {
+                                        Objects.Viewer Viewer = Objects.Viewer.FromTwitchDiscord(e, BotInstance, Target.ID);
+                                        if (Viewer != null)
+                                        {
+                                            if (e.SegmentedBody[2].ToLower() == "on") {
+                                                Viewer.DontReward = false;
+                                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["DontReward"]["Responses"]["On"].ToString(), e,Target);
+                                            }   
+                                            else if (e.SegmentedBody[2].ToLower() == "off") {
+                                                Viewer.DontReward = true;
+                                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["DontReward"]["Responses"]["Off"].ToString(), e,Target);
+                                            }
+                                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["DontReward"]["Responses"]["InvalidState"].ToString(), e); return; }
+                                            List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> {
+                                                new KeyValuePair<string, string>("ID",Viewer.ID.ToString()),
+                                                new KeyValuePair<string, string>("DontReward",Viewer.DontReward.ToString())
+                                            };
+                                            Data.APIIntergrations.RewardCurrencyAPI.WebRequests.PostRequest("viewer", Headers, true);
+                                        }
+                                        else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
+                                    }
+                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["CannotFindUser"].ToString(), e); }
+                                }
+                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["ParamaterCount"].ToString(), e); }
+                            }
+                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["Responses"]["NotMod"].ToString(), e); }
+                        }
                         #endregion
                         else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"], e) &&
                             BotInstance.CommandConfig["CommandSetup"]["SimpleResponses"]["Commands"][Command.ToLower()] != null)
@@ -818,43 +854,47 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         {
             if (BotInstance.TimeEvents != null)
             {
-                IEnumerable<Viewer> Vs = BotInstance.TimeEvents.ViewerRewardTracking.Where(x => x.User.ID == e.SenderID);
-                if (Vs.Count() != 0)
+                if (!e.Viewer.DontReward)
                 {
-                    Viewer V = Vs.First();
-                    int TwitchDelay = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Chatting"]["Twitch"]["Interval"].ToString()),
-                        TwitchReward = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Chatting"]["Twitch"]["Reward"].ToString()),
-                        DiscordDelay = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Chatting"]["Discord"]["Interval"].ToString()),
-                        DiscordReward = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Chatting"]["Discord"]["Reward"].ToString());
-                    if (e.MessageType == MessageType.Twitch)
+                    IEnumerable<Viewer> Vs = BotInstance.TimeEvents.ViewerRewardTracking.Where(x => x.User.ID == e.SenderID);
+                    if (Vs.Count() != 0)
                     {
-                        if (((TimeSpan)(DateTime.Now - V.LastTwitchMessage)).TotalSeconds >= TwitchDelay)
+                        Viewer V = Vs.First();
+                        int TwitchDelay = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Chatting"]["Twitch"]["Interval"].ToString()),
+                            TwitchReward = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Chatting"]["Twitch"]["Reward"].ToString()),
+                            DiscordDelay = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Chatting"]["Discord"]["Interval"].ToString()),
+                            DiscordReward = int.Parse(BotInstance.CommandConfig["AutoRewards"]["Chatting"]["Discord"]["Reward"].ToString());
+                        if (e.MessageType == MessageType.Twitch)
                         {
-                            V.LastTwitchMessage = DateTime.Now;
-                            if (e.Viewer != null)
+                            if (((TimeSpan)(DateTime.Now - V.LastTwitchMessage)).TotalSeconds >= TwitchDelay)
                             {
-                                Objects.Viewer.AdjustBalance(e.Viewer, TwitchReward, "+");
+                                V.LastTwitchMessage = DateTime.Now;
+                                if (e.Viewer != null)
+                                {
+                                    Objects.Viewer.AdjustBalance(e.Viewer, TwitchReward, "+");
+                                }
+                            }
+                        }
+                        else if (e.MessageType == MessageType.Discord)
+                        {
+                            if (((TimeSpan)(DateTime.Now - V.LastTwitchMessage)).TotalSeconds >= DiscordDelay)
+                            {
+                                V.LastTwitchMessage = DateTime.Now;
+                                if (e.Viewer != null)
+                                {
+                                    Objects.Viewer.AdjustBalance(e.Viewer, DiscordReward, "+");
+                                }
                             }
                         }
                     }
-                    else if (e.MessageType == MessageType.Discord)
+                    else
                     {
-                        if (((TimeSpan)(DateTime.Now - V.LastTwitchMessage)).TotalSeconds >= DiscordDelay)
-                        {
-                            V.LastTwitchMessage = DateTime.Now;
-                            if (e.Viewer != null)
-                            {
-                                Objects.Viewer.AdjustBalance(e.Viewer, DiscordReward, "+");
-                            }
-                        }
+                        Viewer V = new Viewer();
+                        StandardisedUser U = new StandardisedUser();
+                        V.User = e.User;
+                        BotInstance.TimeEvents.ViewerRewardTracking.Add(V);
+                        RewardForChatting(e);
                     }
-                }
-                else {
-                    Viewer V = new Viewer();
-                    StandardisedUser U = new StandardisedUser();
-                    V.User = e.User;
-                    BotInstance.TimeEvents.ViewerRewardTracking.Add(V);
-                    RewardForChatting(e);
                 }
             }
         }
@@ -998,33 +1038,32 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 
         public string MessageParser(string ParamaterisedMessage, StandardisedMessageRequest e, MessageType MessageType, StandardisedUser TargetUser = null, int Amount = -1, int NewBal = -1, string OtherString = "", string SenderUsername = null)
         {
-            ParamaterisedMessage = ParamaterisedMessage.Replace("@<OtherString>", OtherString);
-            ParamaterisedMessage = ParamaterisedMessage.Replace("@<CurrencyName>", BotInstance.CommandConfig["CurrencyName"].ToString());
-            ParamaterisedMessage = ParamaterisedMessage.Replace("@<ChannelName>", BotInstance.CommandConfig["ChannelName"].ToString());
-            ParamaterisedMessage = ParamaterisedMessage.Replace("@<Amount>", Amount.ToString("N0"));
-            ParamaterisedMessage = ParamaterisedMessage.Replace("@<NewBalance>", NewBal.ToString("N0"));
-            ParamaterisedMessage = ParamaterisedMessage.Replace("@<CurrencyAcronym>", BotInstance.CommandConfig["CurrencyAcronym"].ToString());
-            ParamaterisedMessage = ParamaterisedMessage.Replace("@<Prefix>", BotInstance.CommandConfig["Prefix"].ToString());
+            ParamaterisedMessage = ParamaterisedMessage.Replace("<@CurrencyName>", BotInstance.CommandConfig["CurrencyName"].ToString());
+            ParamaterisedMessage = ParamaterisedMessage.Replace("<@ChannelName>", BotInstance.CommandConfig["ChannelName"].ToString());
+            ParamaterisedMessage = ParamaterisedMessage.Replace("<@Amount>", Amount.ToString("N0"));
+            ParamaterisedMessage = ParamaterisedMessage.Replace("<@NewBalance>", NewBal.ToString("N0"));
+            ParamaterisedMessage = ParamaterisedMessage.Replace("<@CurrencyAcronym>", BotInstance.CommandConfig["CurrencyAcronym"].ToString());
+            ParamaterisedMessage = ParamaterisedMessage.Replace("<@Prefix>", BotInstance.CommandConfig["Prefix"].ToString());
 
             foreach (Newtonsoft.Json.Linq.JToken Emote in BotInstance.CommandConfig["Emotes"])
             {
-                if (MessageType == MessageType.Discord) { ParamaterisedMessage = ParamaterisedMessage.Replace("@<" + Emote["Name"].ToString() + ">", Emote["Discord"].ToString()); }
-                if (MessageType == MessageType.Twitch) { ParamaterisedMessage = ParamaterisedMessage.Replace("@<" + Emote["Name"].ToString() + ">", Emote["Twitch"].ToString()); }
+                if (MessageType == MessageType.Discord) { ParamaterisedMessage = ParamaterisedMessage.Replace("<@" + Emote["Name"].ToString() + ">", Emote["Discord"].ToString()); }
+                if (MessageType == MessageType.Twitch) { ParamaterisedMessage = ParamaterisedMessage.Replace("<@" + Emote["Name"].ToString() + ">", Emote["Twitch"].ToString()); }
             }
 
             if (MessageType == MessageType.Twitch)
             {
-                if (TargetUser != null) { ParamaterisedMessage = ParamaterisedMessage.Replace("@<TargetUser>", "@" + TargetUser.UserName); }
-                if (e!=null) if (e.SenderUserName != null) { ParamaterisedMessage = ParamaterisedMessage.Replace("@<SenderUser>", "@" + e.SenderUserName); }
-                else { ParamaterisedMessage = ParamaterisedMessage.Replace("@<SenderUser>", "@" + SenderUsername); }
+                if (TargetUser != null) { ParamaterisedMessage = ParamaterisedMessage.Replace("<@TargetUser>", "@" + TargetUser.UserName); }
+                if (e!=null) if (e.SenderUserName != null) { ParamaterisedMessage = ParamaterisedMessage.Replace("<@SenderUser>", "@" + e.SenderUserName); }
+                else { ParamaterisedMessage = ParamaterisedMessage.Replace("<@SenderUser>", "@" + SenderUsername); }
             }
             else
             {
-                if (TargetUser != null) { ParamaterisedMessage = ParamaterisedMessage.Replace("@<TargetUser>", "<@" + TargetUser.ID + ">"); }
+                if (TargetUser != null) { ParamaterisedMessage = ParamaterisedMessage.Replace("<@TargetUser>", "<@" + TargetUser.ID + ">"); }
                 ParamaterisedMessage = ParamaterisedMessage.Replace("/me", "");
-                if (e != null) ParamaterisedMessage = ParamaterisedMessage.Replace("@<SenderUser>", "<@" + e.SenderID + ">");
-                
+                if (e != null) ParamaterisedMessage = ParamaterisedMessage.Replace("<@SenderUser>", "<@" + e.SenderID + ">");
             }
+            ParamaterisedMessage = ParamaterisedMessage.Replace("<@OtherString>", OtherString);
             return ParamaterisedMessage;
         }
 

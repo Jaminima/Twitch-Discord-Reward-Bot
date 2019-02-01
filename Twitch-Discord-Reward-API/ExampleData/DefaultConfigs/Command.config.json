@@ -1,20 +1,20 @@
 {
-  "BotsEnabled": true,
-  "CurrencyName": "JamCoin",
-  "CurrencyAcronym": "JC",
+  "BotsEnabled": false,
+  "CurrencyName": "",
+  "CurrencyAcronym": "",
   "Prefix": "!",
-  "ChannelName": "jccjaminima",
+  "ChannelName": "",
   "InititalBalance": 250,
   "MessageDelay": 3,
   "Discord": {
     "TwitchMerging": true,
     "StatusMessage": "!help",
     "Channels": [
-      ""
+      "277493158777061376"
     ],
-    "NotificationChannel": "",
-    "SubscriberRoleID": "",
-    "ModeratorRoleID": ""
+    "NotificationChannel": "277493158777061376",
+    "SubscriberRoleID": "445021512383070218",
+    "ModeratorRoleID": "238144531613220864"
   },
   "Emotes": [
     {
@@ -152,27 +152,28 @@
     "FallbackMessage": {
       "TwitchEnabled": false,
       "DiscordEnabled": false,
-      "Response": "@<SenderUser> What on earth are you trying to do? @<SexyMan>"
+      "Response": "<@SenderUser> What on earth are you trying to do? <@SexyMan>"
     },
     "ErrorResponses": {
-      "APIError": "@<SenderUser> An error occured while polling the API, if this persists please contact a developer!",
-      "CannotFindUser": "@<SenderUser> Cannot find the target user, please check your command and try again.",
-      "ParamaterCount": "@<SenderUser> You have provided too many or too few paramaters, please check your command and try again.",
-      "NumberParamaterInvalid": "@<SenderUser> The Numeric paramater is invalid, please check your command and try again.",
-      "NumberParamaterNegative": "@<SenderUser> The Number paramater is negative, please check your command and try again."
+      "APIError": "<@SenderUser> An error occured while polling the API, if this persists please contact a developer!",
+      "CannotFindUser": "<@SenderUser> Cannot find the target user, please check your command and try again.",
+      "ParamaterCount": "<@SenderUser> You have provided too many or too few paramaters, please check your command and try again.",
+      "NumberParamaterInvalid": "<@SenderUser> The Numeric paramater is invalid, please check your command and try again.",
+      "NumberParamaterNegative": "<@SenderUser> The Number paramater is negative, please check your command and try again."
     },
     "SimpleResponses": {
       "TwitchEnabled": true,
       "DiscordEnabled": true,
       "RequireLive": false,
       "Commands": {
-        "discord": "@<SenderUser> https://discord.gg/EkKSPMV",
-        "merch": "@<SenderUser> https://teespring.com/en-GB/stores/harbonator-merch - for NA shipping: https://teespring.com/en-GB/stores/harbonator-merch-na-edition",
-        "twitter": "@<SenderUser> https://twitter.com/TheHarbonator",
-        "youtube": "@<SenderUser> https://www.youtube.com/user/TheHarbonator",
-        "snapchat": "@<SenderUser> https://www.snapchat.com/add/harbonator",
-        "minecraft": "@<SenderUser> https://youtu.be/yNEk-N4V6ZY",
-        "poll": "@<SenderUser> https://strawpoll.com/khdbb4z5"
+        "discord": "<@SenderUser> https://discord.gg/EkKSPMV",
+        "merch": "<@SenderUser> https://teespring.com/en-GB/stores/harbonator-merch - for NA shipping: https://teespring.com/en-GB/stores/harbonator-merch-na-edition",
+        "twitter": "<@SenderUser> https://twitter.com/TheHarbonator",
+        "youtube": "<@SenderUser> https://www.youtube.com/user/TheHarbonator",
+        "snapchat": "<@SenderUser> https://www.snapchat.com/add/harbonator",
+        "minecraft": "<@SenderUser> https://youtu.be/yNEk-N4V6ZY",
+        "poll": "<@SenderUser> https://strawpoll.com/khdbb4z5",
+        "help": "<@SenderUser> https://owlcoin.co.uk/dev/Help/viewer.html?ID=1"
       }
     },
     "Balance": {
@@ -186,8 +187,8 @@
         "owlcoin"
       ],
       "Responses": {
-        "OwnBalance": "@<SenderUser> You have @<Amount> @<CurrencyName>",
-        "OtherBalance": "@<SenderUser> @<TargetUser> has @<Amount> @<CurrencyName>"
+        "OwnBalance": "<@SenderUser> You have <@Amount> <@CurrencyName>",
+        "OtherBalance": "<@SenderUser> <@TargetUser> has <@Amount> <@CurrencyName>"
       }
     },
     "Pay": {
@@ -199,9 +200,9 @@
         "pay"
       ],
       "Responses": {
-        "Paid": "@<SenderUser> You have paid @<TargetUser> @<Amount> @<CurrencyName>",
-        "NotEnough": "@<SenderUser> You dont have enough @<CurrencyName>",
-        "TooSmall": "@<SenderUser> You must pay at least @<Amount> @<CurrencyName>"
+        "Paid": "<@SenderUser> You have paid <@TargetUser> <@Amount> <@CurrencyName>",
+        "NotEnough": "<@SenderUser> You dont have enough <@CurrencyName>",
+        "TooSmall": "<@SenderUser> You must pay at least <@Amount> <@CurrencyName>"
       }
     },
     "Gamble": {
@@ -216,10 +217,10 @@
         "roulette"
       ],
       "Responses": {
-        "Win": "@<SenderUser> You have Won @<Amount> @<CurrencyName>",
-        "Lose": "@<SenderUser> You have Lost @<Amount> @<CurrencyName>",
-        "NotEnough": "@<SenderUser> You dont have enough @<CurrencyName>",
-        "TooSmall": "@<SenderUser> You must gamble at least @<Amount> @<CurrencyName>"
+        "Win": "<@SenderUser> You have Won <@Amount> <@CurrencyName>",
+        "Lose": "<@SenderUser> You have Lost <@Amount> <@CurrencyName>",
+        "NotEnough": "<@SenderUser> You dont have enough <@CurrencyName>",
+        "TooSmall": "<@SenderUser> You must gamble at least <@Amount> <@CurrencyName>"
       }
     },
     "Slots": {
@@ -245,10 +246,10 @@
         "slots"
       ],
       "Responses": {
-        "Win": "@<SenderUser> You got @<OtherString> and Won @<Amount> @<CurrencyName>",
-        "Lose": "@<SenderUser> You got @<OtherString> and Lost @<Amount> @<CurrencyName>",
-        "NotEnough": "@<SenderUser> You dont have enough @<CurrencyName>",
-        "TooSmall": "@<SenderUser> You must slot with at least @<Amount> @<CurrencyName>"
+        "Win": "<@SenderUser> You got <@OtherString> and Won <@Amount> <@CurrencyName>",
+        "Lose": "<@SenderUser> You got <@OtherString> and Lost <@Amount> <@CurrencyName>",
+        "NotEnough": "<@SenderUser> You dont have enough <@CurrencyName>",
+        "TooSmall": "<@SenderUser> You must slot with at least <@Amount> <@CurrencyName>"
       }
     },
     "Fish": {
@@ -259,10 +260,10 @@
         "fish"
       ],
       "Responses": {
-        "Started": "@<SenderUser> You started fishing! :fishing_pole_and_fish: @<harbonT>",
-        "Finished": "@<SenderUser> You got @<OtherString> Worth @<Amount> @<CurrencyName>",
-        "NotEnough": "@<SenderUser> You dont have enough @<CurrencyName>",
-        "AlreadyFishing": "@<SenderUser> You are already fishing!"
+        "Started": "<@SenderUser> You started fishing! :fishing_pole_and_fish: <@harbonT>",
+        "Finished": "<@SenderUser> You got <@OtherString> Worth <@Amount> <@CurrencyName>",
+        "NotEnough": "<@SenderUser> You dont have enough <@CurrencyName>",
+        "AlreadyFishing": "<@SenderUser> You are already fishing!"
       },
       "Cost": {
         "Viewer": 500,
@@ -283,7 +284,7 @@
         },
         {
           "Chance": 5,
-          "Name": "@<harbonT> Relic",
+          "Name": "<@harbonT> Relic",
           "Reward": 1000
         },
         {
@@ -293,12 +294,12 @@
         },
         {
           "Chance": 5,
-          "Name": "@<harbonTREE> leaf",
+          "Name": "<@harbonTREE> leaf",
           "Reward": 5000
         },
         {
           "Chance": 15,
-          "Name": "@<harbonDOC> prototype Glasses",
+          "Name": "<@harbonDOC> prototype Glasses",
           "Reward": 750
         },
         {
@@ -343,24 +344,24 @@
         "duel"
       ],
       "Responses": {
-        "Started": "@<SenderUser> You have started a duel against @<TargetUser> for @<Amount> @<CurrencyName>, they can type @<Prefix>accept or @<Prefix>deny",
-        "SelfNotEnough": "@<SenderUser> You dont have enough @<CurrencyName>",
-        "OtherNotEnough": "@<SenderUser> @<TargetUser> doesnt have enough @<CurrencyName>",
-        "TooSmall": "@<SenderUser> You must duel with at least @<Amount> @<CurrencyName>",
-        "SelfDueling": "@<SenderUser> You are already dueling!",
-        "OtherDueling": "@<SenderUser> @<TargetUser> is already dueling!"
+        "Started": "<@SenderUser> You have started a duel against <@TargetUser> for <@Amount> <@CurrencyName>, they can type <@Prefix>accept or <@Prefix>deny",
+        "SelfNotEnough": "<@SenderUser> You dont have enough <@CurrencyName>",
+        "OtherNotEnough": "<@SenderUser> <@TargetUser> doesnt have enough <@CurrencyName>",
+        "TooSmall": "<@SenderUser> You must duel with at least <@Amount> <@CurrencyName>",
+        "SelfDueling": "<@SenderUser> You are already dueling!",
+        "OtherDueling": "<@SenderUser> <@TargetUser> is already dueling!"
       },
       "Accepting": {
         "Commands": [
           "accept"
         ],
         "Responses": {
-          "NotDueling": "@<SenderUser> You are not dueling",
-          "SelfNotEnough": "@<SenderUser> You dont have enough @<CurrencyName> , hence the duel has been canceled",
-          "OtherNotEnough": "@<SenderUser> @<TargetUser> doesnt have enough @<CurrencyName> , hence the duel has been canceled",
-          "SelfAccept": "@<SenderUser> You cant accept your own duel!",
-          "Win": "@<SenderUser> You have Won @<Amount> @<CurrencyName> against @<TargetUser>",
-          "Lose": "@<SenderUser> You have Lost @<Amount> @<CurrencyName> against @<TargetUser>"
+          "NotDueling": "<@SenderUser> You are not dueling",
+          "SelfNotEnough": "<@SenderUser> You dont have enough <@CurrencyName> , hence the duel has been canceled",
+          "OtherNotEnough": "<@SenderUser> <@TargetUser> doesnt have enough <@CurrencyName> , hence the duel has been canceled",
+          "SelfAccept": "<@SenderUser> You cant accept your own duel!",
+          "Win": "<@SenderUser> You have Won <@Amount> <@CurrencyName> against <@TargetUser>",
+          "Lose": "<@SenderUser> You have Lost <@Amount> <@CurrencyName> against <@TargetUser>"
         }
       },
       "Denying": {
@@ -369,8 +370,8 @@
           "cancel"
         ],
         "Responses": {
-          "NotDueling": "@<SenderUser> You are not dueling",
-          "Canceled": "@<SenderUser> You are no longer dueling against @<TargetUser>"
+          "NotDueling": "<@SenderUser> You are not dueling",
+          "Canceled": "<@SenderUser> You are no longer dueling against <@TargetUser>"
         }
       }
     },
@@ -383,10 +384,10 @@
         "redeem"
       ],
       "Responses": {
-        "APIError": "@<SenderUser> The following issue occured: @<OtherString>",
-        "NotEnough": "@<SenderUser> You dont have enough @<CurrencyName>",
-        "Requested": "@<SenderUser> Playing alert: @<OtherString>",
-        "InvalidAlert": "@<SenderUser> Cant find that alert"
+        "APIError": "<@SenderUser> The following issue occured: <@OtherString>",
+        "NotEnough": "<@SenderUser> You dont have enough <@CurrencyName>",
+        "Requested": "<@SenderUser> Playing alert: <@OtherString>",
+        "InvalidAlert": "<@SenderUser> Cant find that alert"
       },
       "CoolDown": {
         "Global": 60,
@@ -447,8 +448,8 @@
         "watchtime"
       ],
       "Responses": {
-        "Self": "@<SenderUser> You have spent @<OtherString> watching",
-        "Other": "@<SenderUser> @<TargetUser> Has spent @<OtherString> watching"
+        "Self": "<@SenderUser> You have spent <@OtherString> watching",
+        "Other": "<@SenderUser> <@TargetUser> Has spent <@OtherString> watching"
       }
     },
     "UpTime": {
@@ -458,9 +459,9 @@
         "uptime"
       ],
       "Responses": {
-        "APIError": "@<SenderUser> An error ocurred while fetching the uptime",
-        "LiveFor": "@<SenderUser> Stream has been live for @<OtherString>",
-        "NotLive": "@<SenderUser> The Stream is not Live"
+        "APIError": "<@SenderUser> An error ocurred while fetching the uptime",
+        "LiveFor": "<@SenderUser> Stream has been live for <@OtherString>",
+        "NotLive": "<@SenderUser> The Stream is not Live"
       }
     },
     "LatestVid": {
@@ -470,25 +471,25 @@
         "latestvid"
       ],
       "Responses": {
-        "APIError": "@<SenderUser> An error ocurred while fetching the latest video",
-        "LatestVid": "@<SenderUser> @<OtherString>"
+        "APIError": "<@SenderUser> An error ocurred while fetching the latest video",
+        "LatestVid": "<@SenderUser> <@OtherString>"
       }
     },
     "NightBot": {
       "TwitchEnabled": true,
       "DiscordEnabled": false,
       "Responses": {
-        "APIError": "@<SenderUser> The following issue occured: @<OtherString>"
+        "APIError": "<@SenderUser> The following issue occured: <@OtherString>"
       },
       "Playlist": {
-        "Response": "@<SenderUser> @<SenderUser> https://beta.nightbot.tv/t/@<ChannelName>/song_requests/playlist",
+        "Response": "<@SenderUser> <@SenderUser> https://beta.nightbot.tv/t/<@ChannelName>/song_requests/playlist",
         "Commands": [
           "playlist",
           "songplaylist"
         ]
       },
       "Queue": {
-        "Response": "@<SenderUser> https://beta.nightbot.tv/t/@<ChannelName>/song_requests",
+        "Response": "<@SenderUser> https://beta.nightbot.tv/t/<@ChannelName>/song_requests",
         "Commands": [
           "queue",
           "songqueue"
@@ -496,8 +497,8 @@
       },
       "Current": {
         "Responses": {
-          "CurrentlyPlaying": "@<SenderUser> Currently Playing @<OtherString>",
-          "NotPlaying": "@<SenderUser> No song is being played at the moment"
+          "CurrentlyPlaying": "<@SenderUser> Currently Playing <@OtherString>",
+          "NotPlaying": "<@SenderUser> No song is being played at the moment"
         },
         "Commands": [
           "currentsong",
@@ -510,9 +511,9 @@
           "songcancel"
         ],
         "Responses": {
-          "NoSong": "@<SenderUser> You dont have a song to cancel",
-          "SongDoesntExist": "@<SenderUser> The song you are trying to cancel is no longer in queue",
-          "CanceledSong": "@<SenderUser> Removed your last requested song from queue"
+          "NoSong": "<@SenderUser> You dont have a song to cancel",
+          "SongDoesntExist": "<@SenderUser> The song you are trying to cancel is no longer in queue",
+          "CanceledSong": "<@SenderUser> Removed your last requested song from queue"
         }
       },
       "Request": {
@@ -525,13 +526,13 @@
           "sr"
         ],
         "Responses": {
-          "NotEnough": "@<SenderUser> You dont have enough @<CurrencyName>",
-          "Requested": "@<SenderUser> Requested @<OtherString> in position @<Amount>"
+          "NotEnough": "<@SenderUser> You dont have enough <@CurrencyName>",
+          "Requested": "<@SenderUser> Requested <@OtherString> in position <@Amount>"
         }
       },
       "Moderator": {
         "Pause": {
-          "Response": "@<SenderUser> Paused music player",
+          "Response": "<@SenderUser> Paused music player",
           "Commands": [
             "songpause",
             "pausesong",
@@ -539,7 +540,7 @@
           ]
         },
         "Play": {
-          "Response": "@<SenderUser> Resumed music player",
+          "Response": "<@SenderUser> Resumed music player",
           "Commands": [
             "songplay",
             "playsong",
@@ -547,7 +548,7 @@
           ]
         },
         "Skip": {
-          "Response": "@<SenderUser> Skipped current song",
+          "Response": "<@SenderUser> Skipped current song",
           "Commands": [
             "songskip",
             "skipsong",
@@ -555,7 +556,7 @@
           ]
         },
         "Remove": {
-          "Response": "@<SenderUser> Removed @<OtherString>",
+          "Response": "<@SenderUser> Removed <@OtherString>",
           "Commands": [
             "songremove",
             "removesong",
@@ -563,7 +564,7 @@
           ]
         },
         "Volume": {
-          "Response": "@<SenderUser> Set volume to @<Amount>",
+          "Response": "<@SenderUser> Set volume to <@Amount>",
           "Commands": [
             "songvolume",
             "volumesong",
@@ -574,7 +575,7 @@
     },
     "Moderator": {
       "Responses": {
-        "NotMod": "@<SenderUser> you are not a moderator"
+        "NotMod": "<@SenderUser> you are not a moderator"
       },
       "SetTitle": {
         "TwitchEnabled": true,
@@ -583,7 +584,7 @@
           "settitle"
         ],
         "Responses": {
-          "SetTitle": "@<SenderUser> Set stream title to @<OtherString>"
+          "SetTitle": "<@SenderUser> Set stream title to <@OtherString>"
         }
       },
       "SetGame": {
@@ -593,7 +594,7 @@
           "setgame"
         ],
         "Responses": {
-          "SetGame": "@<SenderUser> Set stream game to @<OtherString>"
+          "SetGame": "<@SenderUser> Set stream game to <@OtherString>"
         }
       },
       "GiveCoin": {
@@ -603,7 +604,20 @@
           "give"
         ],
         "Responses": {
-          "Gave": "@<SenderUser> Gave @<TargetUser> @<Amount> @<CurrencyName>"
+          "Gave": "<@SenderUser> Gave <@TargetUser> <@Amount> <@CurrencyName>"
+        }
+      },
+      "DontReward": {
+        "TwitchEnabled": true,
+        "DiscordEnabled": true,
+        "Commands": [
+          "rewards",
+          "reward"
+        ],
+        "Responses": {
+          "Off": "<@SenderUser> <@TargetUser> Will no longer be rewarded",
+          "On": "<@SenderUser> <@TargetUser> Will now receive rewards",
+          "InvalidState": "<@SenderUser> You provided an invalid on/off state"
         }
       }
     }
@@ -615,7 +629,7 @@
     "MinimumDelay": 90,
     "Messages": [
       {
-        "Body": "@<harbonPLS> @<harbonCOZY> @<harbonLICENCE> @<harbonTREE> @<harbonLOVE> @<harbonSLEEPER> @<harbonDOC> @<harbonSOCIETY> @<harbonCITO> @<harbonPRIDE> @<harbonHANDS> @<harbonHANDSUP> @<harbonHOP> @<harbonPRIME> @<harbonYIKES> @<harbonHOMELESS> @<harbonHYPER> @<harbonLURK> @<harbonA> @<harbonMEGA1> @<harbonMEGA2> @<harbonMEGA3> @<harbonMEGA4>",
+        "Body": "<@harbonPLS> <@harbonCOZY> <@harbonLICENCE> <@harbonTREE> <@harbonLOVE> <@harbonSLEEPER> <@harbonDOC> <@harbonSOCIETY> <@harbonCITO> <@harbonPRIDE> <@harbonHANDS> <@harbonHANDSUP> <@harbonHOP> <@harbonPRIME> <@harbonYIKES> <@harbonHOMELESS> <@harbonHYPER> <@harbonLURK> <@harbonA> <@harbonMEGA1> <@harbonMEGA2> <@harbonMEGA3> <@harbonMEGA4>",
         "Delay": 1200
       },
       {
@@ -623,7 +637,7 @@
         "Delay": 2700
       },
       {
-        "Body": "@<pick> @<harbonT> Don't mind me, just mining some Owlcoin @<pick> @<harbonT>",
+        "Body": "<@pick> <@harbonT> Don't mind me, just mining some Owlcoin <@pick> <@harbonT>",
         "Delay": 3600
       },
       {
@@ -662,10 +676,10 @@
       }
     ],
     "Responses": {
-      "LeadUp": "/me Raffle for @<Amount> @<CurrencyName> has started! You have @<OtherString> to type @<Prefix>join",
-      "Winner": "/me Raffle for @<Amount> @<CurrencyName> has finished and @<TargetUser> won!!!",
-      "OtherWinner": "/me Raffle for @<Amount> @<CurrencyName> has finished and @<OtherString> won!!!",
-      "NoOne": "/me Raffle for @<Amount> @<CurrencyName> was canceled as no one joined..."
+      "LeadUp": "/me Raffle for <@Amount> <@CurrencyName> has started! You have <@OtherString> to type <@Prefix>join",
+      "Winner": "/me Raffle for <@Amount> <@CurrencyName> has finished and <@TargetUser> won!!!",
+      "OtherWinner": "/me Raffle for <@Amount> <@CurrencyName> has finished and <@OtherString> won!!!",
+      "NoOne": "/me Raffle for <@Amount> <@CurrencyName> was canceled as no one joined..."
     },
     "Joining": {
       "Commands": [
@@ -681,7 +695,7 @@
     "Donating": {
       "RequireLive": true,
       "RewardPerWhole": 5000,
-      "Response": "@<TargetUser> Donated @<OtherString> and recived @<Amount> @<CurrencyName>"
+      "Response": "<@TargetUser> Donated <@OtherString> and recived <@Amount> <@CurrencyName>"
     },
     "Viewing": {
       "RewardPerMinute": 30
@@ -699,15 +713,15 @@
     "DiscordSubNotifications": false,
     "NewSub": {
       "Reward": 5000,
-      "Response": "@<TargetUser> Subbed and received @<Amount> @<CurrenyName>"
+      "Response": "<@TargetUser> Subbed and received <@Amount> <@CurrencyName>"
     },
     "ReSub": {
       "Reward": 5000,
-      "Response": "@<TargetUser> Resubbed and received @<Amount> @<CurrenyName>"
+      "Response": "<@TargetUser> Resubbed and received <@Amount> <@CurrencyName>"
     },
     "GiftSub": {
       "Reward": 5000,
-      "Response": "@<TargetUser> Gifted a sub to @<OtherString> and received @<Amount> @<CurrenyName>"
+      "Response": "<@TargetUser> Gifted a sub to <@OtherString> and received <@Amount> <@CurrencyName>"
     }
   },
   "LiveNotifications": {
@@ -721,10 +735,10 @@
       "live"
     ],
     "Responses": {
-      "LiveDM": "The stream has started! https://twitch.tv/@<ChannelName>\nDisable these notifcations with `@<Prefix>notifications off`",
-      "LiveNotification": "The stream has started! https://twitch.tv/@<ChannelName>",
-      "Off": "@<SenderUser> You have turned live notifications off!",
-      "On": "@<SenderUser> You have turned live notifications on!"
+      "LiveDM": "The stream has started! https://twitch.tv/<@ChannelName>\nDisable these notifcations with `<@Prefix>notifications off`",
+      "LiveNotification": "The stream has started! https://twitch.tv/<@ChannelName>",
+      "Off": "<@SenderUser> You have turned live notifications off!",
+      "On": "<@SenderUser> You have turned live notifications on!"
     }
   }
 }

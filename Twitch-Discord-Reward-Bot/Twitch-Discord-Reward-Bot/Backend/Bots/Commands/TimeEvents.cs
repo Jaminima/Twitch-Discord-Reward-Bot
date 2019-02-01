@@ -62,10 +62,10 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         }
                         foreach (Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer Viewer in Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromCurrency(BotInstance).Where(x => x.LiveNotifcations))
                         {
-                                if (Viewer.DiscordID != "")
-                                {
-                                    await BotInstance.DiscordBot.Client.GetUser(ulong.Parse(Viewer.DiscordID)).SendMessageAsync(BotInstance.CommandHandler.MessageParser(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["LiveDM"].ToString(), null, MessageType.Discord));
-                                }
+                            if (Viewer.DiscordID != "")
+                            {
+                                await BotInstance.DiscordBot.Client.GetUser(ulong.Parse(Viewer.DiscordID)).SendMessageAsync(BotInstance.CommandHandler.MessageParser(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["LiveDM"].ToString(), null, MessageType.Discord));
+                            }
                             if (BotInstance.CommandConfig["LiveNotifications"]["SendToDiscordNotificationChannel"].ToString() == "True")
                             {
                                 await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["LiveNotification"].ToString(), BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(), MessageType.Discord);
@@ -148,13 +148,16 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                     Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer Viewer = Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromTwitchDiscord(MessageType.Twitch, BotInstance, U.ID);
                     if (Viewer != null)
                     {
-                        Viewer.WatchTime += 1;
-                        List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> {
-                            new KeyValuePair<string, string>("ID",Viewer.ID.ToString()),
-                            new KeyValuePair<string, string>("WatchTime",Viewer.WatchTime.ToString())
-                        };
-                        Data.APIIntergrations.RewardCurrencyAPI.WebRequests.PostRequest("viewer", Headers, true);
-                        RewardUser(Reward, U, MessageType.Twitch);
+                        if (!Viewer.DontReward)
+                        {
+                            Viewer.WatchTime += 1;
+                            List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> {
+                                new KeyValuePair<string, string>("ID",Viewer.ID.ToString()),
+                                new KeyValuePair<string, string>("WatchTime",Viewer.WatchTime.ToString())
+                            };
+                            Data.APIIntergrations.RewardCurrencyAPI.WebRequests.PostRequest("viewer", Headers, true);
+                            RewardUser(Reward, U, MessageType.Twitch);
+                        }
                     }
                 }
             }
@@ -282,28 +285,30 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         {
             if (BotInstance.CommandHandler.LiveCheck(BotInstance.CommandConfig["AutoMessage"]))
             {
+                if (BotInstance.TwitchBot.Client.IsConnected) { 
                 int MinDelay = int.Parse(BotInstance.CommandConfig["AutoMessage"]["MinimumDelay"].ToString());
-                if (((TimeSpan)(DateTime.Now - MessageLast)).TotalSeconds >= MinDelay)
-                {
-                    Newtonsoft.Json.Linq.JToken Items = BotInstance.CommandConfig["AutoMessage"]["Messages"];
-                    for (int i = 0; i < Items.Count(); i++)
+                    if (((TimeSpan)(DateTime.Now - MessageLast)).TotalSeconds >= MinDelay)
                     {
-                        bool ShouldSend = false;
-                        if (MessageHistory.ContainsKey(i))
+                        Newtonsoft.Json.Linq.JToken Items = BotInstance.CommandConfig["AutoMessage"]["Messages"];
+                        for (int i = 0; i < Items.Count(); i++)
                         {
-                            if (((TimeSpan)(DateTime.Now - MessageHistory[i])).TotalSeconds >= int.Parse(Items[i]["Delay"].ToString())) { ShouldSend = true; }
-                        }
-                        else { ShouldSend = true; }
-                        if (ShouldSend)
-                        {
-                            if (BotInstance.CommandHandler.CommandEnabled(BotInstance.CommandConfig["AutoMessage"], MessageType.Twitch))
-                            { await BotInstance.CommandHandler.SendMessage(Items[i]["Body"].ToString(),BotInstance.CommandConfig["ChannelName"].ToString(),MessageType.Twitch); }
-                            if (BotInstance.CommandHandler.CommandEnabled(BotInstance.CommandConfig["AutoMessage"], MessageType.Discord))
-                            { await BotInstance.CommandHandler.SendMessage(Items[i]["Body"].ToString(), BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(), MessageType.Discord); }
-                            MessageLast = DateTime.Now;
-                            if (!MessageHistory.ContainsKey(i)) { MessageHistory.Add(i, DateTime.Now); }
-                            else { MessageHistory[i] = DateTime.Now; }
-                            return;
+                            bool ShouldSend = false;
+                            if (MessageHistory.ContainsKey(i))
+                            {
+                                if (((TimeSpan)(DateTime.Now - MessageHistory[i])).TotalSeconds >= int.Parse(Items[i]["Delay"].ToString())) { ShouldSend = true; }
+                            }
+                            else { ShouldSend = true; }
+                            if (ShouldSend)
+                            {
+                                if (BotInstance.CommandHandler.CommandEnabled(BotInstance.CommandConfig["AutoMessage"], MessageType.Twitch))
+                                { await BotInstance.CommandHandler.SendMessage(Items[i]["Body"].ToString(), BotInstance.CommandConfig["ChannelName"].ToString(), MessageType.Twitch); }
+                                if (BotInstance.CommandHandler.CommandEnabled(BotInstance.CommandConfig["AutoMessage"], MessageType.Discord))
+                                { await BotInstance.CommandHandler.SendMessage(Items[i]["Body"].ToString(), BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(), MessageType.Discord); }
+                                MessageLast = DateTime.Now;
+                                if (!MessageHistory.ContainsKey(i)) { MessageHistory.Add(i, DateTime.Now); }
+                                else { MessageHistory[i] = DateTime.Now; }
+                                return;
+                            }
                         }
                     }
                 }

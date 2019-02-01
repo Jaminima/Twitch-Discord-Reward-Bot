@@ -41,8 +41,10 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 }
                 else if (Context.Headers.AllKeys.Contains("CurrencyID")) // Get all viewers for the CurrencyID
                 {
+                    string OrderBy = null;
+                    if (Context.Headers["Order"] == "WatchTime" || Context.Headers["Order"] == "Balance") { OrderBy = Context.Headers["Order"]; }
                     try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
-                    List<Data.Objects.Viewer> B = Data.Objects.Viewer.FromCurrency(int.Parse(Context.Headers["CurrencyID"]));
+                    List<Data.Objects.Viewer> B = Data.Objects.Viewer.FromCurrency(int.Parse(Context.Headers["CurrencyID"]),OrderBy);
                     if (B.Count != 0) { Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(B); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, CurrencyID does not match an existing object"; ErrorOccured = true; }
                 }

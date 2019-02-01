@@ -24,7 +24,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
 
             if (Context.URLSegments[1] == "viewer")
             {
-                if ((Context.Headers.AllKeys.Contains("TwitchID") || Context.Headers.AllKeys.Contains("DiscordID") || Context.Headers.AllKeys.Contains("Notifications") || Context.Headers.AllKeys.Contains("WatchTime")) && Context.Headers.AllKeys.Contains("ID"))
+                if ((Context.Headers.AllKeys.Contains("TwitchID") || Context.Headers.AllKeys.Contains("DiscordID") || Context.Headers.AllKeys.Contains("Notifications") || Context.Headers.AllKeys.Contains("WatchTime") || Context.Headers.AllKeys.Contains("DontReward")) && Context.Headers.AllKeys.Contains("ID"))
                 {
                     if (CorrespondingBot != null)
                     {
@@ -35,6 +35,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                             if (Context.Headers["TwitchID"] != null) { B.TwitchID = Context.Headers["TwitchID"]; }
                             if (Context.Headers["Notifications"] != null) { B.LiveNotifcations = Context.Headers["Notifications"] == "True"; }
                             if (Context.Headers["WatchTime"] != null) { B.WatchTime = int.Parse(Context.Headers["WatchTime"]); }
+                            if (Context.Headers["DontReward"] != null) { B.DontReward = Context.Headers["DontReward"] == "True"; }
                             B.Update();
                         }
                         else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, This bot does not have permission to edit that Bank"; }
@@ -249,15 +250,20 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
                     if (L != null)
                     {
-                        Data.Objects.Bot B = new Data.Objects.Bot();
-                        if (Context.Headers.AllKeys.Contains("BotName")) {
-                            B.BotName = Context.Headers["BotName"];
-                            if (!Checks.IsAlphaNumericString(B.BotName)) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, BotName is not AlphaNumeric"; return Context.ResponseObject; }
+                        if (Data.Objects.Bot.FromLogin(L.ID).Count >= 5) { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, You are already at the max currency count"; }
+                        else
+                        {
+                            Data.Objects.Bot B = new Data.Objects.Bot();
+                            if (Context.Headers.AllKeys.Contains("BotName"))
+                            {
+                                B.BotName = Context.Headers["BotName"];
+                                if (!Checks.IsAlphaNumericString(B.BotName)) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, BotName is not AlphaNumeric"; return Context.ResponseObject; }
+                            }
+                            B.OwnerLogin = Data.Objects.Login.FromID(L.ID);
+                            B.Save();
+                            B = Data.Objects.Bot.FromLogin(L.ID, true).Last();
+                            Context.ResponseObject.Data = B.ToJson();
                         }
-                        B.OwnerLogin = Data.Objects.Login.FromID(L.ID);
-                        B.Save();
-                        B = Data.Objects.Bot.FromLogin(L.ID, true).Last();
-                        Context.ResponseObject.Data = B.ToJson();
                     }
                     else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
                 }
@@ -332,11 +338,15 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
                     if (L != null)
                     {
-                        Data.Objects.Currency B = new Data.Objects.Currency();
-                        B.OwnerLogin = Data.Objects.Login.FromID(L.ID);
-                        B.Save();
-                        B = Data.Objects.Currency.FromLogin(L.ID).Last();
-                        Context.ResponseObject.Data = B.ToJson();
+                        if (Data.Objects.Currency.FromLogin(L.ID).Count >= 5) { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, You are already at the max currency count"; }
+                        else
+                        {
+                            Data.Objects.Currency B = new Data.Objects.Currency();
+                            B.OwnerLogin = Data.Objects.Login.FromID(L.ID);
+                            B.Save();
+                            B = Data.Objects.Currency.FromLogin(L.ID).Last();
+                            Context.ResponseObject.Data = B.ToJson();
+                        }
                     }
                     else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
                 }

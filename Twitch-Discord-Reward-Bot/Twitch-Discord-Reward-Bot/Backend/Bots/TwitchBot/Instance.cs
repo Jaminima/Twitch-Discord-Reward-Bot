@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
-using TwitchLib.Communication.Events;
+//using TwitchLib.Communication.Events;
 
 namespace Twitch_Discord_Reward_Bot.Backend.Bots.TwitchBot
 {
@@ -31,18 +31,37 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.TwitchBot
             Client.OnNewSubscriber += Events.Subbed;
             Client.OnReSubscriber += Events.ReSubbed;
             Client.OnGiftedSubscription += Events.SubGifted;
-            Client.OnDisconnected += BotDisconnected;
+            //Client.OnDisconnected += BotDisconnected;
+            Client.OnConnectionError += BotConnectionError;
+            //Client.OnError += BotError;
             Client.Connect();
             Console.WriteLine("Started Twitch Bot for Currency: " + BotInstance.Currency.ID);
         }
 
-        public void BotDisconnected(object Sender, OnDisconnectedEventArgs e)
+        //public void BotDisconnected(object Sender, OnDisconnectedEventArgs e)
+        //{
+        //    if (BotInstance.Isrunning)
+        //    {
+        //        StartBot();
+        //    }
+        //}
+
+        public void BotConnectionError(object Sender, TwitchLib.Client.Events.OnConnectionErrorArgs e)
         {
+            Console.WriteLine(e);
             if (BotInstance.Isrunning)
             {
                 StartBot();
             }
         }
 
+        //    public void BotError(object Sender, OnErrorEventArgs e)
+        //    {
+        //        Console.WriteLine(e);
+        //        if (BotInstance.Isrunning)
+        //        {
+        //            StartBot();
+        //        }
+        //    }
     }
 }

@@ -13,7 +13,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
         public int Balance, WatchTime;
         public string TwitchID, DiscordID;
         public Currency Currency;
-        public bool LiveNotifcations;
+        public bool LiveNotifcations, DontReward;
 
         public static Viewer FromJson(Newtonsoft.Json.Linq.JToken Json)
         {
