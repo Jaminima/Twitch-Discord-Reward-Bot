@@ -167,32 +167,35 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     try { int.Parse(Context.URL.Split(new string[] { "currencyid%3d" }, StringSplitOptions.None)[1] ); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
                     Data.Objects.Currency C = Data.Objects.Currency.FromID(int.Parse(Context.URL.Split(new string[] { "currencyid%3d" }, StringSplitOptions.None)[1]));
                     if (C == null) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, CurrencyID does not match an existing object"; ErrorOccured = true; }
-                    C.LoadConfigs(true);
-                    WebRequest Req = WebRequest.Create("https://api.nightbot.tv/oauth2/token");
-                    Req.Method = "POST";
-                    byte[] PostData = Encoding.UTF8.GetBytes("client_id=" + C.LoginConfig["NightBot"]["ClientId"] +
-                    "&client_secret=" + C.LoginConfig["NightBot"]["ClientSecret"] +
-                    "&grant_type=authorization_code&redirect_uri="+Backend.Init.APIConfig["WebURL"]+"/nightbot/&code="+Code);
-                    Req.Method = "POST";
-                    Req.ContentType = "application/x-www-form-urlencoded";
-                    Req.ContentLength = PostData.Length;
-                    Stream PostStream = Req.GetRequestStream();
-                    PostStream.Write(PostData, 0, PostData.Length);
-                    PostStream.Flush();
-                    PostStream.Close();
-                    try
+                    else
                     {
-                        WebResponse Res = Req.GetResponse();
-                        string D = new StreamReader(Res.GetResponseStream()).ReadToEnd();
-                        Newtonsoft.Json.Linq.JObject JD = Newtonsoft.Json.Linq.JObject.Parse(D);
-                        C.LoginConfig["NightBot"]["RefreshToken"] = JD["refresh_token"];
-                        C.UpdateConfigs();
-                    }
-                    catch (WebException E)
-                    {
-                        ErrorOccured = true;
-                        Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Something went wrong";
-                        Console.WriteLine(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
+                        C.LoadConfigs(true);
+                        WebRequest Req = WebRequest.Create("https://api.nightbot.tv/oauth2/token");
+                        Req.Method = "POST";
+                        byte[] PostData = Encoding.UTF8.GetBytes("client_id=" + C.LoginConfig["NightBot"]["ClientId"] +
+                        "&client_secret=" + C.LoginConfig["NightBot"]["ClientSecret"] +
+                        "&grant_type=authorization_code&redirect_uri=" + Backend.Init.APIConfig["WebURL"] + "/nightbot/&code=" + Code);
+                        Req.Method = "POST";
+                        Req.ContentType = "application/x-www-form-urlencoded";
+                        Req.ContentLength = PostData.Length;
+                        Stream PostStream = Req.GetRequestStream();
+                        PostStream.Write(PostData, 0, PostData.Length);
+                        PostStream.Flush();
+                        PostStream.Close();
+                        try
+                        {
+                            WebResponse Res = Req.GetResponse();
+                            string D = new StreamReader(Res.GetResponseStream()).ReadToEnd();
+                            Newtonsoft.Json.Linq.JObject JD = Newtonsoft.Json.Linq.JObject.Parse(D);
+                            C.LoginConfig["NightBot"]["RefreshToken"] = JD["refresh_token"];
+                            C.UpdateConfigs();
+                        }
+                        catch (WebException E)
+                        {
+                            ErrorOccured = true;
+                            Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Something went wrong";
+                            Console.WriteLine(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
+                        }
                     }
                 }
                 else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "No Code Provided"; }
@@ -203,31 +206,34 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 try { int.Parse(Context.URL.Split(new string[] { "currencyid%3d" }, StringSplitOptions.None)[1]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
                 Data.Objects.Currency C = Data.Objects.Currency.FromID(int.Parse(Context.URL.Split(new string[] { "currencyid%3d" }, StringSplitOptions.None)[1]));
                 if (C == null) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, CurrencyID does not match an existing object"; ErrorOccured = true; }
-                C.LoadConfigs(true);
-                WebRequest Req = WebRequest.Create("https://streamlabs.com/api/v1.0/token");
-                Req.Method = "POST";
-                Req.ContentType = "application/x-www-form-urlencoded";
-                byte[] PostData = Encoding.UTF8.GetBytes("grant_type=authorization_code&client_id=" + C.LoginConfig["StreamLabs"]["ClientId"] +
-                    "&client_secret=" + C.LoginConfig["StreamLabs"]["ClientSecret"] +
-                    "&redirect_uri="+Backend.Init.APIConfig["WebURL"]+"/streamlabs/&code="+Code);
-                Req.ContentLength = PostData.Length;
-                Stream PostStream = Req.GetRequestStream();
-                PostStream.Write(PostData, 0, PostData.Length);
-                PostStream.Flush();
-                PostStream.Close();
-                WebResponse Res;
-                try
+                else
                 {
-                    Res = Req.GetResponse();
-                    Newtonsoft.Json.Linq.JObject D = Newtonsoft.Json.Linq.JObject.Parse(new StreamReader(Res.GetResponseStream()).ReadToEnd());
-                    C.LoginConfig["StreamLabs"]["RefreshToken"] = D["refresh_token"];
-                    C.UpdateConfigs();
-                }
-                catch (WebException E)
-                {
-                    ErrorOccured = true;
-                    Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Something went wrong";
-                    Console.WriteLine(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
+                    C.LoadConfigs(true);
+                    WebRequest Req = WebRequest.Create("https://streamlabs.com/api/v1.0/token");
+                    Req.Method = "POST";
+                    Req.ContentType = "application/x-www-form-urlencoded";
+                    byte[] PostData = Encoding.UTF8.GetBytes("grant_type=authorization_code&client_id=" + C.LoginConfig["StreamLabs"]["ClientId"] +
+                        "&client_secret=" + C.LoginConfig["StreamLabs"]["ClientSecret"] +
+                        "&redirect_uri=" + Backend.Init.APIConfig["WebURL"] + "/streamlabs/&code=" + Code);
+                    Req.ContentLength = PostData.Length;
+                    Stream PostStream = Req.GetRequestStream();
+                    PostStream.Write(PostData, 0, PostData.Length);
+                    PostStream.Flush();
+                    PostStream.Close();
+                    WebResponse Res;
+                    try
+                    {
+                        Res = Req.GetResponse();
+                        Newtonsoft.Json.Linq.JObject D = Newtonsoft.Json.Linq.JObject.Parse(new StreamReader(Res.GetResponseStream()).ReadToEnd());
+                        C.LoginConfig["StreamLabs"]["RefreshToken"] = D["refresh_token"];
+                        C.UpdateConfigs();
+                    }
+                    catch (WebException E)
+                    {
+                        ErrorOccured = true;
+                        Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Something went wrong";
+                        Console.WriteLine(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
+                    }
                 }
             }
             else if (Context.URLSegments[1] == "twitch")
@@ -236,31 +242,33 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 try { int.Parse(Context.URL.Split(new string[] { "currencyid%3d" }, StringSplitOptions.None)[1]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
                 Data.Objects.Currency C = Data.Objects.Currency.FromID(int.Parse(Context.URL.Split(new string[] { "currencyid%3d" }, StringSplitOptions.None)[1]));
                 if (C == null) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, CurrencyID does not match an existing object"; ErrorOccured = true; }
-                C.LoadConfigs(true);
-                WebRequest Req = WebRequest.Create("https://id.twitch.tv/oauth2/token");
-                Req.Method = "POST";
-                Req.ContentType = "application/x-www-form-urlencoded";
-                byte[] PostData = Encoding.UTF8.GetBytes("grant_type=authorization_code&client_id=" + C.LoginConfig["Twitch"]["API"]["ClientId"] +
-                    "&client_secret=" + C.LoginConfig["Twitch"]["API"]["ClientSecret"] +
-                    "&redirect_uri=" + Backend.Init.APIConfig["WebURL"] + "/twitch/&code=" + Code);
-                Req.ContentLength = PostData.Length;
-                Stream PostStream = Req.GetRequestStream();
-                PostStream.Write(PostData, 0, PostData.Length);
-                PostStream.Flush();
-                PostStream.Close();
-                WebResponse Res;
-                try
-                {
-                    Res = Req.GetResponse();
-                    Newtonsoft.Json.Linq.JObject D = Newtonsoft.Json.Linq.JObject.Parse(new StreamReader(Res.GetResponseStream()).ReadToEnd());
-                    C.LoginConfig["Twitch"]["API"]["RefreshToken"] = D["refresh_token"];
-                    C.UpdateConfigs();
-                }
-                catch (WebException E)
-                {
-                    ErrorOccured = true;
-                    Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Something went wrong";
-                    Console.WriteLine(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
+                else {
+                    C.LoadConfigs(true);
+                    WebRequest Req = WebRequest.Create("https://id.twitch.tv/oauth2/token");
+                    Req.Method = "POST";
+                    Req.ContentType = "application/x-www-form-urlencoded";
+                    byte[] PostData = Encoding.UTF8.GetBytes("grant_type=authorization_code&client_id=" + C.LoginConfig["Twitch"]["API"]["ClientId"] +
+                        "&client_secret=" + C.LoginConfig["Twitch"]["API"]["ClientSecret"] +
+                        "&redirect_uri=" + Backend.Init.APIConfig["WebURL"] + "/twitch/&code=" + Code);
+                    Req.ContentLength = PostData.Length;
+                    Stream PostStream = Req.GetRequestStream();
+                    PostStream.Write(PostData, 0, PostData.Length);
+                    PostStream.Flush();
+                    PostStream.Close();
+                    WebResponse Res;
+                    try
+                    {
+                        Res = Req.GetResponse();
+                        Newtonsoft.Json.Linq.JObject D = Newtonsoft.Json.Linq.JObject.Parse(new StreamReader(Res.GetResponseStream()).ReadToEnd());
+                        C.LoginConfig["Twitch"]["API"]["RefreshToken"] = D["refresh_token"];
+                        C.UpdateConfigs();
+                    }
+                    catch (WebException E)
+                    {
+                        ErrorOccured = true;
+                        Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Something went wrong";
+                        Console.WriteLine(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
+                    }
                 }
             }
             else//Inform requestor that the url does not got anywhere

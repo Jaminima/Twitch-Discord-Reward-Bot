@@ -571,7 +571,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                         else { SongRequestHistory[e.SenderID] = JData["item"]["_id"].ToString(); }
                                         Objects.Viewer.AdjustBalance(B, Cost, "-");
                                         string MessageContent = JData["item"]["track"]["title"] + " by " + JData["item"]["track"]["artist"] + " -- " + JData["item"]["track"]["url"];
-                                        await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Responses"]["Requested"].ToString(), e,Amount: int.Parse(JData["item"]["_position"].ToString()), OtherString: MessageContent);
+                                        await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Request"]["Responses"]["Requested"].ToString(), e, Amount: int.Parse(JData["item"]["_position"].ToString()), OtherString: MessageContent);
                                     }
                                     else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
                                 }
@@ -684,8 +684,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             }
                             else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Moderator"]["Responses"]["NotMod"].ToString(), e); }
                         }
-                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e)&&
-                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Pause"]["Commands"],Command))
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["NightBot"], e) &&
+                            JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Pause"]["Commands"], Command))
                         {
                             if (IsModerator(e))
                             {
@@ -738,7 +738,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                     if (JData["status"].ToString() == "200")
                                     {
                                         string MessageContent = JData["item"]["track"]["title"] + " by " + JData["item"]["track"]["artist"] + " -- " + JData["item"]["track"]["url"];
-                                        await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Remove"]["Response"].ToString(), e,OtherString:MessageContent);
+                                        await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Moderator"]["Remove"]["Response"].ToString(), e, OtherString: MessageContent);
                                     }
                                     else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["NightBot"]["Responses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
                                 }
@@ -1045,11 +1045,6 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             ParamaterisedMessage = ParamaterisedMessage.Replace("<@CurrencyAcronym>", BotInstance.CommandConfig["CurrencyAcronym"].ToString());
             ParamaterisedMessage = ParamaterisedMessage.Replace("<@Prefix>", BotInstance.CommandConfig["Prefix"].ToString());
 
-            foreach (Newtonsoft.Json.Linq.JToken Emote in BotInstance.CommandConfig["Emotes"])
-            {
-                if (MessageType == MessageType.Discord) { ParamaterisedMessage = ParamaterisedMessage.Replace("<@" + Emote["Name"].ToString() + ">", Emote["Discord"].ToString()); }
-                if (MessageType == MessageType.Twitch) { ParamaterisedMessage = ParamaterisedMessage.Replace("<@" + Emote["Name"].ToString() + ">", Emote["Twitch"].ToString()); }
-            }
 
             if (MessageType == MessageType.Twitch)
             {
@@ -1064,6 +1059,13 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 if (e != null) ParamaterisedMessage = ParamaterisedMessage.Replace("<@SenderUser>", "<@" + e.SenderID + ">");
             }
             ParamaterisedMessage = ParamaterisedMessage.Replace("<@OtherString>", OtherString);
+
+            foreach (Newtonsoft.Json.Linq.JToken Emote in BotInstance.CommandConfig["Emotes"])
+            {
+                if (MessageType == MessageType.Discord) { ParamaterisedMessage = ParamaterisedMessage.Replace("<@" + Emote["Name"].ToString() + ">", Emote["Discord"].ToString()); }
+                if (MessageType == MessageType.Twitch) { ParamaterisedMessage = ParamaterisedMessage.Replace("<@" + Emote["Name"].ToString() + ">", Emote["Twitch"].ToString()); }
+            }
+
             return ParamaterisedMessage;
         }
 
