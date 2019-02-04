@@ -66,11 +66,18 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 {
                     try { int.Parse(Context.Headers["ID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
                     Data.Objects.Currency C = Data.Objects.Currency.FromID(int.Parse(Context.Headers["ID"]));
-                    if (Context.Headers.AllKeys.Contains("AccessToken")) { // If a valid accesstoken is provided, get private information
-                        Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
-                        if ( L != null) {
-                            if (Data.Objects.Currency.FromLogin(L.ID).Find(x => x.ID == C.ID) != null) { C.LoadConfigs(true); }
+                    if (Context.Headers.AllKeys.Contains("AccessToken")&& Context.Headers.AllKeys.Contains("LoginID"))
+                    { // If a valid accesstoken is provided, get private information
+                        try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
+                        Data.Objects.Login L = Data.Objects.Login.FromID(int.Parse(Context.Headers["LoginID"]),true);
+                        if (L != null) {
+                            if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken))
+                            {
+                                if (Data.Objects.Currency.FromLogin(L.ID).Find(x => x.ID == C.ID) != null) { C.LoadConfigs(true); }
+                            }
+                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
                         }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, LoginID does not correspond to an existing user"; }
                     }
                     if (C != null) { Context.ResponseObject.Data = C.ToJson(); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not match an existing object"; ErrorOccured = true; }
@@ -109,12 +116,6 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     if (L != null) { Context.ResponseObject.Data = L.ToJson(); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Email does not match an existing object"; ErrorOccured = true; }
                 }
-                else if (Context.Headers.AllKeys.Contains("AccessToken"))//Get Login for AccessToken
-                {
-                    Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
-                    if (L != null) { L.HashedPassword = null; Context.ResponseObject.Data = L.ToJson(); }
-                    else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken does not match an existing object"; ErrorOccured = true; }
-                }
                 else//Inform requestor that we dont have any infomation to work with
                 {
                     ErrorOccured = true;
@@ -123,17 +124,23 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             }
             else if (Context.URLSegments[1] == "bot")
             {
-                if (Context.Headers.AllKeys.Contains("ID"))//Get Bot where ID matches
+                if (Context.Headers.AllKeys.Contains("ID")&& Context.Headers.AllKeys.Contains("LoginID"))//Get Bot where ID matches
                 {
                     bool WithSecretData = false;
                     try { int.Parse(Context.Headers["ID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
                     if (Context.Headers.AllKeys.Contains("AccessToken"))// If a valid accesstoken is provided, get private information
                     {
-                        Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
+                        try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
+                        Data.Objects.Login L = Data.Objects.Login.FromID(int.Parse(Context.Headers["LoginID"]), true);
                         if (L != null)
                         {
-                            if (Data.Objects.Bot.FromLogin(L.ID).Find(x => x.ID == int.Parse(Context.Headers["ID"])) != null) { WithSecretData = true; }
+                            if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken))
+                            {
+                                if (Data.Objects.Bot.FromLogin(L.ID).Find(x => x.ID == int.Parse(Context.Headers["ID"])) != null) { WithSecretData = true; }
+                            }
+                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
                         }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, LoginID does not correspond to an existing user"; }
                     }
                     Data.Objects.Bot B = Data.Objects.Bot.FromID(int.Parse(Context.Headers["ID"]),WithSecretData);
                     if (B != null) { Context.ResponseObject.Data = B.ToJson(); }

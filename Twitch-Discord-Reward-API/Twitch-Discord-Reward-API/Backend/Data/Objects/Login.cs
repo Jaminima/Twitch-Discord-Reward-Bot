@@ -49,16 +49,6 @@ WHERE (((Logins.Email)=@Email));
             return FromRData(RData, WithSecretData);
         }
 
-        public static Login FromAccessToken(string AccessToken)
-        {
-            List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("AccessToken", AccessToken) };
-            List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Logins.LoginID, Logins.UserName, Logins.HashedPassword, Logins.AccessToken, Logins.LastLoginDateTime, Logins.Email
-FROM Logins
-WHERE (((Logins.AccessToken)=@AccessToken));
-",Params);
-            return FromRData(RData, true);
-        }
-
         static Login FromRData(List<string[]> RData, bool WithSecretData)
         {
             if (RData.Count == 0) { return null; }
@@ -81,7 +71,7 @@ WHERE (((Logins.AccessToken)=@AccessToken));
             {
                 List<OleDbParameter> Params = new List<OleDbParameter> {
                     new OleDbParameter("HashedPassword",this.HashedPassword),
-                    new OleDbParameter("AccessToken",Networking.TokenSystem.CreateToken(32)),
+                    new OleDbParameter("AccessToken",Init.ScryptEncoder.Encode(Networking.TokenSystem.CreateToken(32))),
                     new OleDbParameter("LastLoginDateTime",DateTime.Now.ToString())
                 };
                 string PreValue = ""; string PostValue = "";
@@ -104,7 +94,7 @@ WHERE (((Logins.AccessToken)=@AccessToken));
                 this.AccessToken = Networking.TokenSystem.CreateToken(32);
                 this.LastLoginDateTime = DateTime.Now;
                 List<OleDbParameter> Params = new List<OleDbParameter> {
-                    new OleDbParameter("AccessToken",this.AccessToken),
+                    new OleDbParameter("AccessToken",Init.ScryptEncoder.Encode(this.AccessToken)),
                     new OleDbParameter("LastLoginDateTime",this.LastLoginDateTime.ToString()),
                     new OleDbParameter("ID",this.ID)
                 };
