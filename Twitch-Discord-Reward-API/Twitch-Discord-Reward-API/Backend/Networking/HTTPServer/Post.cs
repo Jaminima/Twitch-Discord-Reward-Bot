@@ -229,9 +229,10 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             }
             else if (Context.URLSegments[1] == "bot")
             {
-                if (Context.Headers.AllKeys.Contains("RefreshToken"))
+                if (Context.Headers.AllKeys.Contains("RefreshToken") && Context.Headers.AllKeys.Contains("BotID"))
                 {
-                    Backend.Data.Objects.Bot B = Backend.Data.Objects.Bot.FromRefreshToken(Context.Headers["RefreshToken"]);
+                    try { int.Parse(Context.Headers["BotID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
+                    Data.Objects.Bot B = Data.Objects.Bot.FromID(int.Parse(Context.Headers["BotID"]));
                     if (B != null)
                     {
                         B.PerformRefresh();
@@ -284,10 +285,13 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                                     B.BotName = Context.Headers["BotName"];
                                     if (!Checks.IsAlphaNumericString(B.BotName)) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, BotName is not AlphaNumeric"; return Context.ResponseObject; }
                                 }
+                                else { B.BotName = "No Name Given"; }
                                 B.OwnerLogin = Data.Objects.Login.FromID(L.ID);
                                 B.Save();
-                                B = Data.Objects.Bot.FromLogin(L.ID, true).Last();
-                                Context.ResponseObject.Data = B.ToJson();
+                                Data.Objects.Bot NewB = Data.Objects.Bot.FromLogin(L.ID, true).Last();
+                                NewB.RefreshToken = B.RefreshToken;
+                                NewB.AccessToken = B.AccessToken;
+                                Context.ResponseObject.Data = NewB.ToJson();
                             }
                         }
                         else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
@@ -399,9 +403,12 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
 
         static Data.Objects.Bot AuthCheck(StandardisedRequestObject Context)
         {
-            if (Context.Headers.AllKeys.Contains("AuthToken"))
+            if (Context.Headers.AllKeys.Contains("AuthToken") && Context.Headers.AllKeys.Contains("BotID"))
             {
-                return Data.Objects.Bot.FromAccessToken(Context.Headers["AuthToken"]);
+                try { int.Parse(Context.Headers["BotID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed BotID"; return null; }
+                Data.Objects.Bot Bot = Data.Objects.Bot.FromID(int.Parse(Context.Headers["BotID"]),true);
+                if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AuthToken"], Bot.AccessToken)) { return Bot; }
+                else { return null; }
             }
             else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AuthToken is missing"; return null; }
         }
