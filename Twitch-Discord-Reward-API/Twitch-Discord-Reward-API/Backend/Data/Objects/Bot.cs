@@ -89,63 +89,6 @@ WHERE (((Bots.CurrencyID)=@CurrencyID));
             return Bots;
         }
 
-        public static Bot FromAccessToken(string AccessToken)
-        {
-            List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("AccessToken", AccessToken) };
-            List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.IsSuperBot, Bots.BotName
-FROM Bots
-WHERE ((Bots.AccessToken)=@AccessToken);
-", Params);
-            if (RData.Count == 0) { return null; }
-            Bot Bot = new Bot();
-            Bot.ID = int.Parse(RData[0][0]);
-            if (RData[0][1] != "") { Bot.Currency = Currency.FromID(int.Parse(RData[0][1])); }
-            Bot.AccessToken = RData[0][2];
-            Bot.TokenRefreshDateTime = DateTime.Parse(RData[0][3]);
-            Bot.RefreshToken = RData[0][4];
-            Bot.OwnerLogin = Login.FromID(int.Parse(RData[0][5]));
-            Bot.IsSuperBot = RData[0][6] == "True";
-            Bot.BotName = RData[0][7];
-            if ((int)((TimeSpan)(DateTime.Now - Bot.TokenRefreshDateTime)).TotalMinutes < 10) { return Bot; }
-            else { return null; }
-        }
-
-        public static Bot FromRefreshToken(string RefreshToken)
-        {
-            List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("RefreshToken", RefreshToken) };
-            List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID, Bots.IsSuperBot, Bots.BotName
-FROM Bots
-WHERE ((Bots.RefreshToken)=@RefreshToken);
-", Params);
-            if (RData.Count == 0) { return null; }
-            Bot Bot = new Bot();
-            Bot.ID = int.Parse(RData[0][0]);
-            if (RData[0][1] != "") { Bot.Currency = Currency.FromID(int.Parse(RData[0][1])); }
-            Bot.AccessToken = RData[0][2];
-            Bot.TokenRefreshDateTime = DateTime.Parse(RData[0][3]);
-            Bot.RefreshToken = RData[0][4];
-            Bot.OwnerLogin = Login.FromID(int.Parse(RData[0][5]));
-            Bot.IsSuperBot = RData[0][6] == "True";
-            Bot.BotName = RData[0][7];
-            return Bot;
-        }
-
-        public static Bot FromInviteCode(string InviteCode)
-        {
-            List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("FromInviteCode", InviteCode) };
-            List<string[]> RData = Init.SQLi.ExecuteReader(@"SELECT Bots.BotID, Bots.CurrencyID, Bots.AccessToken, Bots.TokenRefreshDateTime, Bots.RefreshToken, Bots.LoginID,  Bots.IsSuperBot
-FROM Bots
-WHERE ((Bots.InviteCode)=@InviteCode);
-", Params);
-            if (RData.Count == 0) { return null; }
-            Bot Bot = new Bot();
-            Bot.ID = int.Parse(RData[0][0]);
-            if (RData[0][1] != "") { Bot.Currency = Currency.FromID(int.Parse(RData[0][1])); }
-            Bot.OwnerLogin = Login.FromID(int.Parse(RData[0][5]));
-            Bot.IsSuperBot = RData[0][6] == "True";
-            return Bot;
-        }
-
         public bool Save()
         {
             this.AccessToken = Networking.TokenSystem.CreateToken(32);
@@ -153,8 +96,8 @@ WHERE ((Bots.InviteCode)=@InviteCode);
             this.TokenRefreshDateTime = DateTime.Now;
             List<OleDbParameter> Params = new List<OleDbParameter> {
                 new OleDbParameter("LoginID",this.OwnerLogin.ID),
-                new OleDbParameter("AccessToken",this.AccessToken),
-                new OleDbParameter("RefreshToken",this.RefreshToken),
+                new OleDbParameter("AccessToken",Init.ScryptEncoder.Encode(this.AccessToken)),
+                new OleDbParameter("RefreshToken",Init.ScryptEncoder.Encode(this.RefreshToken)),
                 new OleDbParameter("TokenRefreshDateTime",this.TokenRefreshDateTime.ToString()),
                 new OleDbParameter("BotName",this.BotName)
             };
@@ -187,9 +130,9 @@ WHERE (((Bots.BotID) = @ID));
                 this.RefreshToken = Networking.TokenSystem.CreateToken(64);
                 List<OleDbParameter> Params = new List<OleDbParameter>
                 {
-                    new OleDbParameter("AccessToken",this.AccessToken),
+                    new OleDbParameter("AccessToken",Init.ScryptEncoder.Encode(this.AccessToken)),
                     new OleDbParameter("TokenRefreshDateTime",this.TokenRefreshDateTime.ToString()),
-                    new OleDbParameter("RefreshToken",this.RefreshToken),
+                    new OleDbParameter("RefreshToken",Init.ScryptEncoder.Encode(this.RefreshToken)),
                     new OleDbParameter("ID",this.ID)
                 };
                 Init.SQLi.Execute(@"UPDATE Bots SET Bots.AccessToken = @AccessToken, Bots.TokenRefreshDateTime = @TokenRefreshDateTime, Bots.RefreshToken = @RefreshToken

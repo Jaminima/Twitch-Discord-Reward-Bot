@@ -3,6 +3,7 @@
     "WebAddress": "https://owlcoin.co.uk",
     "Port": 443,
     "AddressPath": "webapi",
+	"ID":0,
     "RefreshToken": ""
   }
 }

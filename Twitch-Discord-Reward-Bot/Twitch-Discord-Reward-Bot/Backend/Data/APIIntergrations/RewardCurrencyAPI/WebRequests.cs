@@ -52,7 +52,10 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
                     Req.Headers.Add(HeaderPair.Key, HeaderPair.Value);
                 }
             }
-            if (Auth) { Req.Headers.Add("AuthToken",GetAuthToken()); }
+            if (Auth) {
+                Req.Headers.Add("AuthToken",GetAuthToken());
+                Req.Headers.Add("BotID", Init.MasterConfig["API"]["ID"].ToString());
+            }
             Byte[] PostData = new byte[] { };
             if (Data != null) { PostData = Encoding.UTF8.GetBytes(Data.ToString()); }
             Req.ContentLength = PostData.Length;
@@ -85,6 +88,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
                 if (Init.MasterConfig["API"]["AddressPath"].ToString() != "") { URLStart += Init.MasterConfig["API"]["AddressPath"] + "/"; }
                 WebRequest Req = WebRequest.Create(URLStart + "bot");
                 Req.Headers.Add("RefreshToken", Init.MasterConfig["API"]["RefreshToken"].ToString());
+                Req.Headers.Add("BotID", Init.MasterConfig["API"]["ID"].ToString());
                 Req.Method = "POST";
                 Stream PostStream = Req.GetRequestStream();
                 PostStream.Write(new byte[] { }, 0, new byte[] { }.Length);

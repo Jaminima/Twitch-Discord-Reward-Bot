@@ -129,17 +129,22 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             }
             else if (Context.URLSegments[1] == "login")
             {
-                if ((Context.Headers.AllKeys.Contains("UserName") || Context.Headers.AllKeys.Contains("Email") || Context.Headers.AllKeys.Contains("Password")) && Context.Headers.AllKeys.Contains("AccessToken"))
+                if ((Context.Headers.AllKeys.Contains("UserName") || Context.Headers.AllKeys.Contains("Email") || Context.Headers.AllKeys.Contains("Password")) && Context.Headers.AllKeys.Contains("AccessToken") && Context.Headers.AllKeys.Contains("ID"))
                 {
-                    Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
+                    try { int.Parse(Context.Headers["ID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
+                    Data.Objects.Login L = Data.Objects.Login.FromID(int.Parse(Context.Headers["ID"]),true);
                     if (L != null)
                     {
-                        if (Context.Headers["Email"] != null) { L.Email = Context.Headers["Email"]; }
-                        if (Context.Headers["UserName"] != null) { L.UserName = Context.Headers["UserName"]; }
-                        if (Context.Headers["HashedPassword"] != null) { L.HashedPassword = new Scrypt.ScryptEncoder().Encode(Context.Headers["Password"]); }
-                        if (!L.UpdateUserNameEmailPassword()) { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, That UserName or Email may be in use by another account"; }
+                        if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken))
+                        {
+                            if (Context.Headers["Email"] != null) { L.Email = Context.Headers["Email"]; }
+                            if (Context.Headers["UserName"] != null) { L.UserName = Context.Headers["UserName"]; }
+                            if (Context.Headers["Password"] != null) { L.HashedPassword = new Scrypt.ScryptEncoder().Encode(Context.Headers["Password"]); }
+                            if (!L.UpdateUserNameEmailPassword()) { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, That UserName or Email may be in use by another account"; }
+                        }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
                     }
-                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
+                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not correspond to an existing user"; }
                 }
                 else if (Context.Headers.AllKeys.Contains("Password"))
                 {
@@ -179,14 +184,16 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 }
                 else if (Context.URLSegments.Length == 3)
                 {
-                    if (Context.Headers.AllKeys.Contains("AccessToken") && Context.URLSegments[2] == "delete")
+                    try { int.Parse(Context.Headers["ID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
+                    if (Context.Headers.AllKeys.Contains("AccessToken") && Context.Headers.AllKeys.Contains("ID") && Context.URLSegments[2] == "delete")
                     {
-                        Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
+                        Data.Objects.Login L = Data.Objects.Login.FromID(int.Parse(Context.Headers["ID"]),true);
                         if (L != null)
                         {
-                            L.Delete();
+                            if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken)) { L.Delete(); }
+                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
                         }
-                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not correspond to an existing user"; }
                     }
                 }
                 else
@@ -222,9 +229,10 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             }
             else if (Context.URLSegments[1] == "bot")
             {
-                if (Context.Headers.AllKeys.Contains("RefreshToken"))
+                if (Context.Headers.AllKeys.Contains("RefreshToken") && Context.Headers.AllKeys.Contains("BotID"))
                 {
-                    Backend.Data.Objects.Bot B = Backend.Data.Objects.Bot.FromRefreshToken(Context.Headers["RefreshToken"]);
+                    try { int.Parse(Context.Headers["BotID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
+                    Data.Objects.Bot B = Data.Objects.Bot.FromID(int.Parse(Context.Headers["BotID"]));
                     if (B != null)
                     {
                         B.PerformRefresh();
@@ -232,48 +240,63 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     }
                     else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Refresh Token does not correspond to a bot"; }
                 }
-                else if (Context.Headers.AllKeys.Contains("AccessToken") && Context.Headers.AllKeys.Contains("CurrencyID") && Context.Headers.AllKeys.Contains("BotID"))
+                else if (Context.Headers.AllKeys.Contains("AccessToken") && Context.Headers.AllKeys.Contains("CurrencyID") && Context.Headers.AllKeys.Contains("BotID") && Context.Headers.AllKeys.Contains("LoginID"))
                 {
                     try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
-                    Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
+                    try { int.Parse(Context.Headers["BotID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed BotID"; return Context.ResponseObject; }
+                    try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed LoginID"; return Context.ResponseObject; }
+                    Data.Objects.Login L = Data.Objects.Login.FromID(int.Parse(Context.Headers["LoginID"]), true);
                     if (L != null)
                     {
-                        Data.Objects.Bot B = Data.Objects.Bot.FromID(int.Parse(Context.Headers["BotID"]));
-                        if (B != null)
+                        if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken))
                         {
-                            if (B.Currency == null)
+                            Data.Objects.Bot B = Data.Objects.Bot.FromID(int.Parse(Context.Headers["BotID"]));
+                            if (B != null)
                             {
-                                B.Currency = Data.Objects.Currency.FromLogin(L.ID).Find(x => x.ID == int.Parse(Context.Headers["CurrencyID"]));
-                                if (B.Currency == null) { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is not allowed to edit that currency"; }
-                                else { B.UpdateCurrency(); }
+                                if (B.Currency == null)
+                                {
+                                    B.Currency = Data.Objects.Currency.FromLogin(L.ID).Find(x => x.ID == int.Parse(Context.Headers["CurrencyID"]));
+                                    if (B.Currency == null) { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is not allowed to edit that currency"; }
+                                    else { B.UpdateCurrency(); }
+                                }
+                                else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Bot is already bound to a currency"; }
                             }
-                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Bot is already bound to a currency"; }
+                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, InviteCode doesnt match any bot"; }
                         }
-                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, InviteCode doesnt match any bot"; }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
                     }
-                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
+                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not correspond to an existing user"; }
                 }
-                else if (Context.Headers.AllKeys.Contains("AccessToken"))
+                else if (Context.Headers.AllKeys.Contains("AccessToken") && Context.Headers.AllKeys.Contains("LoginID"))
                 {
-                    Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
+                    try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed LoginID"; return Context.ResponseObject; }
+                    try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed LoginID"; return Context.ResponseObject; }
+                    Data.Objects.Login L = Data.Objects.Login.FromID(int.Parse(Context.Headers["LoginID"]), true);
                     if (L != null)
                     {
-                        if (Data.Objects.Bot.FromLogin(L.ID).Count >= 5) { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, You are already at the max currency count"; }
-                        else
+                        if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken))
                         {
-                            Data.Objects.Bot B = new Data.Objects.Bot();
-                            if (Context.Headers.AllKeys.Contains("BotName"))
+                            if (Data.Objects.Bot.FromLogin(L.ID).Count >= 5) { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, You are already at the max currency count"; }
+                            else
                             {
-                                B.BotName = Context.Headers["BotName"];
-                                if (!Checks.IsAlphaNumericString(B.BotName)) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, BotName is not AlphaNumeric"; return Context.ResponseObject; }
+                                Data.Objects.Bot B = new Data.Objects.Bot();
+                                if (Context.Headers.AllKeys.Contains("BotName"))
+                                {
+                                    B.BotName = Context.Headers["BotName"];
+                                    if (!Checks.IsAlphaNumericString(B.BotName)) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, BotName is not AlphaNumeric"; return Context.ResponseObject; }
+                                }
+                                else { B.BotName = "No Name Given"; }
+                                B.OwnerLogin = Data.Objects.Login.FromID(L.ID);
+                                B.Save();
+                                Data.Objects.Bot NewB = Data.Objects.Bot.FromLogin(L.ID, true).Last();
+                                NewB.RefreshToken = B.RefreshToken;
+                                NewB.AccessToken = B.AccessToken;
+                                Context.ResponseObject.Data = NewB.ToJson();
                             }
-                            B.OwnerLogin = Data.Objects.Login.FromID(L.ID);
-                            B.Save();
-                            B = Data.Objects.Bot.FromLogin(L.ID, true).Last();
-                            Context.ResponseObject.Data = B.ToJson();
                         }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
                     }
-                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
+                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not correspond to an existing user"; }
                 }
                 else
                 {
@@ -287,7 +310,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 {
                     if (Context.URLSegments[2] == "all")
                     {
-                        if (CorrespondingBot!=null&&CorrespondingBot.IsSuperBot) { Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(Data.Objects.Currency.All(true)); }
+                        if (CorrespondingBot != null && CorrespondingBot.IsSuperBot) { Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(Data.Objects.Currency.All(true)); }
                         else { Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(Data.Objects.Currency.All()); }
                     }
                     else
@@ -296,11 +319,15 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Bot is not SuperBot";
                     }
                 }
-                else if ((Context.Headers.AllKeys.Contains("AccessToken")||CorrespondingBot!=null) && Context.RequestData != null && Context.Headers.AllKeys.Contains("CurrencyID"))
+                else if ((Context.Headers.AllKeys.Contains("AccessToken") || CorrespondingBot != null) && Context.RequestData != null && Context.Headers.AllKeys.Contains("CurrencyID") && Context.Headers.AllKeys.Contains("LoginID"))
                 {
                     try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
                     Data.Objects.Login L = null;
-                    if (Context.Headers.AllKeys.Contains("AccessToken")) { L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]); }
+                    try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed LoginID"; return Context.ResponseObject; }
+                    L = Data.Objects.Login.FromID(int.Parse(Context.Headers["LoginID"]), true);
+                    if (!Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken)) {
+                        L = null;
+                    }
                     if (L != null||CorrespondingBot!=null)
                     {
                         Data.Objects.Currency B = Data.Objects.Currency.FromID(int.Parse(Context.Headers["CurrencyID"]));
@@ -341,22 +368,27 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     }
                     else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, This bot does not have permission to read that Currency"; }
                 }
-                else if (Context.Headers.AllKeys.Contains("AccessToken"))
+                else if (Context.Headers.AllKeys.Contains("AccessToken")&& Context.Headers.AllKeys.Contains("LoginID"))
                 {
-                    Data.Objects.Login L = Data.Objects.Login.FromAccessToken(Context.Headers["AccessToken"]);
+                    try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed LoginID"; return Context.ResponseObject; }
+                    Data.Objects.Login L = Data.Objects.Login.FromID(int.Parse(Context.Headers["LoginID"]), true);
                     if (L != null)
                     {
-                        if (Data.Objects.Currency.FromLogin(L.ID).Count >= 5) { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, You are already at the max currency count"; }
-                        else
+                        if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken))
                         {
-                            Data.Objects.Currency B = new Data.Objects.Currency();
-                            B.OwnerLogin = Data.Objects.Login.FromID(L.ID);
-                            B.Save();
-                            B = Data.Objects.Currency.FromLogin(L.ID).Last();
-                            Context.ResponseObject.Data = B.ToJson();
+                            if (Data.Objects.Currency.FromLogin(L.ID).Count >= 5) { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, You are already at the max currency count"; }
+                            else
+                            {
+                                Data.Objects.Currency B = new Data.Objects.Currency();
+                                B.OwnerLogin = Data.Objects.Login.FromID(L.ID);
+                                B.Save();
+                                B = Data.Objects.Currency.FromLogin(L.ID).Last();
+                                Context.ResponseObject.Data = B.ToJson();
+                            }
                         }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
                     }
-                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
+                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not correspond to an existing user"; }
                 }
             }
             else
@@ -371,9 +403,12 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
 
         static Data.Objects.Bot AuthCheck(StandardisedRequestObject Context)
         {
-            if (Context.Headers.AllKeys.Contains("AuthToken"))
+            if (Context.Headers.AllKeys.Contains("AuthToken") && Context.Headers.AllKeys.Contains("BotID"))
             {
-                return Data.Objects.Bot.FromAccessToken(Context.Headers["AuthToken"]);
+                try { int.Parse(Context.Headers["BotID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed BotID"; return null; }
+                Data.Objects.Bot Bot = Data.Objects.Bot.FromID(int.Parse(Context.Headers["BotID"]),true);
+                if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AuthToken"], Bot.AccessToken)) { return Bot; }
+                else { return null; }
             }
             else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AuthToken is missing"; return null; }
         }
