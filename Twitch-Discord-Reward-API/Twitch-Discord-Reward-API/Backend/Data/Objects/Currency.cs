@@ -12,8 +12,9 @@ namespace Twitch_Discord_Reward_API.Backend.Data.Objects
         public Login OwnerLogin;
         public Newtonsoft.Json.Linq.JToken LoginConfig, CommandConfig;
 
-        public void LoadConfigs(bool WithLogin = false)
+        public void LoadConfigs(bool WithLogin = false)//Load the confuartion files into the bot object
         {
+            //Only load the login config if WithLogin is true
             if (WithLogin) { LoginConfig = FileManager.ReadFile("./Data/CurrencyConfigs/" + ID + "/Login.config.json"); }
             CommandConfig = FileManager.ReadFile("./Data/CurrencyConfigs/" + ID + "/Command.config.json");
         }
@@ -77,7 +78,9 @@ FROM [Currency];");
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("LoginID",this.OwnerLogin.ID) };
             Init.SQLi.Execute(@"INSERT INTO [Currency] (LoginID) VALUES (@LoginID)", Params);
             Currency C = FromLogin(this.OwnerLogin.ID).Last();
+            //Create a directory for the configuration files
             System.IO.Directory.CreateDirectory("./Data/CurrencyConfigs/" + C.ID);
+            //Copy the example config files into the directory
             System.IO.File.Copy("./Data/DefaultConfigs/Command.config.json", "./Data/CurrencyConfigs/" + C.ID+ "/Command.config.json");
             System.IO.File.Copy("./Data/DefaultConfigs/Login.config.json", "./Data/CurrencyConfigs/" + C.ID + "/Login.config.json");
             return true;
@@ -85,6 +88,7 @@ FROM [Currency];");
 
         public void UpdateConfigs()
         {
+            //Overwrite the current contents of the configuration files with the new config data
             System.IO.File.WriteAllText("./Data/CurrencyConfigs/" + this.ID + "/Command.config.json",this.CommandConfig.ToString());
             System.IO.File.WriteAllText("./Data/CurrencyConfigs/" + this.ID + "/Login.config.json", this.LoginConfig.ToString());
         }
@@ -93,6 +97,7 @@ FROM [Currency];");
         {
             if (FromID(this.ID) != null)
             {
+                //Delete the folder with the currency configuration files in
                 System.IO.Directory.Delete("./Data/CurrencyConfigs/" + this.ID,true);
                 List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("ID", this.ID) };
                 Init.SQLi.Execute(@"DELETE FROM [Currency]

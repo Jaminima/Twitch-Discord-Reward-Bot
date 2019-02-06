@@ -7,7 +7,7 @@ using System.Data.OleDb;
 
 namespace Twitch_Discord_Reward_API.Backend.Data.Objects
 {
-    public class Bot : BaseObject
+    public class Bot : BaseObject//This object will be commented as an example, the other objects follow a similar structure
     {
         public Currency Currency; //Define variables to replicate the Bot table
         public string AccessToken, RefreshToken, BotName;
@@ -91,7 +91,7 @@ WHERE (((Bots.CurrencyID)=@CurrencyID));
 
         public bool Save()
         {
-            this.AccessToken = Networking.TokenSystem.CreateToken(32);
+            this.AccessToken = Networking.TokenSystem.CreateToken(32);//Set the Access and Refresh Tokens along with the RefreshDateTime
             this.RefreshToken = Networking.TokenSystem.CreateToken(64);
             this.TokenRefreshDateTime = DateTime.Now;
             List<OleDbParameter> Params = new List<OleDbParameter> {
@@ -100,8 +100,9 @@ WHERE (((Bots.CurrencyID)=@CurrencyID));
                 new OleDbParameter("RefreshToken",Init.ScryptEncoder.Encode(this.RefreshToken)),
                 new OleDbParameter("TokenRefreshDateTime",this.TokenRefreshDateTime.ToString()),
                 new OleDbParameter("BotName",this.BotName)
-            };
+            };//Set the sql paramaters
             Init.SQLi.Execute(@"INSERT INTO Bots (CurrencyID, LoginID, AccessToken, RefreshToken, TokenRefreshDateTime, BotName) VALUES (NULL, @LoginID, @AccessToken, @RefreshToken, @TokenRefreshDateTime, @BotName)", Params);
+            //Insert the bot into the table
             return true;
         }
 

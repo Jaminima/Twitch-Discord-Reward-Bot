@@ -133,7 +133,7 @@ WHERE(((Logins.LoginID) = @ID));
         {
             if (FromID(this.ID) != null)
             {
-                foreach (Currency C in Currency.FromLogin(this.ID)) { C.Delete(); }
+                foreach (Currency C in Currency.FromLogin(this.ID)) { C.Delete(); }//Delete all currencies tied to this login
                 List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("ID", this.ID) };
                 Init.SQLi.Execute(@"DELETE FROM Logins
 WHERE (((Logins.LoginID)=@ID));

@@ -70,10 +70,10 @@ WHERE (((Viewer.CurrencyID)=@CurrencyID))
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { };
             string WhereStatment = "";
-            if (DiscordID != null) { Params.Add(new OleDbParameter("DiscordID", DiscordID)); WhereStatment += "((Viewer.DiscordID)=@DiscordID)"; }
-            if (TwitchID != null){
-                if (WhereStatment != "") { WhereStatment += " AND "; }
-                Params.Add(new OleDbParameter("TwitchID", TwitchID)); WhereStatment += "((Viewer.TwitchID)=@TwitchID)";
+            if (DiscordID != null) { Params.Add(new OleDbParameter("DiscordID", DiscordID)); WhereStatment += "((Viewer.DiscordID)=@DiscordID)"; }//Add the DiscordID paramater if DiscordID isnt null
+            if (TwitchID != null){//If TwitchID isnt null
+                if (WhereStatment != "") { WhereStatment += " AND "; }//If weve already added DiscordID we add AND into the statment
+                Params.Add(new OleDbParameter("TwitchID", TwitchID)); WhereStatment += "((Viewer.TwitchID)=@TwitchID)";//Add the TwitchID paramater
             }
             List<String[]> RData = Init.SQLi.ExecuteReader(@"SELECT Viewer.ViewerID, Viewer.DiscordID, Viewer.TwitchID, Viewer.Balance, Viewer.CurrencyID, Viewer.WatchTime, Viewer.LiveNotifications, Viewer.DontReward
 FROM Viewer
