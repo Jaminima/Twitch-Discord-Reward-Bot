@@ -32,10 +32,10 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     if (B != null) { Context.ResponseObject.Data = B.ToJson(); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not match an existing object"; ErrorOccured = true; }
                 }
-                else if ((Context.Headers.AllKeys.Contains("TwitchID") || Context.Headers.AllKeys.Contains("DiscordID"))&&Context.Headers.AllKeys.Contains("CurrencyID")) // Get the viewer where header (TwitchID and/or DiscordID) and CurrencyID matches
+                else if ((Context.Headers.AllKeys.Contains("TwitchID") || Context.Headers.AllKeys.Contains("DiscordID")) && Context.Headers.AllKeys.Contains("CurrencyID")) // Get the viewer where header (TwitchID and/or DiscordID) and CurrencyID matches
                 {
                     try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
-                    Data.Objects.Viewer B = Data.Objects.Viewer.FromTwitchDiscord(Context.Headers["DiscordID"], Context.Headers["TwitchID"],int.Parse(Context.Headers["CurrencyID"]));
+                    Data.Objects.Viewer B = Data.Objects.Viewer.FromTwitchDiscord(Context.Headers["DiscordID"], Context.Headers["TwitchID"], int.Parse(Context.Headers["CurrencyID"]));
                     if (B != null) { Context.ResponseObject.Data = B.ToJson(); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, TwitchID and/or DiscordID does not match an existing object"; ErrorOccured = true; }
                 }
@@ -44,7 +44,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     string OrderBy = null;
                     if (Context.Headers["Order"] == "WatchTime" || Context.Headers["Order"] == "Balance") { OrderBy = Context.Headers["Order"]; }
                     try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
-                    List<Data.Objects.Viewer> B = Data.Objects.Viewer.FromCurrency(int.Parse(Context.Headers["CurrencyID"]),OrderBy);
+                    List<Data.Objects.Viewer> B = Data.Objects.Viewer.FromCurrency(int.Parse(Context.Headers["CurrencyID"]), OrderBy);
                     if (B.Count != 0) { Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(B); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, CurrencyID does not match an existing object"; ErrorOccured = true; }
                 }
@@ -66,11 +66,12 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 {
                     try { int.Parse(Context.Headers["ID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
                     Data.Objects.Currency C = Data.Objects.Currency.FromID(int.Parse(Context.Headers["ID"]));
-                    if (Context.Headers.AllKeys.Contains("AccessToken")&& Context.Headers.AllKeys.Contains("LoginID"))
+                    if (Context.Headers.AllKeys.Contains("AccessToken") && Context.Headers.AllKeys.Contains("LoginID"))
                     { // If a valid accesstoken is provided, get private information
                         try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
-                        Data.Objects.Login L = Data.Objects.Login.FromID(int.Parse(Context.Headers["LoginID"]),true);
-                        if (L != null) {
+                        Data.Objects.Login L = Data.Objects.Login.FromID(int.Parse(Context.Headers["LoginID"]), true);
+                        if (L != null)
+                        {
                             if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken))
                             {
                                 if (Data.Objects.Currency.FromLogin(L.ID).Find(x => x.ID == C.ID) != null) { C.LoadConfigs(true); }
@@ -124,7 +125,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             }
             else if (Context.URLSegments[1] == "bot")
             {
-                if (Context.Headers.AllKeys.Contains("ID")&& Context.Headers.AllKeys.Contains("LoginID"))//Get Bot where ID matches
+                if (Context.Headers.AllKeys.Contains("ID") && Context.Headers.AllKeys.Contains("LoginID"))//Get Bot where ID matches
                 {
                     bool WithSecretData = false;
                     try { int.Parse(Context.Headers["ID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
@@ -142,7 +143,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         }
                         else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, LoginID does not correspond to an existing user"; }
                     }
-                    Data.Objects.Bot B = Data.Objects.Bot.FromID(int.Parse(Context.Headers["ID"]),WithSecretData);
+                    Data.Objects.Bot B = Data.Objects.Bot.FromID(int.Parse(Context.Headers["ID"]), WithSecretData);
                     if (B != null) { Context.ResponseObject.Data = B.ToJson(); }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not match an existing object"; ErrorOccured = true; }
                 }
@@ -168,115 +169,142 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             }
             else if (Context.URLSegments[1] == "nightbot")
             {
-                if (Context.URL.Contains("code=") && Context.URL.Contains("currencyid%3d"))
+                Context.GetStateParams();
+                if (Context.URLParamaters.ContainsKey("code") && Context.URLParamaters.ContainsKey("state") && Context.StateParamaters.ContainsKey("currencyid") && Context.StateParamaters.ContainsKey("accesstoken"))
                 {
-                    string Code = Context.URL.Split(new string[] { "code=" }, StringSplitOptions.None)[1].Split(new string[] { "&state" }, StringSplitOptions.None)[0];
-                    try { int.Parse(Context.URL.Split(new string[] { "currencyid%3d" }, StringSplitOptions.None)[1] ); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
-                    Data.Objects.Currency C = Data.Objects.Currency.FromID(int.Parse(Context.URL.Split(new string[] { "currencyid%3d" }, StringSplitOptions.None)[1]));
+                    string Code = Context.URLParamaters["code"];
+                    try { int.Parse(Context.StateParamaters["currencyid"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
+                    Data.Objects.Currency C = Data.Objects.Currency.FromID(int.Parse(Context.StateParamaters["currencyid"]));
                     if (C == null) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, CurrencyID does not match an existing object"; ErrorOccured = true; }
                     else
                     {
-                        C.LoadConfigs(true);
-                        WebRequest Req = WebRequest.Create("https://api.nightbot.tv/oauth2/token");
-                        Req.Method = "POST";
-                        byte[] PostData = Encoding.UTF8.GetBytes("client_id=" + C.LoginConfig["NightBot"]["ClientId"] +
-                        "&client_secret=" + C.LoginConfig["NightBot"]["ClientSecret"] +
-                        "&grant_type=authorization_code&redirect_uri=" + Backend.Init.APIConfig["WebURL"] + "/nightbot/&code=" + Code);
-                        Req.Method = "POST";
-                        Req.ContentType = "application/x-www-form-urlencoded";
-                        Req.ContentLength = PostData.Length;
-                        Stream PostStream = Req.GetRequestStream();
-                        PostStream.Write(PostData, 0, PostData.Length);
-                        PostStream.Flush();
-                        PostStream.Close();
-                        try
+                        Data.Objects.Login L = Data.Objects.Login.FromID(C.OwnerLogin.ID, true);
+                        if (Backend.Init.ScryptEncoder.Compare(Context.StateParamaters["accesstoken"], L.AccessToken))
                         {
-                            WebResponse Res = Req.GetResponse();
-                            string D = new StreamReader(Res.GetResponseStream()).ReadToEnd();
-                            Newtonsoft.Json.Linq.JObject JD = Newtonsoft.Json.Linq.JObject.Parse(D);
-                            C.LoginConfig["NightBot"]["RefreshToken"] = JD["refresh_token"];
-                            C.UpdateConfigs();
+                            C.LoadConfigs(true);
+                            WebRequest Req = WebRequest.Create("https://api.nightbot.tv/oauth2/token");
+                            Req.Method = "POST";
+                            byte[] PostData = Encoding.UTF8.GetBytes("client_id=" + C.LoginConfig["NightBot"]["ClientId"] +
+                            "&client_secret=" + C.LoginConfig["NightBot"]["ClientSecret"] +
+                            "&grant_type=authorization_code&redirect_uri=" + Backend.Init.APIConfig["WebURL"] + "/nightbot/&code=" + Code);
+                            Req.Method = "POST";
+                            Req.ContentType = "application/x-www-form-urlencoded";
+                            Req.ContentLength = PostData.Length;
+                            Stream PostStream = Req.GetRequestStream();
+                            PostStream.Write(PostData, 0, PostData.Length);
+                            PostStream.Flush();
+                            PostStream.Close();
+                            try
+                            {
+                                WebResponse Res = Req.GetResponse();
+                                string D = new StreamReader(Res.GetResponseStream()).ReadToEnd();
+                                Newtonsoft.Json.Linq.JObject JD = Newtonsoft.Json.Linq.JObject.Parse(D);
+                                C.LoginConfig["NightBot"]["RefreshToken"] = JD["refresh_token"];
+                                C.UpdateConfigs();
+                            }
+                            catch (WebException E)
+                            {
+                                ErrorOccured = true;
+                                Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Something went wrong";
+                                Console.WriteLine(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
+                            }
                         }
-                        catch (WebException E)
-                        {
-                            ErrorOccured = true;
-                            Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Something went wrong";
-                            Console.WriteLine(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
-                        }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "AccessToken is not allowed to modify that currency"; }
                     }
                 }
-                else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "No Code Provided"; }
+                else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Code and/or currencyid and/or accesstoken is missing"; }
             }
             else if (Context.URLSegments[1] == "streamlabs")
             {
-                string Code = Context.URL.Split(new string[] { "code=" }, StringSplitOptions.None)[1].Split(new string[] { "&state" }, StringSplitOptions.None)[0];
-                try { int.Parse(Context.URL.Split(new string[] { "currencyid%3d" }, StringSplitOptions.None)[1]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
-                Data.Objects.Currency C = Data.Objects.Currency.FromID(int.Parse(Context.URL.Split(new string[] { "currencyid%3d" }, StringSplitOptions.None)[1]));
-                if (C == null) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, CurrencyID does not match an existing object"; ErrorOccured = true; }
-                else
+                Context.GetStateParams();
+                if (Context.URLParamaters.ContainsKey("code") && Context.URLParamaters.ContainsKey("state") && Context.StateParamaters.ContainsKey("currencyid"))
                 {
-                    C.LoadConfigs(true);
-                    WebRequest Req = WebRequest.Create("https://streamlabs.com/api/v1.0/token");
-                    Req.Method = "POST";
-                    Req.ContentType = "application/x-www-form-urlencoded";
-                    byte[] PostData = Encoding.UTF8.GetBytes("grant_type=authorization_code&client_id=" + C.LoginConfig["StreamLabs"]["ClientId"] +
-                        "&client_secret=" + C.LoginConfig["StreamLabs"]["ClientSecret"] +
-                        "&redirect_uri=" + Backend.Init.APIConfig["WebURL"] + "/streamlabs/&code=" + Code);
-                    Req.ContentLength = PostData.Length;
-                    Stream PostStream = Req.GetRequestStream();
-                    PostStream.Write(PostData, 0, PostData.Length);
-                    PostStream.Flush();
-                    PostStream.Close();
-                    WebResponse Res;
-                    try
+                    string Code = Context.URLParamaters["code"];
+                    try { int.Parse(Context.StateParamaters["currencyid"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
+                    Data.Objects.Currency C = Data.Objects.Currency.FromID(int.Parse(Context.StateParamaters["currencyid"]));
+                    if (C == null) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, CurrencyID does not match an existing object"; ErrorOccured = true; }
+                    else
                     {
-                        Res = Req.GetResponse();
-                        Newtonsoft.Json.Linq.JObject D = Newtonsoft.Json.Linq.JObject.Parse(new StreamReader(Res.GetResponseStream()).ReadToEnd());
-                        C.LoginConfig["StreamLabs"]["RefreshToken"] = D["refresh_token"];
-                        C.UpdateConfigs();
-                    }
-                    catch (WebException E)
-                    {
-                        ErrorOccured = true;
-                        Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Something went wrong";
-                        Console.WriteLine(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
+                        Data.Objects.Login L = Data.Objects.Login.FromID(C.OwnerLogin.ID, true);
+                        if (Backend.Init.ScryptEncoder.Compare(Context.StateParamaters["accesstoken"], L.AccessToken))
+                        {
+                            C.LoadConfigs(true);
+                            WebRequest Req = WebRequest.Create("https://streamlabs.com/api/v1.0/token");
+                            Req.Method = "POST";
+                            Req.ContentType = "application/x-www-form-urlencoded";
+                            byte[] PostData = Encoding.UTF8.GetBytes("grant_type=authorization_code&client_id=" + C.LoginConfig["StreamLabs"]["ClientId"] +
+                                "&client_secret=" + C.LoginConfig["StreamLabs"]["ClientSecret"] +
+                                "&redirect_uri=" + Backend.Init.APIConfig["WebURL"] + "/streamlabs/&code=" + Code);
+                            Req.ContentLength = PostData.Length;
+                            Stream PostStream = Req.GetRequestStream();
+                            PostStream.Write(PostData, 0, PostData.Length);
+                            PostStream.Flush();
+                            PostStream.Close();
+                            WebResponse Res;
+                            try
+                            {
+                                Res = Req.GetResponse();
+                                Newtonsoft.Json.Linq.JObject D = Newtonsoft.Json.Linq.JObject.Parse(new StreamReader(Res.GetResponseStream()).ReadToEnd());
+                                C.LoginConfig["StreamLabs"]["RefreshToken"] = D["refresh_token"];
+                                C.UpdateConfigs();
+                            }
+                            catch (WebException E)
+                            {
+                                ErrorOccured = true;
+                                Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Something went wrong";
+                                Console.WriteLine(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
+                            }
+                        }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "AccessToken is not allowed to modify that currency"; }
                     }
                 }
+                else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Code and/or currencyid and/or accesstoken is missing"; }
             }
             else if (Context.URLSegments[1] == "twitch")
             {
-                string Code = Context.URL.Split(new string[] { "code=" }, StringSplitOptions.None)[1].Split(new string[] { "&state" }, StringSplitOptions.None)[0];
-                try { int.Parse(Context.URL.Split(new string[] { "currencyid%3d" }, StringSplitOptions.None)[1]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
-                Data.Objects.Currency C = Data.Objects.Currency.FromID(int.Parse(Context.URL.Split(new string[] { "currencyid%3d" }, StringSplitOptions.None)[1]));
-                if (C == null) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, CurrencyID does not match an existing object"; ErrorOccured = true; }
-                else {
-                    C.LoadConfigs(true);
-                    WebRequest Req = WebRequest.Create("https://id.twitch.tv/oauth2/token");
-                    Req.Method = "POST";
-                    Req.ContentType = "application/x-www-form-urlencoded";
-                    byte[] PostData = Encoding.UTF8.GetBytes("grant_type=authorization_code&client_id=" + C.LoginConfig["Twitch"]["API"]["ClientId"] +
-                        "&client_secret=" + C.LoginConfig["Twitch"]["API"]["ClientSecret"] +
-                        "&redirect_uri=" + Backend.Init.APIConfig["WebURL"] + "/twitch/&code=" + Code);
-                    Req.ContentLength = PostData.Length;
-                    Stream PostStream = Req.GetRequestStream();
-                    PostStream.Write(PostData, 0, PostData.Length);
-                    PostStream.Flush();
-                    PostStream.Close();
-                    WebResponse Res;
-                    try
+                Context.GetStateParams();
+                if (Context.URLParamaters.ContainsKey("code") && Context.URLParamaters.ContainsKey("state") && Context.StateParamaters.ContainsKey("currencyid"))
+                {
+                    string Code = Context.URLParamaters["code"];
+                    try { int.Parse(Context.StateParamaters["currencyid"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
+                    Data.Objects.Currency C = Data.Objects.Currency.FromID(int.Parse(Context.StateParamaters["currencyid"]));
+                    if (C == null) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, CurrencyID does not match an existing object"; ErrorOccured = true; }
+                    else
                     {
-                        Res = Req.GetResponse();
-                        Newtonsoft.Json.Linq.JObject D = Newtonsoft.Json.Linq.JObject.Parse(new StreamReader(Res.GetResponseStream()).ReadToEnd());
-                        C.LoginConfig["Twitch"]["API"]["RefreshToken"] = D["refresh_token"];
-                        C.UpdateConfigs();
-                    }
-                    catch (WebException E)
-                    {
-                        ErrorOccured = true;
-                        Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Something went wrong";
-                        Console.WriteLine(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
+                        Data.Objects.Login L = Data.Objects.Login.FromID(C.OwnerLogin.ID, true);
+                        if (Backend.Init.ScryptEncoder.Compare(Context.StateParamaters["accesstoken"], L.AccessToken))
+                        {
+                            C.LoadConfigs(true);
+                            WebRequest Req = WebRequest.Create("https://id.twitch.tv/oauth2/token");
+                            Req.Method = "POST";
+                            Req.ContentType = "application/x-www-form-urlencoded";
+                            byte[] PostData = Encoding.UTF8.GetBytes("grant_type=authorization_code&client_id=" + C.LoginConfig["Twitch"]["API"]["ClientId"] +
+                                "&client_secret=" + C.LoginConfig["Twitch"]["API"]["ClientSecret"] +
+                                "&redirect_uri=" + Backend.Init.APIConfig["WebURL"] + "/twitch/&code=" + Code);
+                            Req.ContentLength = PostData.Length;
+                            Stream PostStream = Req.GetRequestStream();
+                            PostStream.Write(PostData, 0, PostData.Length);
+                            PostStream.Flush();
+                            PostStream.Close();
+                            WebResponse Res;
+                            try
+                            {
+                                Res = Req.GetResponse();
+                                Newtonsoft.Json.Linq.JObject D = Newtonsoft.Json.Linq.JObject.Parse(new StreamReader(Res.GetResponseStream()).ReadToEnd());
+                                C.LoginConfig["Twitch"]["API"]["RefreshToken"] = D["refresh_token"];
+                                C.UpdateConfigs();
+                            }
+                            catch (WebException E)
+                            {
+                                ErrorOccured = true;
+                                Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Something went wrong";
+                                Console.WriteLine(new StreamReader(E.Response.GetResponseStream()).ReadToEnd());
+                            }
+                        }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "AccessToken is not allowed to modify that currency"; }
                     }
                 }
+                else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Code and/or currencyid and/or accesstoken is missing"; }
             }
             else//Inform requestor that the url does not got anywhere
             {

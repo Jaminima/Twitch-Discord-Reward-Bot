@@ -337,13 +337,13 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         if (CorrespondingBot != null) { BotGood = CorrespondingBot.Currency.ID == B.ID || CorrespondingBot.IsSuperBot; }
                         if (LoginGood||BotGood)
                         {
-                            if (Context.RequestData["LoginConfig"] != null)
-                            {
-                                if (Checks.JSONLayoutCompare(
-                                    Newtonsoft.Json.Linq.JToken.Parse(System.IO.File.ReadAllText("./Data/DefaultConfigs/Login.config.json")),
-                                    Context.RequestData["LoginConfig"])) { B.LoginConfig = Context.RequestData["LoginConfig"]; }
-                                else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, LoginConfig does not follow the required structure"; }
-                            }
+                            //if (Context.RequestData["LoginConfig"] != null)
+                            //{
+                            //    if (Checks.JSONLayoutCompare(
+                            //        Newtonsoft.Json.Linq.JToken.Parse(System.IO.File.ReadAllText("./Data/DefaultConfigs/Login.config.json")),
+                            //        Context.RequestData["LoginConfig"])) { B.LoginConfig = Context.RequestData["LoginConfig"]; }
+                            //    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, LoginConfig does not follow the required structure"; }
+                            //}
                             if (Context.RequestData["CommandConfig"] != null)
                             {
                                 if (Checks.JSONLayoutCompare(
@@ -361,7 +361,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 {
                     try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
                     Data.Objects.Currency C = Data.Objects.Currency.FromID(int.Parse(Context.Headers["CurrencyID"]));
-                    if (CorrespondingBot.Currency.ID == C.ID || CorrespondingBot.IsSuperBot)
+                    if (/*CorrespondingBot.Currency.ID == C.ID ||*/ CorrespondingBot.IsSuperBot)
                     {
                         C.LoadConfigs(true);
                         Context.ResponseObject.Data = C.ToJson();

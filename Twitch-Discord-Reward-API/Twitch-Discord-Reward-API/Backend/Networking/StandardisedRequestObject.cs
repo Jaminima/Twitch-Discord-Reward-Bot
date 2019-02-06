@@ -14,6 +14,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking
         */
         public string URL,Method;
         public string[] URLSegments;
+        public Dictionary<string, string> URLParamaters,StateParamaters;
         public System.Collections.Specialized.NameValueCollection Headers;
         public ResponseObject ResponseObject;//By keeping the response object and request data here, we wont need to pass it seperatly to functions
         public Newtonsoft.Json.Linq.JToken RequestData;
@@ -25,6 +26,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking
             URL = Context.Request.RawUrl.ToLower();
             Method = Context.Request.HttpMethod.ToLower();
             URLSegments = URL.Split("/".ToCharArray());
+            URLParamaters = GetParamaters(Context.Request.RawUrl);
             if (Method == "post")//If the method is post, read the posted data into json format and store it
             {
                 string StreamString = new System.IO.StreamReader(Context.Request.InputStream).ReadToEnd();
@@ -32,6 +34,36 @@ namespace Twitch_Discord_Reward_API.Backend.Networking
             }
             this.Context = Context;//Set the objects object references
             this.ResponseObject = ResponseObject;
+        }
+
+        Dictionary<string, string> GetParamaters(string URL)
+        {
+            Dictionary<string, string> Params = new Dictionary<string, string> { };
+            string[] ParamSet = URL.Split("?".ToCharArray())[1].Split("&".ToCharArray());
+            foreach (string Param in ParamSet)
+            {
+                string[] SplitParam = Param.Split("=".ToCharArray());
+                if (SplitParam.Length == 2)
+                {
+                    Params.Add(SplitParam[0].ToLower(), SplitParam[1]);
+                }
+            }
+            return Params;
+        }
+
+        public void GetStateParams()
+        {
+            Dictionary<string, string> Params = new Dictionary<string, string> { };
+            string[] ParamSet = this.URLParamaters["state"].Split(new string[] { "%20" },StringSplitOptions.None);
+            foreach (string Param in ParamSet)
+            {
+                string[] SplitParam = Param.Split(new string[] { "%3D" },StringSplitOptions.None);
+                if (SplitParam.Length == 2)
+                {
+                    Params.Add(SplitParam[0].ToLower(), SplitParam[1]);
+                }
+            }
+            StateParamaters = Params;
         }
     }
 }
