@@ -12,7 +12,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking
         public static string CreateToken(int Length)
         {
             string S = "";
-            for (int i = 0; i < Length; i++)
+            for (int i = 0; i < Length; i++)//While we havent reached the given length, add a random character from alphabet to the return string
             {
                 S += TokenChars[Init.Rnd.Next(0, TokenChars.Length)];
             }

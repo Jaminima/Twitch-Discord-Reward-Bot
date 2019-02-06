@@ -49,7 +49,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 Resp.OutputStream.Write(ByteResponseData, 0, ByteResponseData.Length);
                 Resp.OutputStream.Close();
             }
-            catch { Console.WriteLine("Unable to send response too " + Context.Request.RemoteEndPoint); }
+            catch { Console.WriteLine("Unable to send response too " + Context.Request.RemoteEndPoint); } // If we cant send the response report the error to console
         }
     }
 }
