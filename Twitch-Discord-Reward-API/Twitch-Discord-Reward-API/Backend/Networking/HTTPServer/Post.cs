@@ -332,18 +332,21 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     {
                         Data.Objects.Currency B = Data.Objects.Currency.FromID(int.Parse(Context.Headers["CurrencyID"]));
                         B.LoadConfigs(true);
-                        bool LoginGood = false, BotGood = false; ;
+                        bool LoginGood = false, BotGood = false;
                         if (L != null) { LoginGood = B.OwnerLogin.ID == L.ID; }
-                        if (CorrespondingBot != null) { BotGood = CorrespondingBot.Currency.ID == B.ID || CorrespondingBot.IsSuperBot; }
+                        if (CorrespondingBot != null) { BotGood = /*CorrespondingBot.Currency.ID == B.ID ||*/ CorrespondingBot.IsSuperBot; }
                         if (LoginGood||BotGood)
                         {
-                            //if (Context.RequestData["LoginConfig"] != null)
-                            //{
-                            //    if (Checks.JSONLayoutCompare(
-                            //        Newtonsoft.Json.Linq.JToken.Parse(System.IO.File.ReadAllText("./Data/DefaultConfigs/Login.config.json")),
-                            //        Context.RequestData["LoginConfig"])) { B.LoginConfig = Context.RequestData["LoginConfig"]; }
-                            //    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, LoginConfig does not follow the required structure"; }
-                            //}
+                            if (Context.RequestData["LoginConfig"] != null)
+                            {
+                                if (CorrespondingBot == null || CorrespondingBot.IsSuperBot)
+                                {
+                                    if (Checks.JSONLayoutCompare(
+                                        Newtonsoft.Json.Linq.JToken.Parse(System.IO.File.ReadAllText("./Data/DefaultConfigs/Login.config.json")),
+                                        Context.RequestData["LoginConfig"])) { B.LoginConfig = Context.RequestData["LoginConfig"]; }
+                                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, LoginConfig does not follow the required structure"; }
+                                }
+                            }
                             if (Context.RequestData["CommandConfig"] != null)
                             {
                                 if (Checks.JSONLayoutCompare(

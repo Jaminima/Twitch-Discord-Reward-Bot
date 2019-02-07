@@ -39,13 +39,16 @@ namespace Twitch_Discord_Reward_API.Backend.Networking
         Dictionary<string, string> GetParamaters(string URL)
         {
             Dictionary<string, string> Params = new Dictionary<string, string> { };
-            string[] ParamSet = URL.Split("?".ToCharArray())[1].Split("&".ToCharArray());
-            foreach (string Param in ParamSet)
+            if (URL.Contains("?"))
             {
-                string[] SplitParam = Param.Split("=".ToCharArray());
-                if (SplitParam.Length == 2)
+                string[] ParamSet = URL.Split("?".ToCharArray())[1].Split("&".ToCharArray());
+                foreach (string Param in ParamSet)
                 {
-                    Params.Add(SplitParam[0].ToLower(), SplitParam[1]);
+                    string[] SplitParam = Param.Split("=".ToCharArray());
+                    if (SplitParam.Length == 2)
+                    {
+                        Params.Add(SplitParam[0].ToLower(), SplitParam[1]);
+                    }
                 }
             }
             return Params;
