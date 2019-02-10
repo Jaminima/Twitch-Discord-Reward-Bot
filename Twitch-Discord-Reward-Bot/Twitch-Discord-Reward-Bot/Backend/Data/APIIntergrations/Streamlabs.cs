@@ -35,7 +35,9 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
                 string D = new StreamReader(Res.GetResponseStream()).ReadToEnd();
                 Newtonsoft.Json.Linq.JObject JD = Newtonsoft.Json.Linq.JObject.Parse(D);
                 BotInstance.LoginConfig["StreamLabs"]["RefreshToken"] = JD["refresh_token"];
-                List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("CurrencyID", BotInstance.Currency.ID.ToString()) };
+                List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> {
+                    new KeyValuePair<string, string>("CurrencyID", BotInstance.Currency.ID.ToString())
+                };
                 var R = RewardCurrencyAPI.WebRequests.PostRequest("currency", Headers, true, Newtonsoft.Json.Linq.JToken.Parse("{'LoginConfig':" + BotInstance.LoginConfig.ToString() + @"}"));
 
                 AccessToken Tk = new AccessToken(JD["access_token"].ToString(), int.Parse(JD["expires_in"].ToString()));

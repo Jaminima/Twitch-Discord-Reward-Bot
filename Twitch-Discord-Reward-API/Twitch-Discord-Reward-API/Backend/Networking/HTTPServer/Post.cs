@@ -319,14 +319,18 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Bot is not SuperBot";
                     }
                 }
-                else if ((Context.Headers.AllKeys.Contains("AccessToken") || CorrespondingBot != null) && Context.RequestData != null && Context.Headers.AllKeys.Contains("CurrencyID") && Context.Headers.AllKeys.Contains("LoginID"))
+                else if (((Context.Headers.AllKeys.Contains("AccessToken") && Context.Headers.AllKeys.Contains("LoginID")) || CorrespondingBot != null) && Context.RequestData != null && Context.Headers.AllKeys.Contains("CurrencyID") )
                 {
                     try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
                     Data.Objects.Login L = null;
-                    try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed LoginID"; return Context.ResponseObject; }
-                    L = Data.Objects.Login.FromID(int.Parse(Context.Headers["LoginID"]), true);
-                    if (!Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken)) {
-                        L = null;
+                    if (Context.Headers.AllKeys.Contains("LoginID"))
+                    {
+                        try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed LoginID"; return Context.ResponseObject; }
+                        L = Data.Objects.Login.FromID(int.Parse(Context.Headers["LoginID"]), true);
+                        if (!Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken))
+                        {
+                            L = null;
+                        }
                     }
                     if (L != null||CorrespondingBot!=null)
                     {
