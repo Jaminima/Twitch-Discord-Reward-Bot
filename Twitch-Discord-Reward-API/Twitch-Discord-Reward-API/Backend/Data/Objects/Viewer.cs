@@ -108,20 +108,26 @@ WHERE " + WhereStatment+@";
 
         public bool Save()
         {
+            //Check if DiscordID or TwitchID is already in the database
             if (FromTwitchDiscord(this.DiscordID,this.TwitchID,this.Currency.ID) == null)
             {
                 List<OleDbParameter> Params = new List<OleDbParameter> {
                     new OleDbParameter("Balance",this.Balance),
                     new OleDbParameter("CurrencyID",this.Currency.ID)
                 };
+                //Set the sql paramaters
                 string PostStatment = "",PreStatment="";
+                //If DiscorID isnt null, we add it to our params and value statments
                 if (DiscordID != null) { Params.Add(new OleDbParameter("DiscordID", DiscordID)); PreStatment += "DiscordID"; PostStatment += "@DiscordID"; }
+                //If TwitchID isnt null, we add it to our params and value statments
                 if (TwitchID != null)
                 {
+                    //If we have already added to our statments we will need a comma to seperate the values
                     if (PostStatment != "") { PreStatment += ","; PostStatment += ","; }
                     Params.Add(new OleDbParameter("TwitchID", TwitchID)); PreStatment += "TwitchID"; PostStatment += "@TwitchID";
                 }
                 Init.SQLi.Execute(@"INSERT INTO Viewer (Balance, CurrencyID, " + PreStatment+ @") VALUES (@Balance, @CurrencyID, " + PostStatment+@")", Params);
+                //insert the viewer into the table
                 return true;
             }
             return false;

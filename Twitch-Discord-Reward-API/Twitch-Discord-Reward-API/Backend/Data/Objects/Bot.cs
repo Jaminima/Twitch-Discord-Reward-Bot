@@ -91,7 +91,7 @@ WHERE (((Bots.CurrencyID)=@CurrencyID));
 
         public bool Save()
         {
-            this.AccessToken = Networking.TokenSystem.CreateToken(32);//Set the Access and Refresh Tokens along with the RefreshDateTime
+            this.AccessToken = Networking.TokenSystem.CreateToken(32); 
             this.RefreshToken = Networking.TokenSystem.CreateToken(64);
             this.TokenRefreshDateTime = DateTime.Now;
             List<OleDbParameter> Params = new List<OleDbParameter> {
