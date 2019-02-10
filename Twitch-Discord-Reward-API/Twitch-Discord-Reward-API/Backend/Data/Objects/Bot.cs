@@ -91,8 +91,8 @@ WHERE (((Bots.CurrencyID)=@CurrencyID));
 
         public bool Save()
         {
-            this.AccessToken = Networking.TokenSystem.CreateToken(32); 
-            this.RefreshToken = Networking.TokenSystem.CreateToken(64);
+            this.AccessToken = Networking.TokenSystem.CreateToken(64); 
+            this.RefreshToken = Networking.TokenSystem.CreateToken(128);
             this.TokenRefreshDateTime = DateTime.Now;
             List<OleDbParameter> Params = new List<OleDbParameter> {
                 new OleDbParameter("LoginID",this.OwnerLogin.ID),
@@ -126,9 +126,9 @@ WHERE (((Bots.BotID) = @ID));
         {
             if (FromID(this.ID) != null)//Check if the Bot appears in the database
             {
-                this.AccessToken = Networking.TokenSystem.CreateToken(32);//Change the Access and Refresh Tokens along with the RefreshDateTime
+                this.AccessToken = Networking.TokenSystem.CreateToken(64);//Change the Access and Refresh Tokens along with the RefreshDateTime
                 this.TokenRefreshDateTime = DateTime.Now;
-                this.RefreshToken = Networking.TokenSystem.CreateToken(64);
+                this.RefreshToken = Networking.TokenSystem.CreateToken(128);
                 List<OleDbParameter> Params = new List<OleDbParameter>
                 {
                     new OleDbParameter("AccessToken",Init.ScryptEncoder.Encode(this.AccessToken)),

@@ -87,8 +87,8 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 {
                     try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed LoginID"; return Context.ResponseObject; }
                     List<Data.Objects.Currency> C = Data.Objects.Currency.FromLogin(int.Parse(Context.Headers["LoginID"]));
-                    if (C.Count != 0) { Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(C); }
-                    else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, LoginID does not match an existing object"; ErrorOccured = true; }
+                    Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(C);
+                    Context.ResponseObject.Code = 200; Context.ResponseObject.Message = "Unknown Outcome, It is not known if the LoginID matches an object"; ErrorOccured = true;
                 }
                 else//Inform requestor that we dont have any infomation to work with
                 {
@@ -103,6 +103,17 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     try { int.Parse(Context.Headers["ID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
                     Data.Objects.Login L = Data.Objects.Login.FromID(int.Parse(Context.Headers["ID"]));
                     if (L != null) { Context.ResponseObject.Data = L.ToJson(); }
+                    if (Context.Headers.AllKeys.Contains("AccessToken")) {
+                        if (Context.Headers["AccessToken"] != "")
+                        {
+                            L = Data.Objects.Login.FromID(int.Parse(Context.Headers["ID"]),true);
+                            if (!Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken))
+                            {
+                                Context.ResponseObject = null;
+                                Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken doesnt match"; ErrorOccured = true;
+                            }
+                        }
+                    }
                     else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not match an existing object"; ErrorOccured = true; }
                 }
                 else if (Context.Headers.AllKeys.Contains("UserName"))//Get Login where UserName matches
@@ -151,8 +162,8 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 {
                     try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed LoginID"; return Context.ResponseObject; }
                     List<Data.Objects.Bot> B = Data.Objects.Bot.FromLogin(int.Parse(Context.Headers["LoginID"]));
-                    if (B.Count != 0) { Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(B); }
-                    else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, LoginID does not match an existing object"; ErrorOccured = true; }
+                    Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(B);
+                    Context.ResponseObject.Code = 200; Context.ResponseObject.Message = "Unknown Outcome, It is not known if the LoginID matches an object"; ErrorOccured = true;
                 }
                 else if (Context.Headers.AllKeys.Contains("CurrencyID"))//Get all Bots of CurrencyID
                 {

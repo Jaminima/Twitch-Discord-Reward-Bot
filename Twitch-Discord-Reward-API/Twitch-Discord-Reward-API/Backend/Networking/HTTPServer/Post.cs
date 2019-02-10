@@ -397,6 +397,11 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     }
                     else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not correspond to an existing user"; }
                 }
+                else
+                {
+                    ErrorOccured = true;
+                    Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, No operable Headers provided";
+                }
             }
             else
             {

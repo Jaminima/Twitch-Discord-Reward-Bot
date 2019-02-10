@@ -71,7 +71,7 @@ WHERE (((Logins.Email)=@Email));
             {
                 List<OleDbParameter> Params = new List<OleDbParameter> {
                     new OleDbParameter("HashedPassword",this.HashedPassword),
-                    new OleDbParameter("AccessToken",Init.ScryptEncoder.Encode(Networking.TokenSystem.CreateToken(32))),
+                    new OleDbParameter("AccessToken",Init.ScryptEncoder.Encode(Networking.TokenSystem.CreateToken(64))),
                     new OleDbParameter("LastLoginDateTime",DateTime.Now.ToString())
                 };
                 string PreValue = ""; string PostValue = "";
@@ -91,7 +91,7 @@ WHERE (((Logins.Email)=@Email));
         {
             if (FromID(this.ID)!=null)
             {
-                this.AccessToken = Networking.TokenSystem.CreateToken(32);
+                this.AccessToken = Networking.TokenSystem.CreateToken(64);
                 this.LastLoginDateTime = DateTime.Now;
                 List<OleDbParameter> Params = new List<OleDbParameter> {
                     new OleDbParameter("AccessToken",Init.ScryptEncoder.Encode(this.AccessToken)),
