@@ -89,8 +89,8 @@ FROM [Currency];");
         public void UpdateConfigs()
         {
             //Overwrite the current contents of the configuration files with the new config data
-            System.IO.File.WriteAllText("./Data/CurrencyConfigs/" + this.ID + "/Command.config.json",this.CommandConfig.ToString());
-            System.IO.File.WriteAllText("./Data/CurrencyConfigs/" + this.ID + "/Login.config.json", this.LoginConfig.ToString());
+            FileManager.WriteFile("./Data/CurrencyConfigs/" + this.ID + "/Command.config.json",this.CommandConfig.ToString());
+            FileManager.WriteFile("./Data/CurrencyConfigs/" + this.ID + "/Login.config.json", this.LoginConfig.ToString());
         }
 
         public void Delete()
