@@ -9,8 +9,8 @@ namespace Twitch_Discord_Reward_API.Backend.Data
 {
     public class SQL
     {
-        private OleDbConnection Conn;
-        private string DBase = "";
+        private OleDbConnection Conn;//Stores The Active Database Coneection
+        private string DBase = "";//Stores The Databases File Path
         public SQL(string DataBase)
         {
             DBase = DataBase;
@@ -19,7 +19,7 @@ namespace Twitch_Discord_Reward_API.Backend.Data
 
         private void RestartConn()
         {
-            if (Conn != null) { if (Conn.State == System.Data.ConnectionState.Open) { Conn.Close(); } /* Of connection is open, close it*/ }
+            if (Conn != null) { if (Conn.State == System.Data.ConnectionState.Open) { Conn.Close(); } /* If connection is open, close it*/ }
             Conn = new OleDbConnection("Provider = Microsoft.ACE.OLEDB.12.0; Data Source = " + DBase + ".accdb"); // Open a new database connection
             Conn.Open();
         }
