@@ -141,26 +141,20 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 Union(JData["chatters"]["admins"]).
                 Union(JData["chatters"]["global_mods"]).
                 Union(JData["chatters"]["viewers"]);
+            List<KeyValuePair<string, string>> Headers;
+            Headers = new List<KeyValuePair<string, string>> {
+                new KeyValuePair<string, string>("BalanceIncrement",Reward.ToString()),
+                new KeyValuePair<string, string>("WatchTimeIncrement","1")
+            };
+            JData = Newtonsoft.Json.Linq.JToken.Parse("{'TwitchIDs':[]}");
+            List<string> TwitchIDs = new List<string> { };
             foreach (Newtonsoft.Json.Linq.JToken StreamViewer in Merged)
             {
                 StandardisedUser U = StandardisedUser.FromTwitchUsername(StreamViewer.ToString(), BotInstance);
-                if (U != null) {
-                    Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer Viewer = Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromTwitchDiscord(MessageType.Twitch, BotInstance, U.ID);
-                    if (Viewer != null)
-                    {
-                        if (!Viewer.DontReward)
-                        {
-                            Viewer.WatchTime += 1;
-                            List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> {
-                                new KeyValuePair<string, string>("ID",Viewer.ID.ToString()),
-                                new KeyValuePair<string, string>("WatchTime",Viewer.WatchTime.ToString())
-                            };
-                            Data.APIIntergrations.RewardCurrencyAPI.WebRequests.PostRequest("viewer", Headers, true);
-                            RewardUser(Reward, U, MessageType.Twitch);
-                        }
-                    }
-                }
+                if (U != null) { TwitchIDs.Add(U.ID); }
             }
+            JData["TwitchIDs"] = Newtonsoft.Json.Linq.JToken.FromObject(TwitchIDs);
+            Data.APIIntergrations.RewardCurrencyAPI.WebRequests.PostRequest("viewer", Headers, true,JData);
         }
         void RewardUser(int Reward,StandardisedUser U,MessageType MessageType)
         {

@@ -106,6 +106,31 @@ WHERE " + WhereStatment+@";
             return null;
         }
 
+        public static bool Increment(List<string> DiscordIDs = null, List<string> TwitchIDs=null,int BalanceIncrementBy=0,int WatchTimeIncrementBy=0)
+        {
+            List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("BalanceIncrement", BalanceIncrementBy),new OleDbParameter("WatchTimeIncrement",WatchTimeIncrementBy) };
+            string WhereStatement = "";
+            int i = 0;
+            foreach(string DID in DiscordIDs)
+            {
+                Params.Add(new OleDbParameter("DiscordID" + i, DID));
+                if (WhereStatement != "") { WhereStatement += " OR "; }
+                WhereStatement += "Viewer.DiscordID=@DiscordID" + i;
+                i++;
+            }
+            foreach (string TID in TwitchIDs)
+            {
+                Params.Add(new OleDbParameter("TwitchID" + i, TID));
+                if (WhereStatement != "") { WhereStatement += " OR "; }
+                WhereStatement += "Viewer.TwitchID=@TwitchID" + i;
+                i++;
+            }
+            Init.SQLi.Execute(@"UPDATE Viewer SET Viewer.Balance = Viewer.Balance + @BalanceIncrement, Viewer.WatchTime = Viewer.WatchTime + @WatchTimeIncrement
+WHERE (((Viewer.DontReward)=False) AND (" + WhereStatement+@"));
+", Params);
+            return true;
+        }
+
         public bool Save()
         {
             //Check if DiscordID or TwitchID is already in the database

@@ -103,6 +103,24 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         Context.ResponseObject.Code = 403; Context.ResponseObject.Message = "Invalid AuthToken";
                     }
                 }
+                else if ((Context.Headers.AllKeys.Contains("BalanceIncrement") || Context.Headers.AllKeys.Contains("WatchTimeIncrement")) && Context.RequestData != null)
+                {
+                    if (CorrespondingBot != null)
+                    {
+                        int BalanceIncrement = 0, WatchTimeIncrement=0;
+                        if (Context.Headers.AllKeys.Contains("BalanceIncrement")) {
+                            try { BalanceIncrement=int.Parse(Context.Headers["BalanceIncrement"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed BalanceIncrement"; return Context.ResponseObject; }
+                        }
+                        if (Context.Headers.AllKeys.Contains("WatchTimeIncrement"))
+                        {
+                            try { WatchTimeIncrement=int.Parse(Context.Headers["WatchTimeIncrement"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed WatchTimeIncrement"; return Context.ResponseObject; }
+                        }
+                        List<string> DiscordIDs=new List<string> { }, TwitchIDs=new List<string> { };
+                        if (Context.RequestData["DiscordIDs"] != null) { DiscordIDs = Context.RequestData["DiscordIDs"].ToObject<List<string>>(); }
+                        if (Context.RequestData["TwitchIDs"] != null) { TwitchIDs = Context.RequestData["TwitchIDs"].ToObject<List<string>>(); }
+                        Data.Objects.Viewer.Increment(DiscordIDs, TwitchIDs,BalanceIncrement,WatchTimeIncrement);
+                    }
+                }
                 else if (Context.Headers.AllKeys.Contains("ID"))
                 {
                     if (CorrespondingBot != null)
