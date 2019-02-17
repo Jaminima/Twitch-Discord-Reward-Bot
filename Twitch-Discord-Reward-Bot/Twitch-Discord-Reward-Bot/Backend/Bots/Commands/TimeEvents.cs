@@ -53,7 +53,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                     if (NewIsLive)
                     {
                         Newtonsoft.Json.Linq.JToken StreamLocal = Data.FileHandler.ReadJSON("./Data/Streams.json");
-                        string StreamCurrent= Data.APIIntergrations.Twitch.GetStreamHelix(BotInstance)["data"][0]["id"].ToString();
+                        string StreamCurrent = Data.APIIntergrations.Twitch.GetStreamHelix(BotInstance)["data"][0]["id"].ToString();
                         if (BotInstance.CommandHandler.JArrayContainsString(StreamLocal, StreamCurrent)) { return; }
                         else {
                             List<String> StreamList = StreamLocal.ToObject<List<string>>();
@@ -66,10 +66,10 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                             {
                                 await BotInstance.DiscordBot.Client.GetUser(ulong.Parse(Viewer.DiscordID)).SendMessageAsync(BotInstance.CommandHandler.MessageParser(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["LiveDM"].ToString(), null, MessageType.Discord));
                             }
-                            if (BotInstance.CommandConfig["LiveNotifications"]["SendToDiscordNotificationChannel"].ToString() == "True")
-                            {
-                                await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["LiveNotification"].ToString(), BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(), MessageType.Discord);
-                            }
+                        }
+                        if (BotInstance.CommandConfig["LiveNotifications"]["SendToDiscordNotificationChannel"].ToString() == "True")
+                        {
+                            await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["LiveNotifications"]["Responses"]["LiveNotification"].ToString(), BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(), MessageType.Discord);
                         }
                     }
                 }
