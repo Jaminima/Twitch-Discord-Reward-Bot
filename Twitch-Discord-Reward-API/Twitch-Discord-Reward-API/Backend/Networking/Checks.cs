@@ -78,18 +78,19 @@ namespace Twitch_Discord_Reward_API.Backend.Networking
 
         public static bool JSONLayoutCompare(Newtonsoft.Json.Linq.JToken Layout, Newtonsoft.Json.Linq.JToken Data)
         {
-            bool MissingItem = false, LayoutValuesAreAlphaNumeric = true, DataValuesAreAlphaNumeric = true;
+            bool MissingItem = false, LayoutValuesAreAlphaNumeric = true, DataValuesAreAlphaNumeric = true;//Stores data related to the conformity of the json Data
             List<string> LayoutPaths = new List<string> { }, DataPaths = new List<string> { };
+            //Perform the search of the Layout and Data jsons
             PerformSearch(Layout, ref LayoutPaths, ref LayoutValuesAreAlphaNumeric); PerformSearch(Data, ref DataPaths, ref DataValuesAreAlphaNumeric);
-            foreach (string Path in LayoutPaths)
+            foreach (string Path in LayoutPaths)//Checks if a path in the layout json does not exist in the data json
             {
-                if (!DataPaths.Contains(Path)) { MissingItem = true; break; }
+                if (!DataPaths.Contains(Path)) { MissingItem = true; break; }//if a path is missing indicate there is a non-conformity
             }
-            foreach (string Path in DataPaths.Where(x => x.Contains(":::")))
+            foreach (string Path in DataPaths.Where(x => x.Contains(":::")))//checks all list/array paths to ensure all conform
             {
-                if (!LayoutPaths.Contains(Path)) { MissingItem = true; break; }
+                if (!LayoutPaths.Contains(Path)) { MissingItem = true; break; }//if a path is missing in the list/array indicate there is a non-conformity
             }
-            return !MissingItem && DataValuesAreAlphaNumeric;
+            return !MissingItem && DataValuesAreAlphaNumeric;//returns true if the values all conform and the paths all exist
         }
 
         //Perform a recursive search of the given json, and check if the values conform to our valid character set
@@ -112,19 +113,19 @@ namespace Twitch_Discord_Reward_API.Backend.Networking
                     {
                         if (Key.Value.HasValues)//If the property has further values
                         {
-                            if (!Paths.Contains(CurrentPath + Key.Name + ":"))//Check if we have all ready entered the current path into the path set
+                            if (!Paths.Contains(CurrentPath + Key.Name + ":"))//Check if we have all ready entered the current path into the path set and adds the path if we havent
                             { Paths.Add(CurrentPath + Key.Name + ":"); }
                             PerformSearch(Key.Value, ref Paths, ref ValueIsAlphaNumeric, CurrentPath + Key.Name + ":");//Perform search of items inside of the property
                         }
                         else
                         {
-                            if (!Paths.Contains(CurrentPath + Key.Name + ":"))
+                            if (!Paths.Contains(CurrentPath + Key.Name + ":"))//Check if we have all ready entered the current path into the path set and adds the path if we havent
                             { Paths.Add(CurrentPath + Key.Name + ":"); }
-                            if (!IsValidValueInJsonConfig(Key.Value.ToString()))
+                            if (!IsValidValueInJsonConfig(Key.Value.ToString()))//Check if the value conforms
                             {
-                                if (!Key.Value.ToString().StartsWith("<:") && !Key.Value.ToString().StartsWith("<a:"))
+                                if (!Key.Value.ToString().StartsWith("<:") && !Key.Value.ToString().StartsWith("<a:"))//ignore the non-conformity for these cases
                                 {
-                                    ValueIsAlphaNumeric = false;
+                                    ValueIsAlphaNumeric = false;//Indicates a value does not conform
                                 }
                             }
                         }

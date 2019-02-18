@@ -10,8 +10,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking
     public class StandardisedRequestObject
     {
         /* This Object places usefull and frequently used data in an easy to access set of variables inside of the object
-         * This will allow for shorter code, and by placing it in an object, the data can be kept together in a very elegant manner.
-        */
+         * This will allow for shorter code, and by placing it in an object, the data can be kept together in a very elegant manner.*/
         public string URL,Method;
         public string[] URLSegments;
         public Dictionary<string, string> URLParamaters,StateParamaters;
@@ -36,13 +35,14 @@ namespace Twitch_Discord_Reward_API.Backend.Networking
             this.ResponseObject = ResponseObject;
         }
 
+        //Convert all url paramaters into a dictionary for ease of use
         Dictionary<string, string> GetParamaters(string URL)
         {
             Dictionary<string, string> Params = new Dictionary<string, string> { };
-            if (URL.Contains("?"))
+            if (URL.Contains("?"))//Only attempt if the url does contain a ?
             {
-                string[] ParamSet = URL.Split("?".ToCharArray())[1].Split("&".ToCharArray());
-                foreach (string Param in ParamSet)
+                string[] ParamSet = URL.Split("?".ToCharArray())[1].Split("&".ToCharArray());//split the parameter string into its individual variables
+                foreach (string Param in ParamSet)//Go through each variable and add the key and value into the dictionary
                 {
                     string[] SplitParam = Param.Split("=".ToCharArray());
                     if (SplitParam.Length == 2)
@@ -54,11 +54,12 @@ namespace Twitch_Discord_Reward_API.Backend.Networking
             return Params;
         }
 
+        //Converts vriables part of the url state paramater into a dictionary
         public void GetStateParams()
         {
             Dictionary<string, string> Params = new Dictionary<string, string> { };
-            string[] ParamSet = this.URLParamaters["state"].Split(new string[] { "%20" },StringSplitOptions.None);
-            foreach (string Param in ParamSet)
+            string[] ParamSet = this.URLParamaters["state"].Split(new string[] { "%20" },StringSplitOptions.None);//split the state paramater into its sub-variables
+            foreach (string Param in ParamSet)//Go through each sub-variable and add the key and value into the dictionary
             {
                 string[] SplitParam = Param.Split(new string[] { "%3D" },StringSplitOptions.None);
                 if (SplitParam.Length == 2)
