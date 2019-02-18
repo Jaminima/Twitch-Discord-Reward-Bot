@@ -1049,6 +1049,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             ParamaterisedMessage = ParamaterisedMessage.Replace("<@NewBalance>", NewBal.ToString("N0"));
             ParamaterisedMessage = ParamaterisedMessage.Replace("<@CurrencyAcronym>", BotInstance.CommandConfig["CurrencyAcronym"].ToString());
             ParamaterisedMessage = ParamaterisedMessage.Replace("<@Prefix>", BotInstance.CommandConfig["Prefix"].ToString());
+            ParamaterisedMessage = ParamaterisedMessage.Replace("<@LatestTweet>", Data.APIIntergrations.Twitter.GetLatestTweet(BotInstance));
 
             if (MessageType == MessageType.Twitch)
             {
