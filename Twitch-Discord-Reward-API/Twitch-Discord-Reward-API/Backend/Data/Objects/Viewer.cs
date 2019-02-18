@@ -106,19 +106,21 @@ WHERE " + WhereStatment+@";
             return null;
         }
 
+        //Increment the balance and watchtime by the gioven amount for all accounts with the given ids
         public static bool Increment(List<string> DiscordIDs = null, List<string> TwitchIDs=null,int BalanceIncrementBy=0,int WatchTimeIncrementBy=0)
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("BalanceIncrement", BalanceIncrementBy),new OleDbParameter("WatchTimeIncrement",WatchTimeIncrementBy) };
             string WhereStatement = "";
             int i = 0;
-            foreach(string DID in DiscordIDs)
+            foreach(string DID in DiscordIDs)//Cycle through every ID in the discord id set
             {
-                Params.Add(new OleDbParameter("DiscordID" + i, DID));
-                if (WhereStatement != "") { WhereStatement += " OR "; }
-                WhereStatement += "Viewer.DiscordID=@DiscordID" + i;
+                Params.Add(new OleDbParameter("DiscordID" + i, DID));//Add a paramater containing the discord id to the set
+                if (WhereStatement != "") { WhereStatement += " OR "; }//and an OR between each statement
+                WhereStatement += "Viewer.DiscordID=@DiscordID" + i;//Add on the conditional statement
                 i++;
             }
-            foreach (string TID in TwitchIDs)
+            i = 0;
+            foreach (string TID in TwitchIDs)//Does the same as above just for twitch ids
             {
                 Params.Add(new OleDbParameter("TwitchID" + i, TID));
                 if (WhereStatement != "") { WhereStatement += " OR "; }
@@ -128,6 +130,7 @@ WHERE " + WhereStatment+@";
             Init.SQLi.Execute(@"UPDATE Viewer SET Viewer.Balance = Viewer.Balance + @BalanceIncrement, Viewer.WatchTime = Viewer.WatchTime + @WatchTimeIncrement
 WHERE (((Viewer.DontReward)=False) AND (" + WhereStatement+@"));
 ", Params);
+            //Increment all matching ids balances and watchtime by the given amount
             return true;
         }
 
