@@ -55,7 +55,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                         Newtonsoft.Json.Linq.JToken StreamLocal = Data.FileHandler.ReadJSON("./Data/Streams.json");
                         string StreamCurrent = Data.APIIntergrations.Twitch.GetStreamHelix(BotInstance)["data"][0]["id"].ToString();
                         if (BotInstance.CommandHandler.JArrayContainsString(StreamLocal, StreamCurrent)) { return; }
-                        else {
+                        else
+                        {
                             List<String> StreamList = StreamLocal.ToObject<List<string>>();
                             StreamList.Add(StreamCurrent);
                             Data.FileHandler.SaveJSON("./Data/Streams.json", Newtonsoft.Json.Linq.JToken.FromObject(StreamList));

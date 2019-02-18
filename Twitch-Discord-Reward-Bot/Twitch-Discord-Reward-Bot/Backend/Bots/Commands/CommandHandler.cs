@@ -1024,7 +1024,12 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 
         public async Task SendMessage(string ParamaterisedMessage, string Channel, MessageType MessageType, StandardisedUser TargetUser = null, int Amount = -1, int NewBal = -1, string OtherString = "", string SenderUsername = null)
         {
-            ParamaterisedMessage = MessageParser(ParamaterisedMessage, null, MessageType, TargetUser, Amount, NewBal, OtherString, SenderUsername);
+            string ServerID = null;
+            if (MessageType == MessageType.Discord) {
+                ServerID = ((SocketGuildChannel)BotInstance.DiscordBot.Client.GetChannel(ulong.Parse(Channel))).Guild.Id.ToString();
+            }
+
+            ParamaterisedMessage = MessageParser(ParamaterisedMessage, null, MessageType, TargetUser, Amount, NewBal, OtherString, SenderUsername,ServerID);
 
             if (MessageType == MessageType.Twitch)
             {
@@ -1036,7 +1041,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             }
         }
 
-        public string MessageParser(string ParamaterisedMessage, StandardisedMessageRequest e, MessageType MessageType, StandardisedUser TargetUser = null, int Amount = -1, int NewBal = -1, string OtherString = "", string SenderUsername = null)
+        public string MessageParser(string ParamaterisedMessage, StandardisedMessageRequest e, MessageType MessageType, StandardisedUser TargetUser = null, int Amount = -1, int NewBal = -1, string OtherString = "", string SenderUsername = null,string ServerID=null)
         {
             ParamaterisedMessage = ParamaterisedMessage.Replace("<@CurrencyName>", BotInstance.CommandConfig["CurrencyName"].ToString());
             ParamaterisedMessage = ParamaterisedMessage.Replace("<@ChannelName>", BotInstance.CommandConfig["ChannelName"].ToString());
@@ -1044,7 +1049,6 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             ParamaterisedMessage = ParamaterisedMessage.Replace("<@NewBalance>", NewBal.ToString("N0"));
             ParamaterisedMessage = ParamaterisedMessage.Replace("<@CurrencyAcronym>", BotInstance.CommandConfig["CurrencyAcronym"].ToString());
             ParamaterisedMessage = ParamaterisedMessage.Replace("<@Prefix>", BotInstance.CommandConfig["Prefix"].ToString());
-
 
             if (MessageType == MessageType.Twitch)
             {
@@ -1054,10 +1058,12 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             }
             else
             {
+                if (ServerID != null) { ParamaterisedMessage = ParamaterisedMessage.Replace("<@everyone>", "@everyone"); }
                 if (TargetUser != null) { ParamaterisedMessage = ParamaterisedMessage.Replace("<@TargetUser>", "<@" + TargetUser.ID + ">"); }
                 ParamaterisedMessage = ParamaterisedMessage.Replace("/me", "");
                 if (e != null) ParamaterisedMessage = ParamaterisedMessage.Replace("<@SenderUser>", "<@" + e.SenderID + ">");
             }
+            ParamaterisedMessage = ParamaterisedMessage.Replace("<@everyone>", "");
             ParamaterisedMessage = ParamaterisedMessage.Replace("<@OtherString>", OtherString);
 
             foreach (Newtonsoft.Json.Linq.JToken Emote in BotInstance.CommandConfig["Emotes"])
