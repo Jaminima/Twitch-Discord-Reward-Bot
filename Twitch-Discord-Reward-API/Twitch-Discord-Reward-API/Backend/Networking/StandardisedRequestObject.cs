@@ -58,7 +58,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking
         public void GetStateParams()
         {
             Dictionary<string, string> Params = new Dictionary<string, string> { };
-            string[] ParamSet = this.URLParamaters["state"].Split(new string[] { "%20" },StringSplitOptions.None);//split the state paramater into its sub-variables
+            string[] ParamSet = this.URLParamaters["state"].Split(new string[] { "%20","+" },StringSplitOptions.None);//split the state paramater into its sub-variables
             foreach (string Param in ParamSet)//Go through each sub-variable and add the key and value into the dictionary
             {
                 string[] SplitParam = Param.Split(new string[] { "%3D" },StringSplitOptions.None);

@@ -64,7 +64,7 @@ namespace Twitch_Discord_Reward_Bot.Backend
             this.Currency = Currency;
             this.CommandConfig = this.Currency.CommandConfig;
             this.LoginConfig = this.Currency.LoginConfig;
-            new Thread(() => CheckBotsAlive()).Start();
+            //new Thread(() => CheckBotsAlive()).Start();
             Start();
         }
 
