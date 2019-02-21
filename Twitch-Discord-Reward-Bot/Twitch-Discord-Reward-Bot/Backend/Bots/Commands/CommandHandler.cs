@@ -34,6 +34,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         public Dictionary<string, string> SongRequestHistory = new Dictionary<string, string> { };
         async Task HandleThread(StandardisedMessageRequest e)
         {
+            if (BotInstance.TimeEvents == null) { return; }
             //var C1 = BotInstance.DiscordBot.Client.GetChannel(546382361151930388);
             //var C2 = (ISocketMessageChannel)(C1);
             //var M = await C2.GetMessageAsync(548057440898514945);
@@ -476,58 +477,54 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 await SendMessage(BotInstance.CommandConfig["Raffle"]["Joining"]["Responses"]["AlreadyRaffling"].ToString(), e);
                             }
                         }
-                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Alert"],e)&&
+                        else if (CommandEnabled(BotInstance.CommandConfig["CommandSetup"]["Alert"], e) &&
                             JArrayContainsString(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Commands"], Command))
                         {
                             if (LiveCheck(BotInstance.CommandConfig["CommandSetup"]["Alert"]))
                             {
                                 if (e.SegmentedBody.Length > 1)
                                 {
-                                    string AlertName = e.MessageBody.Replace(e.SegmentedBody[0]+" ", "");
-                                    Dictionary<int, int> MostSuitableAlert = new Dictionary<int, int> { };
-                                    foreach (string AlertNameParts in AlertName.Split(" ".ToCharArray()))
+                                    if (BotInstance.TimeEvents.AlertTimeOutExpired(e.User))
                                     {
-                                        for (int iAlert=0;iAlert<BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"].Count();iAlert++)
+                                        string AlertName = e.MessageBody.Replace(e.SegmentedBody[0] + " ", "");
+                                        Dictionary<int, int> MostSuitableAlert = new Dictionary<int, int> { };
+                                        for (int iAlert = 0; iAlert < BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"].Count(); iAlert++)
                                         {
-                                            Newtonsoft.Json.Linq.JToken TargetAlert = BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"][iAlert];
-                                            if (TargetAlert["Name"].ToString().Contains(AlertNameParts))
-                                            {
-                                                if (MostSuitableAlert.ContainsKey(iAlert)) { MostSuitableAlert[iAlert]++; }
-                                                else { MostSuitableAlert.Add(iAlert, 1); }
-                                            }
+                                            MostSuitableAlert.Add(iAlert, AlertName.Split(" ".ToCharArray()).Count(
+                                                x => BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"][iAlert]["Name"].ToString().Split(" ".ToCharArray()).Contains(x) ||
+                                                BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"][iAlert]["Name"].ToString().Split(" ".ToCharArray()).Count(y => y.Contains(x)) != 0
+                                                ));
                                         }
-                                    }
-                                    if (MostSuitableAlert.Count == 0) { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Responses"]["InvalidAlert"].ToString(), e); return; }
-                                    KeyValuePair<int, int> ChosenAlert = new KeyValuePair<int, int> (0,MostSuitableAlert.First().Value);
-                                    foreach (int Key in MostSuitableAlert.Keys) {
-                                        if (ChosenAlert.Value > MostSuitableAlert[Key]) { ChosenAlert = new KeyValuePair<int, int> (Key, MostSuitableAlert[Key]); }
-                                        else if (ChosenAlert.Value == MostSuitableAlert[Key])
+                                        if (MostSuitableAlert.Count == 0) { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Responses"]["InvalidAlert"].ToString(), e); return; }
+                                        KeyValuePair<int, int> ChosenAlert = new KeyValuePair<int, int>(0, MostSuitableAlert.First().Value);
+                                        foreach (int Key in MostSuitableAlert.Keys)
                                         {
-                                            if (BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"][Key]["Name"].ToString().Split(" ".ToCharArray()).Length
-                                                < BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"][ChosenAlert.Key]["Name"].ToString().Split(" ".ToCharArray()).Length)
-                                            {
-                                                ChosenAlert= new KeyValuePair<int, int>(Key, MostSuitableAlert[Key]);
-                                            }
+                                            if (ChosenAlert.Value < MostSuitableAlert[Key]) { ChosenAlert = new KeyValuePair<int, int>(Key, MostSuitableAlert[Key]); }
                                         }
-                                    }
-                                    Newtonsoft.Json.Linq.JToken Alert = BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"][ChosenAlert.Key];
-                                    Objects.Viewer V = e.Viewer;
-                                    if (V != null)
-                                    {
-                                        int Cost = int.Parse(Alert["Cost"].ToString());
-                                        if (V.Balance >= Cost)
+                                        Newtonsoft.Json.Linq.JToken Alert = BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"][ChosenAlert.Key];
+                                        Objects.Viewer V = e.Viewer;
+                                        if (V != null)
                                         {
-                                            Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Streamlabs.PlayAlert(BotInstance, Alert["URL"].ToString());
-                                            if (JData["success"] != null)
+                                            int Cost = int.Parse(Alert["Cost"].ToString());
+                                            if (V.Balance >= Cost)
                                             {
-                                                Objects.Viewer.AdjustBalance(V, Cost, "-");
-                                                await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Responses"]["Requested"].ToString(), e, OtherString: Alert["Name"].ToString());
+                                                Newtonsoft.Json.Linq.JToken JData = Data.APIIntergrations.Streamlabs.PlayAlert(BotInstance, Alert["URL"].ToString());
+                                                if (JData["success"] != null)
+                                                {
+                                                    Objects.Viewer.AdjustBalance(V, Cost, "-");
+                                                    Alerter A = new Alerter();
+                                                    A.User = e.User; A.LastAlert = DateTime.Now;
+                                                    BotInstance.TimeEvents.AlertRequests.Add(A);
+                                                    BotInstance.TimeEvents.LastAlert = DateTime.Now;
+                                                    await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Responses"]["Requested"].ToString(), e, OtherString: Alert["Name"].ToString());
+                                                }
+                                                else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Respomses"]["APIError"].ToString(), e, OtherString: JData["message"].ToString()); }
                                             }
-                                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Respomses"]["APIError"].ToString(),e,OtherString:JData["message"].ToString()); }
+                                            else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Responses"]["NotEnough"].ToString(), e); }
                                         }
-                                        else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Responses"]["NotEnough"].ToString(), e); }
+                                        else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
                                     }
-                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["APIError"].ToString(), e); }
+                                    else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Responses"]["TimeOut"].ToString(), e, Amount: BotInstance.TimeEvents.GetRemainingCooldown(e.User)); }
                                 }
                                 else { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["ErrorResponses"]["ParamaterCount"].ToString(), e); }
                             }

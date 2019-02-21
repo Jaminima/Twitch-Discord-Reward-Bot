@@ -42,6 +42,29 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             }
         }
 
+        public DateTime LastAlert = DateTime.MinValue;
+        public List<Alerter> AlertRequests = new List<Alerter> { };
+        void CullAlerts()
+        {
+            int AlertTimeout = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Alert"]["CoolDown"]["Individual"].ToString());
+            foreach (Alerter V in AlertRequests.Where(x => ((TimeSpan)(DateTime.Now - x.LastAlert)).TotalSeconds >= AlertTimeout)) { AlertRequests.Remove(V); }
+        }
+        public bool AlertTimeOutExpired(StandardisedUser U)
+        {
+            int GlobalAlertTimeout= int.Parse(BotInstance.CommandConfig["CommandSetup"]["Alert"]["CoolDown"]["Global"].ToString());
+            CullAlerts();
+            return (AlertRequests.Where(x => x.User.ID == U.ID).Count() == 0) && (((TimeSpan)(DateTime.Now-LastAlert)).TotalSeconds>=GlobalAlertTimeout);
+        }
+        public int GetRemainingCooldown(StandardisedUser U)
+        {
+            int GlobalAlertTimeout = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Alert"]["CoolDown"]["Global"].ToString()),
+                GlobalTimeoutRemaining = GlobalAlertTimeout - (int)((TimeSpan)(DateTime.Now - LastAlert)).TotalSeconds,
+                IndividualAlertTimeout = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Alert"]["CoolDown"]["Individual"].ToString()),
+                IndividualTimeoutRemaining = IndividualAlertTimeout - (int)((TimeSpan)(DateTime.Now - AlertRequests.Where(x => x.User.ID == U.ID).First().LastAlert)).TotalSeconds;
+            if (GlobalTimeoutRemaining > IndividualTimeoutRemaining) { return GlobalTimeoutRemaining; }
+            else { return IndividualTimeoutRemaining; }
+        }
+
         bool IsLive = false;
         async Task LiveNotifications()
         {
@@ -341,6 +364,12 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         public StandardisedUser User;
         public DateTime LastDiscordMessage = DateTime.MinValue, 
             LastTwitchMessage = DateTime.MinValue;
+    }
+
+    public class Alerter
+    {
+        public StandardisedUser User;
+        public DateTime LastAlert;
     }
 
     public class Raffler
