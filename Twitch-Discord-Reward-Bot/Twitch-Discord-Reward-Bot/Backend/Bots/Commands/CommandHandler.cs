@@ -34,9 +34,26 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
         public Dictionary<string, string> SongRequestHistory = new Dictionary<string, string> { };
         async Task HandleThread(StandardisedMessageRequest e)
         {
+            //var C1 = BotInstance.DiscordBot.Client.GetChannel(546382361151930388);
+            //var C2 = (ISocketMessageChannel)(C1);
+            //var M = await C2.GetMessageAsync(548057440898514945);
+            //await C2.DeleteMessageAsync(M);
             try
             {
                 RewardForChatting(e);
+                #region "Welcome"
+                if (e.IsNewUser)
+                {
+                    if (CommandEnabled(BotInstance.CommandConfig["WelcomeMessage"],e.MessageType))
+                    {
+                        if (LiveCheck(BotInstance.CommandConfig["WelcomeMessage"]))
+                        {
+                            if (e.MessageType == MessageType.Twitch) { await SendMessage(BotInstance.CommandConfig["WelcomeMessage"]["TwitchWelcome"].ToString(), e); }
+                            if (e.MessageType == MessageType.Discord) { await SendMessage(BotInstance.CommandConfig["WelcomeMessage"]["DiscordWelcome"].ToString(), BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(), e.MessageType,e.User); }
+                        }
+                    }
+                }
+                #endregion
                 #region "Commands"
                 if (e.SenderID != BotInstance.DiscordBot.Client.CurrentUser.Id.ToString())
                 {

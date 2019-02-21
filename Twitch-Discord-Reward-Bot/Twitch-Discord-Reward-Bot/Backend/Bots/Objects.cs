@@ -17,6 +17,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots
         public MessageType MessageType;
         public OnMessageReceivedArgs TwitchRaw;
         public SocketMessage DiscordRaw;
+        public bool IsNewUser;
         public StandardisedUser User;
         public Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer Viewer;
 
@@ -33,7 +34,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots
             S.User = new StandardisedUser();
             S.User.ID = S.SenderID;
             S.User.UserName = S.SenderUserName;
-            S.Viewer = Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromTwitchDiscord(S,BotInstance,S.User.ID);
+            S.Viewer = Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromTwitchDiscord(S,BotInstance,S.User.ID,ref S.IsNewUser);
             return S;
         }
 
@@ -51,7 +52,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots
             S.User = new StandardisedUser();
             S.User.ID = S.SenderID;
             S.User.UserName = S.SenderUserName;
-            S.Viewer = Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromTwitchDiscord(S, BotInstance, S.User.ID);
+            S.Viewer = Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromTwitchDiscord(S, BotInstance, S.User.ID, ref S.IsNewUser);
             return S;
         }
     }

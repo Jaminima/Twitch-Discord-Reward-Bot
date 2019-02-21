@@ -24,13 +24,23 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations.RewardCurrency
         {
             return FromTwitchDiscord(e.MessageType, BotInstance, ID);
         }
+        public static Viewer FromTwitchDiscord(Bots.StandardisedMessageRequest e, BotInstance BotInstance, string ID,ref bool CreatedViewer)
+        {
+            return FromTwitchDiscord(e.MessageType, BotInstance, ID,ref CreatedViewer);
+        }
         public static Viewer FromTwitchDiscord(Bots.MessageType e, BotInstance BotInstance, string ID)
+        {
+            bool Temp=false;
+            return FromTwitchDiscord(e, BotInstance, ID, ref Temp);
+        }
+        public static Viewer FromTwitchDiscord(Bots.MessageType e, BotInstance BotInstance, string ID, ref bool CreatedViewer)
         {
             List<KeyValuePair<string, string>> Headers = new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("CurrencyID", BotInstance.Currency.ID.ToString()) };
             if (e == Bots.MessageType.Twitch) { Headers.Add(new KeyValuePair<string, string>("TwitchID", ID)); }
             if (e == Bots.MessageType.Discord) { Headers.Add(new KeyValuePair<string, string>("DiscordID", ID)); }
-            WebRequests.PostRequest("viewer", Headers, true);
-            ResponseObject RObj = WebRequests.GetRequest("viewer", Headers);
+            ResponseObject RObj = WebRequests.PostRequest("viewer", Headers, true);
+            CreatedViewer = RObj.Code == 200;
+            RObj = WebRequests.GetRequest("viewer", Headers);
             if (RObj.Code == 200)
             {
                 Viewer B = FromJson(RObj.Data);

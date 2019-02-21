@@ -64,7 +64,11 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         }
                         else { B.Currency = CorrespondingBot.Currency; }
                         B.Balance = int.Parse(CorrespondingBot.Currency.CommandConfig["InititalBalance"].ToString());
-                        if (B.Currency != null) { B.Save(); }
+                        if (B.Currency != null) {
+                            if (!B.Save()) {
+                                ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, a Viewer already exists in this currency witht that Discord and/or Twitch ID";
+                            }
+                        }
                         else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, was unable to set Currency, try explicitly setting Currency with CurrencyID header"; }
                     }
                     else
