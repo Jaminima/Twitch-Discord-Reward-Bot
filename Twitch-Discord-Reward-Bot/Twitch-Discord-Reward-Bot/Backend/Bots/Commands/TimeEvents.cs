@@ -226,7 +226,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             foreach (Newtonsoft.Json.Linq.JToken RaffleType in BotInstance.CommandConfig["Raffle"]["Sizes"])
             {
                 RaffleSize += int.Parse(RaffleType["Frequency"].ToString());
-                if (RaffleSize >= RaffleNumber && ChosenRaffle==null) { ChosenRaffle = RaffleType; }
+                if (RaffleSize > RaffleNumber && ChosenRaffle==null) { ChosenRaffle = RaffleType; }
             }
             int RaffleReward = int.Parse(ChosenRaffle["Size"].ToString());
             RaffleParticipants = new List<Raffler> { };

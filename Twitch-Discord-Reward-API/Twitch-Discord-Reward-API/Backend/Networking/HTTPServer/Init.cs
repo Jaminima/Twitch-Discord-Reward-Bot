@@ -25,10 +25,13 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             Listener.BeginGetContext(HandleRequest, null); // Restart listener
         }
 
+        public static int Size=0;
         static void RequestThread(HttpListenerContext Context)
         {
             string Event = Context.Request.RemoteEndPoint + " Visited " + Context.Request.RawUrl + " Using " + Context.Request.HttpMethod;
-            Console.WriteLine(Event); 
+            Console.WriteLine(Event);
+            Size=(Size+1)%100;
+            if (Size == 0) { Console.Clear(); }
             HttpListenerResponse Resp = Context.Response; // Create the Listener Response and set response parameters
             Resp.StatusCode = 200;
             Resp.ContentType = "application/json";
