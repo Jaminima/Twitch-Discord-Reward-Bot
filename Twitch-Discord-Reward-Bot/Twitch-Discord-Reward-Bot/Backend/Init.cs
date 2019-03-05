@@ -87,8 +87,8 @@ namespace Twitch_Discord_Reward_Bot.Backend
                 Thread.Sleep(10000);
                 if (Isrunning)
                 {
-                    if (!TwitchBot.Client.IsConnected) { TwitchBot.Client.Connect(); }
-                    if (DiscordBot.Client.ConnectionState == Discord.ConnectionState.Disconnected) { DiscordBot.Client.StartAsync(); }
+                    if (!TwitchBot.Client.IsConnected) { try { TwitchBot.Client.Connect(); } catch { } }
+                    if (DiscordBot.Client.ConnectionState == Discord.ConnectionState.Disconnected) { try { DiscordBot.Client.StartAsync(); } catch { } }
                 }
             }
         }
