@@ -243,8 +243,9 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             }
             if (RaffleParticipants.Count != 0)
             {
-                int WinnerCount= int.Parse(ChosenRaffle["Winners"].ToString());
+                int WinnerCount = int.Parse(ChosenRaffle["Winners"].ToString());
                 if (WinnerCount > RaffleParticipants.Count) { WinnerCount = RaffleParticipants.Count; }
+                RaffleReward = (int)Math.Ceiling((decimal)RaffleReward / WinnerCount);
                 for (int i=WinnerCount; WinnerCount > 0; WinnerCount--)
                 {
                     int WinnerN = Init.Rnd.Next(0, RaffleParticipants.Count);
