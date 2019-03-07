@@ -4,7 +4,7 @@
   "CurrencyAcronym": "",
   "Prefix": "!",
   "ChannelName": "",
-  "InititalBalance": 250,
+  "InititalBalance": 500,
   "MessageDelay": 3,
   "Discord": {
     "TwitchMerging": true,
@@ -12,7 +12,7 @@
     "Channels": [
       "277493158777061376"
     ],
-    "NotificationChannel": "277493158777061376",
+    "NotificationChannel": "546382361151930388",
     "SubscriberRoleID": "445021512383070218",
     "ModeratorRoleID": "238144531613220864"
   },
@@ -56,11 +56,6 @@
       "Name": "harbonSOCIETY",
       "Discord": "<:harbonSOCIETY:438742417466720276>",
       "Twitch": "harbonSOCIETY"
-    },
-    {
-      "Name": "harbonCITO",
-      "Discord": "<:harbonCITO:438851118601207848>",
-      "Twitch": "harbonCITO"
     },
     {
       "Name": "harbonPRIDE",
@@ -108,11 +103,6 @@
       "Twitch": "harbonBLESS"
     },
     {
-      "Name": "harbonA",
-      "Discord": "<:harbonA:486210663866171403>",
-      "Twitch": "harbonA"
-    },
-    {
       "Name": "harbonMEGA1",
       "Discord": "<:harbonMEGA1:475198231610130432>",
       "Twitch": "harbonMEGA1"
@@ -146,6 +136,11 @@
       "Name": "harbonHOMELESS",
       "Discord": "<:harbonHOMELESS:530457152653885441>",
       "Twitch": "harbonHOMELESS"
+    },
+    {
+      "Name": "FeelsOkayMan",
+      "Discord": "<:FeelsOkayMan:432209065444245514>",
+      "Twitch": "FeelsOkayMan"
     }
   ],
   "CommandSetup": {
@@ -172,8 +167,9 @@
         "youtube": "<@SenderUser> https://www.youtube.com/user/TheHarbonator",
         "snapchat": "<@SenderUser> https://www.snapchat.com/add/harbonator",
         "minecraft": "<@SenderUser> https://youtu.be/yNEk-N4V6ZY",
-        "poll": "<@SenderUser> https://strawpoll.com/khdbb4z5",
-        "help": "<@SenderUser> https://owlcoin.co.uk/dev/Help/viewer.html?ID=1"
+        "tweet": "<@SenderUser> <@LatestTweet>",
+        "reddit": "<@SenderUser> https://www.reddit.com/r/HarbonatorFanClub",
+        "help": "<@SenderUser> https://owlcoin.co.uk/dev/Pages/Help/viewer.html?ID=1 https://owlcoin.co.uk/dev/Pages/Help/moderator.html?ID=1"
       }
     },
     "Balance": {
@@ -234,7 +230,7 @@
         "Discord": [
           "<:harbonA:486210663866171403>",
           "<:harbonCITO:438851118601207848>",
-          "<:harbonDAB:243138145640644618>"
+          "<a:harbonDAB2:441609336595283987>"
         ],
         "Twitch": [
           "harbonCITO",
@@ -257,7 +253,8 @@
       "DiscordEnabled": false,
       "RequireLive": true,
       "Commands": [
-        "fish"
+        "fish",
+        "angling"
       ],
       "Responses": {
         "Started": "<@SenderUser> You started fishing! :fishing_pole_and_fish: <@harbonT>",
@@ -378,7 +375,7 @@
     "Alert": {
       "TwitchEnabled": true,
       "DiscordEnabled": true,
-      "RequireLive": false,
+      "RequireLive": true,
       "Commands": [
         "alert",
         "redeem"
@@ -387,7 +384,8 @@
         "APIError": "<@SenderUser> The following issue occured: <@OtherString>",
         "NotEnough": "<@SenderUser> You dont have enough <@CurrencyName>",
         "Requested": "<@SenderUser> Playing alert: <@OtherString>",
-        "InvalidAlert": "<@SenderUser> Cant find that alert"
+        "InvalidAlert": "<@SenderUser> Cant find that alert",
+        "TimeOut": "<@SenderUser> You must wait <@Amount> seconds before you can request an alert!"
       },
       "CoolDown": {
         "Global": 60,
@@ -629,7 +627,7 @@
     "MinimumDelay": 90,
     "Messages": [
       {
-        "Body": "<@harbonPLS> <@harbonCOZY> <@harbonLICENCE> <@harbonTREE> <@harbonLOVE> <@harbonSLEEPER> <@harbonDOC> <@harbonSOCIETY> <@harbonCITO> <@harbonPRIDE> <@harbonHANDS> <@harbonHANDSUP> <@harbonHOP> <@harbonPRIME> <@harbonYIKES> <@harbonHOMELESS> <@harbonHYPER> <@harbonLURK> <@harbonA> <@harbonMEGA1> <@harbonMEGA2> <@harbonMEGA3> <@harbonMEGA4>",
+        "Body": "<@harbonPLS> <@harbonCOZY> <@harbonLICENCE> <@harbonTREE> <@harbonLOVE> <@harbonSLEEPER> <@harbonDOC> <@harbonSOCIETY> <@harbonPRIDE> <@harbonHANDS> <@harbonHANDSUP> <@harbonHOP> <@harbonPRIME> <@harbonYIKES> <@harbonHOMELESS> <@harbonHYPER> <@harbonLURK> <@harbonMEGA1> <@harbonMEGA2> <@harbonMEGA3> <@harbonMEGA4>",
         "Delay": 1200
       },
       {
@@ -675,6 +673,7 @@
         "Winners": 2
       }
     ],
+	"CountDownMessages":2,
     "Responses": {
       "LeadUp": "/me Raffle for <@Amount> <@CurrencyName> has started! You have <@OtherString> to type <@Prefix>join",
       "Winner": "/me Raffle for <@Amount> <@CurrencyName> has finished and <@TargetUser> won!!!",
@@ -728,7 +727,7 @@
     "TwitchEnabled": true,
     "DiscordEnabled": true,
     "Enabled": true,
-    "SendToDiscordNotificationChannel": false,
+    "SendToDiscordNotificationChannel": true,
     "Commands": [
       "notifications",
       "notification",
@@ -736,9 +735,16 @@
     ],
     "Responses": {
       "LiveDM": "The stream has started! https://twitch.tv/<@ChannelName>\nDisable these notifcations with `<@Prefix>notifications off`",
-      "LiveNotification": "The stream has started! https://twitch.tv/<@ChannelName>",
+      "LiveNotification": "<@everyone> Harbonator is now LIVE on Twitch\nhttps://www.twitch.tv/harbonator\n\nalso, feel free to like/rt the gone live tweet for today, it helps the stream grow <@FeelsOkayMan> :point_right: :heart: <@LatestTweet>\n\n(mute the channel, or right-click the Server bubble to opt-out of @-everyone-alerts)",
       "Off": "<@SenderUser> You have turned live notifications off!",
       "On": "<@SenderUser> You have turned live notifications on!"
     }
+  },
+  "WelcomeMessage": {
+    "TwitchEnabled": true,
+    "DiscordEnabled": false,
+    "RequireLive": false,
+    "TwitchWelcome": "Welcome to the stream <@SenderUser> here is 500 Owlcoin, use !help for command information, and feel free to ask any questions <@FeelsOkayMan> <3",
+    "DiscordWelcome": "Welcome to the Harbonator Discord <@TargetUser> here is 500 Owlcoin, use !help for command information, and feel free to ask any questions <@FeelsOkayMan> <3"
   }
 }

@@ -228,16 +228,18 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                 RaffleSize += int.Parse(RaffleType["Frequency"].ToString());
                 if (RaffleSize > RaffleNumber && ChosenRaffle==null) { ChosenRaffle = RaffleType; }
             }
-            int RaffleReward = int.Parse(ChosenRaffle["Size"].ToString());
+            int RaffleReward = int.Parse(ChosenRaffle["Size"].ToString()),
+                CountDownMessages = int.Parse(BotInstance.CommandConfig["Raffle"]["CountDownMessages"].ToString()),
+                MinuteSegmentSize=(int)Math.Ceiling((decimal)60/CountDownMessages);
             RaffleParticipants = new List<Raffler> { };
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < CountDownMessages; i++)
             {
-                String TimeLeft = (4-i)*15+" seconds";
+                String TimeLeft = (CountDownMessages-i)*MinuteSegmentSize+" seconds";
                 if (BotInstance.CommandHandler.CommandEnabled(BotInstance.CommandConfig["Raffle"], MessageType.Twitch))
                 { await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["Raffle"]["Responses"]["LeadUp"].ToString(), BotInstance.CommandConfig["ChannelName"].ToString(), MessageType.Twitch,null, RaffleReward, -1,TimeLeft); }
                 if (BotInstance.CommandHandler.CommandEnabled(BotInstance.CommandConfig["Raffle"], MessageType.Discord))
                 { await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["Raffle"]["Responses"]["LeadUp"].ToString(), BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(), MessageType.Discord, null, RaffleReward, -1, TimeLeft); }
-                Thread.Sleep(15000);
+                Thread.Sleep(MinuteSegmentSize*1000);
             }
             if (RaffleParticipants.Count != 0)
             {
