@@ -437,14 +437,33 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
 
         static Data.Objects.Bot AuthCheck(StandardisedRequestObject Context)
         {
+            //Check if the required Headers are present
             if (Context.Headers.AllKeys.Contains("AuthToken") && Context.Headers.AllKeys.Contains("BotID"))
             {
-                try { int.Parse(Context.Headers["BotID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed BotID"; return null; }
+                //Check if the ID can be converted into an Integer
+                try { int.Parse(Context.Headers["BotID"]); } catch {
+                    //If it cant be converted, set the contents of the Response Object to reflect this
+                    Context.ResponseObject.Code = 400;
+                    Context.ResponseObject.Message = "Bad Request, Malformed BotID";
+                    return null;
+                }
+                //Fetch the Bot Object with the given ID
                 Data.Objects.Bot Bot = Data.Objects.Bot.FromID(int.Parse(Context.Headers["BotID"]),true);
-                if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AuthToken"], Bot.AccessToken)) { return Bot; }
-                else { return null; }
+                //Check if the provided AuthToken matches the hash in the Bot Object
+                //And return  the bot object if it is valid
+                if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AuthToken"], Bot.AccessToken)) {
+                    return Bot;
+                }
+                else {
+                    return null;
+                }
             }
-            else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AuthToken is missing"; return null; }
+            else {
+                //If a Header is missing, set the contents of the Response Object to relfect it
+                Context.ResponseObject.Code = 400;
+                Context.ResponseObject.Message = "Bad Request, AuthToken or BotID is missing";
+                return null;
+            }
         }
     }
 }

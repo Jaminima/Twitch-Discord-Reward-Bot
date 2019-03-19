@@ -27,10 +27,19 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             {
                 if (Context.Headers.AllKeys.Contains("ID")) // Get the viewer where header ID matches
                 {
-                    try { int.Parse(Context.Headers["ID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
-                    Data.Objects.Viewer B = Data.Objects.Viewer.FromID(int.Parse(Context.Headers["ID"]));
-                    if (B != null) { Context.ResponseObject.Data = B.ToJson(); }
-                    else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not match an existing object"; ErrorOccured = true; }
+                    try { int.Parse(Context.Headers["ID"]); }//Check if the ID Header can be converted to an integer
+                    catch {//If it cant be converted, set the contents of the Response Object to reflect this
+                        Context.ResponseObject.Code = 400;
+                        Context.ResponseObject.Message = "Bad Request, Malformed ID";
+                        return Context.ResponseObject;
+                    }
+                    Data.Objects.Viewer B = Data.Objects.Viewer.FromID(int.Parse(Context.Headers["ID"]));//Fetch the Viewer Object with the given ID
+                    if (B != null) { Context.ResponseObject.Data = B.ToJson(); }//If We get a Viewer back, set the Response Objects data to the JSON format of the Viewer
+                    else {//If we didnt get a viewer back, set the contents of the Response Object to reflect that a viewer doesnt exist with the given ID
+                        Context.ResponseObject.Code = 400;
+                        Context.ResponseObject.Message = "Bad Request, ID does not match an existing object";
+                        ErrorOccured = true;
+                    }
                 }
                 else if ((Context.Headers.AllKeys.Contains("TwitchID") || Context.Headers.AllKeys.Contains("DiscordID")) && Context.Headers.AllKeys.Contains("CurrencyID")) // Get the viewer where header (TwitchID and/or DiscordID) and CurrencyID matches
                 {
