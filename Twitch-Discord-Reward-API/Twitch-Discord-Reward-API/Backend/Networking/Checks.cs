@@ -51,13 +51,13 @@ namespace Twitch_Discord_Reward_API.Backend.Networking
             {
                 if (!LowerSet.Contains(C) && !UpperSet.Contains(C) && !NumberSet.Contains(C) && !SpecialSet.Contains(C))
                 {//if the character isnt Lower,Upper,Number or special
-                    if (PrevC.ToString() == "<" && C.ToString() == "@") { ClosableBrackets++; }//Where we have a start of a paramater increase the closable bracket count
-                    else if (C.ToString() == ">" && ClosableBrackets > 0) { ClosableBrackets--; }//where we have the end of a paramater decreas the closable bracket count
-                    else
+                    if (C.ToString() == ">" && ClosableBrackets > 0) { ClosableBrackets--; }//where we have the end of a paramater decreas the closable bracket count
+                    else if (C.ToString() != "<")
                     {//if it isnt the start or end of a bracket return false to indicate that it is invalid
                         return false;
                     }
                 }
+                else if (PrevC.ToString() == "<" && C.ToString() == "@") { ClosableBrackets++; }//Where we have a start of a paramater increase the closable bracket count
                 PrevC = C;//Set the last character
             }
             return ClosableBrackets == 0;//If we have closed all paramater brackets
