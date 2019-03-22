@@ -21,7 +21,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
 
         public void Stop()
         {
-            T.Abort();
+            if (T != null) { if (T.IsAlive) { T.Abort(); } }
         }
 
         async Task TimeThread()

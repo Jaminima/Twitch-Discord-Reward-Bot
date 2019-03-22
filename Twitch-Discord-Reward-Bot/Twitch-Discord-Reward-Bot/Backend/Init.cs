@@ -76,6 +76,7 @@ namespace Twitch_Discord_Reward_Bot.Backend
             try { DiscordBot = new Backend.Bots.DiscordBot.Instance(this); } catch { }
             try { TwitchBot = new Backend.Bots.TwitchBot.Instance(this); } catch { }
             System.Threading.Thread.Sleep(5000);
+            if (this.TimeEvents != null) { this.TimeEvents.Stop(); }
             this.TimeEvents = new Bots.Commands.TimeEvents();
             this.TimeEvents.Start(this);
         }
