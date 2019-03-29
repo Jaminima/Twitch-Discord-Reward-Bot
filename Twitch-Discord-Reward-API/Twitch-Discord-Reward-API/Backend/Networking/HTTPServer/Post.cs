@@ -60,7 +60,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                             {
                                 B.Currency = Data.Objects.Currency.FromID(int.Parse(Context.Headers["CurrencyID"]));
                             }
-                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, This bot does not have permission to edit that Currency"; }
+                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, This bot does not have permission to edit that Currency"; return Context.ResponseObject; }
                         }
                         else { B.Currency = CorrespondingBot.Currency; }
                         B.Balance = int.Parse(CorrespondingBot.Currency.CommandConfig["InititalBalance"].ToString());
@@ -449,6 +449,11 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 }
                 //Fetch the Bot Object with the given ID
                 Data.Objects.Bot Bot = Data.Objects.Bot.FromID(int.Parse(Context.Headers["BotID"]),true);
+                if (Bot == null) {
+                    Context.ResponseObject.Code = 400;
+                    Context.ResponseObject.Message = "Bad Request, BotID does not correspond to an object";
+                    return null;
+                }
                 //Check if the provided AuthToken matches the hash in the Bot Object
                 //And return  the bot object if it is valid
                 if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AuthToken"], Bot.AccessToken)) {
