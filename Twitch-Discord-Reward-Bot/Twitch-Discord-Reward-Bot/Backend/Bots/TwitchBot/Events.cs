@@ -24,7 +24,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.TwitchBot
             int Reward = int.Parse(BotInstance.CommandConfig["AutoRewards"]["GiftSub"]["Reward"].ToString());
             Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer V = Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.FromTwitchDiscord(MessageType.Twitch, BotInstance, Gifter.ID);
             if (V != null) { Data.APIIntergrations.RewardCurrencyAPI.Objects.Viewer.AdjustBalance(V, Reward, "+"); }
-            await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["AutoRewards"]["GiftSub"]["Response"].ToString(), e.Channel.ToString(),MessageType.Twitch,Gifter,Reward,OtherString:"@"+Giftee);
+            await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["AutoRewards"]["GiftSub"]["Response"].ToString(), e.Channel.ToString(),MessageType.Twitch,Gifter,Reward,OtherString:"@"+Giftee.UserName);
             if (BotInstance.CommandConfig["AutoRewards"]["DiscordSubNotifications"].ToString() == "True")
             { await BotInstance.CommandHandler.SendMessage(BotInstance.CommandConfig["AutoRewards"]["GiftSub"]["Response"].ToString(), BotInstance.CommandConfig["Discord"]["NotificationChannel"].ToString(), MessageType.Discord, Gifter, Reward, OtherString: "<@" + Giftee.UserName +">"); }
         }
