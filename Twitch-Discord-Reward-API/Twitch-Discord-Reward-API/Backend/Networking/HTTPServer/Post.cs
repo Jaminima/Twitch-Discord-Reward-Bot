@@ -43,7 +43,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     else
                     {
                         ErrorOccured = true;
-                        Context.ResponseObject.Code = 403; Context.ResponseObject.Message = "Invalid AuthToken";
+                        //Context.ResponseObject.Code = 403; Context.ResponseObject.Message = "Invalid AuthToken";
                     }
                 }
                 else if (Context.Headers.AllKeys.Contains("TwitchID") || Context.Headers.AllKeys.Contains("DiscordID"))
@@ -74,7 +74,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     else
                     {
                         ErrorOccured = true;
-                        Context.ResponseObject.Code = 403; Context.ResponseObject.Message = "Invalid AuthToken";
+                        //Context.ResponseObject.Code = 403; Context.ResponseObject.Message = "Invalid AuthToken";
                     }
                 }
                 else if (Context.Headers.AllKeys.Contains("ID") && Context.Headers.AllKeys.Contains("Operator") && Context.Headers.AllKeys.Contains("Value"))
@@ -104,7 +104,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     else
                     {
                         ErrorOccured = true;
-                        Context.ResponseObject.Code = 403; Context.ResponseObject.Message = "Invalid AuthToken";
+                        //Context.ResponseObject.Code = 403; Context.ResponseObject.Message = "Invalid AuthToken";
                     }
                 }
                 else if ((Context.Headers.AllKeys.Contains("BalanceIncrement") || Context.Headers.AllKeys.Contains("WatchTimeIncrement")) && Context.RequestData != null)
@@ -140,7 +140,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     else
                     {
                         ErrorOccured = true;
-                        Context.ResponseObject.Code = 403; Context.ResponseObject.Message = "Invalid AuthToken";
+                        //Context.ResponseObject.Code = 403; Context.ResponseObject.Message = "Invalid AuthToken";
                     }
                 }
                 else
@@ -459,7 +459,10 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AuthToken"], Bot.AccessToken)) {
                     return Bot;
                 }
-                else {
+                else
+                {
+                    Context.ResponseObject.Code = 400;
+                    Context.ResponseObject.Message = "Bad Request, AuthToken is invalid for that Bot";
                     return null;
                 }
             }
