@@ -159,9 +159,20 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     {
                         if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken))
                         {
-                            if (Context.Headers["Email"] != null) { L.Email = Context.Headers["Email"]; }
-                            if (Context.Headers["UserName"] != null) { L.UserName = Context.Headers["UserName"]; }
-                            if (Context.Headers["Password"] != null) { L.HashedPassword = new Scrypt.ScryptEncoder().Encode(Context.Headers["Password"]); }
+                            if (Context.Headers["Email"] != null) {
+                                if (!Checks.IsValidEmail(Context.Headers["Email"])) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Email is not valid"; return Context.ResponseObject; }
+                                L.Email = Context.Headers["Email"];
+                            }
+                            if (Context.Headers["UserName"] != null) {
+                                if (!Checks.IsAlphaNumericString(Context.Headers["UserName"])) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Username is not AlphaNumeric"; return Context.ResponseObject; }
+                                L.UserName = Context.Headers["UserName"];
+                            }
+                            if (Context.Headers["Password"] != null)
+                            {
+                                if (Context.Headers["Password"].Length < 8) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Password too short"; return Context.ResponseObject; }
+                                if (!Checks.IsValidPassword(Context.Headers["Password"])) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Password requires at least 1 Capital, 1 Number, 1 Special"; return Context.ResponseObject; }
+                                L.HashedPassword = new Scrypt.ScryptEncoder().Encode(Context.Headers["Password"]);
+                            }
                             if (!L.UpdateUserNameEmailPassword()) { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, That UserName or Email may be in use by another account"; }
                         }
                         else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
