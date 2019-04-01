@@ -168,7 +168,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             List<KeyValuePair<string, string>> Headers;
             Headers = new List<KeyValuePair<string, string>> {
                 new KeyValuePair<string, string>("BalanceIncrement",Reward.ToString()),
-                new KeyValuePair<string, string>("WatchTimeIncrement","1")
+                new KeyValuePair<string, string>("WatchTimeIncrement","1"),
+                new KeyValuePair<string, string>("CurrencyID",this.BotInstance.Currency.ID.ToString())
             };
             JData = Newtonsoft.Json.Linq.JToken.Parse("{'TwitchIDs':[]}");
             List<string> TwitchIDs = new List<string> { };

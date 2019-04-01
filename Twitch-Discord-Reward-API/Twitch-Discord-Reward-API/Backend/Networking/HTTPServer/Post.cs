@@ -29,6 +29,8 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     if (CorrespondingBot != null)
                     {
                         Data.Objects.Viewer B = Data.Objects.Viewer.FromID(int.Parse(Context.Headers["ID"]));
+                        if (B == null)
+                        { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not correspond to an existing viewer"; return Context.ResponseObject; }
                         if (B.Currency.ID == CorrespondingBot.Currency.ID || CorrespondingBot.IsSuperBot)
                         {
                             if (Context.Headers["DiscordID"] != null) { B.DiscordID = Context.Headers["DiscordID"]; }
@@ -51,6 +53,8 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     if (CorrespondingBot != null)
                     {
                         Data.Objects.Viewer B = new Data.Objects.Viewer();
+                        if (B == null)
+                        { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not correspond to an existing viewer"; return Context.ResponseObject; }
                         B.DiscordID = Context.Headers["DiscordID"];
                         B.TwitchID = Context.Headers["TwitchID"];
                         if (Context.Headers.AllKeys.Contains("CurrencyID"))
@@ -83,6 +87,8 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     {
                         try { int.Parse(Context.Headers["ID"]); int.Parse(Context.Headers["Value"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID and/or Value"; return Context.ResponseObject; }
                         Data.Objects.Viewer B = Data.Objects.Viewer.FromID(int.Parse(Context.Headers["ID"]));
+                        if (B == null)
+                        { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not correspond to an existing viewer"; return Context.ResponseObject; }
                         if (B.Currency.ID == CorrespondingBot.Currency.ID || CorrespondingBot.IsSuperBot)
                         {
                             if (Context.Headers["Operator"].ToString() == "+")
@@ -107,7 +113,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         //Context.ResponseObject.Code = 403; Context.ResponseObject.Message = "Invalid AuthToken";
                     }
                 }
-                else if ((Context.Headers.AllKeys.Contains("BalanceIncrement") || Context.Headers.AllKeys.Contains("WatchTimeIncrement")) && Context.RequestData != null)
+                else if ((Context.Headers.AllKeys.Contains("BalanceIncrement") || Context.Headers.AllKeys.Contains("WatchTimeIncrement")) && Context.Headers.AllKeys.Contains("CurrencyID") && Context.RequestData != null)
                 {
                     if (CorrespondingBot != null)
                     {
@@ -119,10 +125,12 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         {
                             try { WatchTimeIncrement=int.Parse(Context.Headers["WatchTimeIncrement"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed WatchTimeIncrement"; return Context.ResponseObject; }
                         }
+                        try { int.Parse(Context.Headers["CurrencyID"]); }
+                        catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
                         List<string> DiscordIDs=new List<string> { }, TwitchIDs=new List<string> { };
                         if (Context.RequestData["DiscordIDs"] != null) { DiscordIDs = Context.RequestData["DiscordIDs"].ToObject<List<string>>(); }
                         if (Context.RequestData["TwitchIDs"] != null) { TwitchIDs = Context.RequestData["TwitchIDs"].ToObject<List<string>>(); }
-                        Data.Objects.Viewer.Increment(DiscordIDs, TwitchIDs,BalanceIncrement,WatchTimeIncrement);
+                        Data.Objects.Viewer.Increment(DiscordIDs, TwitchIDs,BalanceIncrement,WatchTimeIncrement, int.Parse(Context.Headers["CurrencyID"]));
                     }
                 }
                 else if (Context.Headers.AllKeys.Contains("ID"))
@@ -131,6 +139,8 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     {
                         try { int.Parse(Context.Headers["ID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
                         Data.Objects.Viewer B = Data.Objects.Viewer.FromID(int.Parse(Context.Headers["ID"]));
+                        if (B == null)
+                        { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not correspond to an existing viewer"; return Context.ResponseObject; }
                         if (B.Currency.ID == CorrespondingBot.Currency.ID || CorrespondingBot.IsSuperBot)
                         {
                             B.Delete();
@@ -468,6 +478,12 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 //Check if the provided AuthToken matches the hash in the Bot Object
                 //And return  the bot object if it is valid
                 if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AuthToken"], Bot.AccessToken)) {
+                    if (!Bot.IsSuperBot && Bot.Currency == null)
+                    {
+                        Context.ResponseObject.Code = 400;
+                        Context.ResponseObject.Message = "Bad Request, Bot is not authorised for any currency";
+                        return null;
+                    }
                     return Bot;
                 }
                 else

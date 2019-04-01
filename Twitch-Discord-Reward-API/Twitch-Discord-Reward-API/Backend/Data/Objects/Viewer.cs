@@ -107,7 +107,7 @@ WHERE " + WhereStatment+@";
         }
 
         //Increment the balance and watchtime by the gioven amount for all accounts with the given ids
-        public static bool Increment(List<string> DiscordIDs = null, List<string> TwitchIDs=null,int BalanceIncrementBy=0,int WatchTimeIncrementBy=0)
+        public static bool Increment(List<string> DiscordIDs = null, List<string> TwitchIDs=null,int BalanceIncrementBy=0,int WatchTimeIncrementBy=0,int CurrencyID=0)
         {
             List<OleDbParameter> Params = new List<OleDbParameter> { new OleDbParameter("BalanceIncrement", BalanceIncrementBy),new OleDbParameter("WatchTimeIncrement",WatchTimeIncrementBy) };
             string WhereStatement = "";
@@ -127,8 +127,14 @@ WHERE " + WhereStatment+@";
                 WhereStatement += "Viewer.TwitchID=@TwitchID" + i;
                 i++;
             }
+            string ExtraStatement = "";
+            if (CurrencyID != 0)
+            {
+                ExtraStatement = " AND (Viewer.CurrencyID=@CurrencyID)";
+                Params.Add(new OleDbParameter("CurrencyID", CurrencyID));
+            }
             Init.SQLi.Execute(@"UPDATE Viewer SET Viewer.Balance = Viewer.Balance + @BalanceIncrement, Viewer.WatchTime = Viewer.WatchTime + @WatchTimeIncrement
-WHERE (((Viewer.DontReward)=False) AND (" + WhereStatement+@"));
+WHERE (((Viewer.DontReward)=False) AND (" + WhereStatement+@")"+ExtraStatement+@");
 ", Params);
             //Increment all matching ids balances and watchtime by the given amount
             return true;
