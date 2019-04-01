@@ -60,7 +60,8 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
             int GlobalAlertTimeout = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Alert"]["CoolDown"]["Global"].ToString()),
                 GlobalTimeoutRemaining = GlobalAlertTimeout - (int)((TimeSpan)(DateTime.Now - LastAlert)).TotalSeconds,
                 IndividualAlertTimeout = int.Parse(BotInstance.CommandConfig["CommandSetup"]["Alert"]["CoolDown"]["Individual"].ToString()),
-                IndividualTimeoutRemaining = IndividualAlertTimeout - (int)((TimeSpan)(DateTime.Now - AlertRequests.Where(x => x.User.ID == U.ID).First().LastAlert)).TotalSeconds;
+                IndividualTimeoutRemaining = 0;
+            if (AlertRequests.Where(x => x.User.ID == U.ID).Count() != 0) { IndividualTimeoutRemaining = IndividualAlertTimeout - (int)((TimeSpan)(DateTime.Now - AlertRequests.Where(x => x.User.ID == U.ID).First().LastAlert)).TotalSeconds; }
             if (GlobalTimeoutRemaining > IndividualTimeoutRemaining) { return GlobalTimeoutRemaining; }
             else { return IndividualTimeoutRemaining; }
         }

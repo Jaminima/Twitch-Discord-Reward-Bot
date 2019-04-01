@@ -313,13 +313,12 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 else if (Context.Headers.AllKeys.Contains("AccessToken") && Context.Headers.AllKeys.Contains("LoginID"))
                 {
                     try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed LoginID"; return Context.ResponseObject; }
-                    try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed LoginID"; return Context.ResponseObject; }
                     Data.Objects.Login L = Data.Objects.Login.FromID(int.Parse(Context.Headers["LoginID"]), true);
                     if (L != null)
                     {
                         if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken))
                         {
-                            if (Data.Objects.Bot.FromLogin(L.ID).Count >= 5) { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, You are already at the max currency count"; }
+                            if (Data.Objects.Bot.FromLogin(L.ID).Count >= 5) { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, You are already at the max Bot count"; }
                             else
                             {
                                 Data.Objects.Bot B = new Data.Objects.Bot();
