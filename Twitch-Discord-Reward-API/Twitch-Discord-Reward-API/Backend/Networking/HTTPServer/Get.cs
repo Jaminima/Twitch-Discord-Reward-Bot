@@ -111,15 +111,19 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 {
                     try { int.Parse(Context.Headers["ID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
                     Data.Objects.Login L = Data.Objects.Login.FromID(int.Parse(Context.Headers["ID"]));
-                    if (L != null) { Context.ResponseObject.Data = L.ToJson(); }
-                    if (Context.Headers.AllKeys.Contains("AccessToken")) {
-                        if (Context.Headers["AccessToken"] != "")
+                    if (L != null)
+                    {
+                        Context.ResponseObject.Data = L.ToJson();
+                        if (Context.Headers.AllKeys.Contains("AccessToken"))
                         {
-                            L = Data.Objects.Login.FromID(int.Parse(Context.Headers["ID"]),true);
-                            if (!Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken))
+                            if (Context.Headers["AccessToken"] != "")
                             {
-                                Context.ResponseObject = null;
-                                Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken doesnt match"; ErrorOccured = true;
+                                L = Data.Objects.Login.FromID(int.Parse(Context.Headers["ID"]), true);
+                                if (!Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken))
+                                {
+                                    Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken doesnt match"; ErrorOccured = true;
+                                }
+                                else { L.AccessToken = null; L.HashedPassword = null; Context.ResponseObject.Data = L.ToJson(); }
                             }
                         }
                     }
