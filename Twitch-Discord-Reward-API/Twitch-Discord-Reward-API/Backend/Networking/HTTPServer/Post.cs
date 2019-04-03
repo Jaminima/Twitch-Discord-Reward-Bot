@@ -117,20 +117,36 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 {
                     if (CorrespondingBot != null)
                     {
-                        int BalanceIncrement = 0, WatchTimeIncrement=0;
-                        if (Context.Headers.AllKeys.Contains("BalanceIncrement")) {
-                            try { BalanceIncrement=int.Parse(Context.Headers["BalanceIncrement"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed BalanceIncrement"; return Context.ResponseObject; }
+
+                        int BalanceIncrement = 0, WatchTimeIncrement = 0;
+                        if (Context.Headers.AllKeys.Contains("BalanceIncrement"))
+                        {
+                            try { BalanceIncrement = int.Parse(Context.Headers["BalanceIncrement"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed BalanceIncrement"; return Context.ResponseObject; }
                         }
                         if (Context.Headers.AllKeys.Contains("WatchTimeIncrement"))
                         {
-                            try { WatchTimeIncrement=int.Parse(Context.Headers["WatchTimeIncrement"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed WatchTimeIncrement"; return Context.ResponseObject; }
+                            try { WatchTimeIncrement = int.Parse(Context.Headers["WatchTimeIncrement"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed WatchTimeIncrement"; return Context.ResponseObject; }
                         }
                         try { int.Parse(Context.Headers["CurrencyID"]); }
                         catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
-                        List<string> DiscordIDs=new List<string> { }, TwitchIDs=new List<string> { };
-                        if (Context.RequestData["DiscordIDs"] != null) { DiscordIDs = Context.RequestData["DiscordIDs"].ToObject<List<string>>(); }
-                        if (Context.RequestData["TwitchIDs"] != null) { TwitchIDs = Context.RequestData["TwitchIDs"].ToObject<List<string>>(); }
-                        Data.Objects.Viewer.Increment(DiscordIDs, TwitchIDs,BalanceIncrement,WatchTimeIncrement, int.Parse(Context.Headers["CurrencyID"]));
+                        Data.Objects.Currency C = Data.Objects.Currency.FromID(int.Parse(Context.Headers["CurrencyID"]));
+                        if (C != null)
+                        {
+                            if (C.ID == CorrespondingBot.Currency.ID || CorrespondingBot.IsSuperBot)
+                            {
+                                List<string> DiscordIDs = new List<string> { }, TwitchIDs = new List<string> { };
+                                if (Context.RequestData["DiscordIDs"] != null) { DiscordIDs = Context.RequestData["DiscordIDs"].ToObject<List<string>>(); }
+                                if (Context.RequestData["TwitchIDs"] != null) { TwitchIDs = Context.RequestData["TwitchIDs"].ToObject<List<string>>(); }
+                                Data.Objects.Viewer.Increment(DiscordIDs, TwitchIDs, BalanceIncrement, WatchTimeIncrement, C.ID);
+                            }
+                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, This bot does not have permission to edit that Bank"; }
+                        }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, CurrencyID does not correspond to an existing Currency"; }
+                    }
+                    else
+                    {
+                        ErrorOccured = true;
+                        //Context.ResponseObject.Code = 403; Context.ResponseObject.Message = "Invalid AuthToken";
                     }
                 }
                 else if (Context.Headers.AllKeys.Contains("ID"))
@@ -275,13 +291,17 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 if (Context.Headers.AllKeys.Contains("RefreshToken") && Context.Headers.AllKeys.Contains("BotID"))
                 {
                     try { int.Parse(Context.Headers["BotID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
-                    Data.Objects.Bot B = Data.Objects.Bot.FromID(int.Parse(Context.Headers["BotID"]));
+                    Data.Objects.Bot B = Data.Objects.Bot.FromID(int.Parse(Context.Headers["BotID"]),true);
                     if (B != null)
                     {
-                        B.PerformRefresh();
-                        Context.ResponseObject.Data = B.ToJson();
+                        if (Backend.Init.ScryptEncoder.Compare(Context.Headers["RefreshToken"], B.RefreshToken))
+                        {
+                            B.PerformRefresh();
+                            Context.ResponseObject.Data = B.ToJson();
+                        }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Refresh Token is not valid"; }
                     }
-                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Refresh Token does not correspond to a bot"; }
+                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, BotID does not correspond to a bot"; }
                 }
                 else if (Context.Headers.AllKeys.Contains("AccessToken") && Context.Headers.AllKeys.Contains("CurrencyID") && Context.Headers.AllKeys.Contains("BotID") && Context.Headers.AllKeys.Contains("LoginID"))
                 {
@@ -304,7 +324,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                                 }
                                 else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Bot is already bound to a currency"; }
                             }
-                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, InviteCode doesnt match any bot"; }
+                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, BotID doesnt match any bot"; }
                         }
                         else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
                     }
