@@ -93,7 +93,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Data.APIIntergrations
 
         public static Newtonsoft.Json.Linq.JToken PlayAlert(BotInstance BotInstance, string SoundURL)
         {
-            return GenericExecute(BotInstance, "https://streamlabs.com/api/v1.0/alerts", "access_token="+ GetAuthToken(BotInstance).Token + "&type=donation&message= &user_message=This Is An Alert Not A Donation&image_href=https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/TransparentPlaceholder.svg/240px-TransparentPlaceholder.svg.png&sound_href=" + SoundURL, Method:"POST");
+            return GenericExecute(BotInstance, "https://streamlabs.com/api/v1.0/alerts", "access_token="+ GetAuthToken(BotInstance).Token + "&type=donation&message= &user_message=   &image_href=https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/TransparentPlaceholder.svg/240px-TransparentPlaceholder.svg.png&sound_href=" + SoundURL, Method:"POST");
         }
     }
 }

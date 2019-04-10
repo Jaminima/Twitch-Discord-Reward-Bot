@@ -486,7 +486,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                 {
                                     if (BotInstance.TimeEvents.AlertTimeOutExpired(e.User))
                                     {
-                                        string AlertName = e.MessageBody.Replace(e.SegmentedBody[0] + " ", "");
+                                        string AlertName = e.MessageBody.Replace(e.SegmentedBody[0] + " ", "").ToLower();
                                         Dictionary<int, int> MostSuitableAlert = new Dictionary<int, int> { };
                                         for (int iAlert = 0; iAlert < BotInstance.CommandConfig["CommandSetup"]["Alert"]["Alerts"].Count(); iAlert++)
                                         {
@@ -497,6 +497,7 @@ namespace Twitch_Discord_Reward_Bot.Backend.Bots.Commands
                                         }
                                         if (MostSuitableAlert.Count == 0) { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Responses"]["InvalidAlert"].ToString(), e); return; }
                                         KeyValuePair<int, int> ChosenAlert = new KeyValuePair<int, int>(0, MostSuitableAlert.First().Value);
+                                        if (MostSuitableAlert.Sum(x => x.Value) == 0) { await SendMessage(BotInstance.CommandConfig["CommandSetup"]["Alert"]["Responses"]["InvalidAlert"].ToString(), e); return; }
                                         foreach (int Key in MostSuitableAlert.Keys)
                                         {
                                             if (ChosenAlert.Value < MostSuitableAlert[Key]) { ChosenAlert = new KeyValuePair<int, int>(Key, MostSuitableAlert[Key]); }
