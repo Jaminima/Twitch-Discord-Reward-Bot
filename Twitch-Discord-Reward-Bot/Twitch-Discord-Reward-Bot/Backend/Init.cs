@@ -73,8 +73,8 @@ namespace Twitch_Discord_Reward_Bot.Backend
             //if (Isrunning) { CheckBotsAlive(); return; }
             //Isrunning = true;
             if (this.CommandHandler == null) { this.CommandHandler = new Bots.Commands.CommandHandler(this); }
-            try { if (this.DiscordBot == null) { this.DiscordBot = new Backend.Bots.DiscordBot.Instance(this); } } catch { }
-            try { if (this.TwitchBot == null) { this.TwitchBot = new Backend.Bots.TwitchBot.Instance(this); } } catch { }
+            try { if (this.DiscordBot == null) { this.DiscordBot = new Backend.Bots.DiscordBot.Instance(this); } } catch (Exception E) { Console.WriteLine(E); }
+            try { if (this.TwitchBot == null) { this.TwitchBot = new Backend.Bots.TwitchBot.Instance(this); } } catch (Exception E) { Console.WriteLine(E); }
             System.Threading.Thread.Sleep(5000);
             if (this.TimeEvents == null)
             {

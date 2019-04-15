@@ -375,6 +375,26 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                         if (CorrespondingBot != null && CorrespondingBot.IsSuperBot) { Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(Data.Objects.Currency.All(true)); }
                         else { Context.ResponseObject.Data = Newtonsoft.Json.Linq.JToken.FromObject(Data.Objects.Currency.All()); }
                     }
+                    else if (Context.URLSegments[2] == "delete")
+                    {
+                        if (Context.Headers.AllKeys.Contains("AccessToken") && Context.Headers.AllKeys.Contains("LoginID") && Context.Headers.AllKeys.Contains("CurrencyID"))
+                        {
+                            try { int.Parse(Context.Headers["LoginID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed LoginID"; return Context.ResponseObject; }
+                            try { int.Parse(Context.Headers["CurrencyID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
+                            Data.Objects.Login L = Data.Objects.Login.FromID(int.Parse(Context.Headers["LoginID"]), true);
+                            if (L != null)
+                            {
+                                if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken))
+                                {
+                                    Data.Objects.Currency C = Data.Objects.Currency.FromID(int.Parse(Context.Headers["CurrencyID"]));
+                                    if (C != null) { C.Delete(); }
+                                    else { }
+                                }
+                                else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
+                            }
+                            else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not correspond to an existing user"; }
+                        }
+                    }
                     else
                     {
                         ErrorOccured = true;
