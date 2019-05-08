@@ -205,6 +205,21 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                     }
                     else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not correspond to an existing user"; }
                 }
+                else if (Context.Headers.AllKeys.Contains("AccessToken") && Context.Headers.AllKeys.Contains("ID"))
+                {
+                    try { int.Parse(Context.Headers["ID"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed ID"; return Context.ResponseObject; }
+                    Data.Objects.Login L = Data.Objects.Login.FromID(int.Parse(Context.Headers["ID"]), true);
+                    if (L != null)
+                    {
+                        if (Backend.Init.ScryptEncoder.Compare(Context.Headers["AccessToken"], L.AccessToken))
+                        {
+                            if (!L.UpdateToken()) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Was unable to refresh"; ErrorOccured = true; }
+                            else { Context.ResponseObject.Data = L.ToJson(); }
+                        }
+                        else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, AccessToken is invalid"; }
+                    }
+                    else { ErrorOccured = true; Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, ID does not correspond to an existing user"; }
+                }
                 else if (Context.Headers.AllKeys.Contains("Password"))
                 {
                     if (Context.Headers.AllKeys.Contains("UserName"))
@@ -263,7 +278,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             }
             else if (Context.URLSegments[1] == "signup")
             {
-                if ((Context.Headers.AllKeys.Contains("UserName") || Context.Headers.AllKeys.Contains("Email")) && Context.Headers.AllKeys.Contains("Password"))
+                if (Context.Headers.AllKeys.Contains("UserName") && Context.Headers.AllKeys.Contains("Email") && Context.Headers.AllKeys.Contains("Password"))
                 {
                     Backend.Data.Objects.Login L = new Data.Objects.Login();
                     L.Email = Context.Headers["Email"];

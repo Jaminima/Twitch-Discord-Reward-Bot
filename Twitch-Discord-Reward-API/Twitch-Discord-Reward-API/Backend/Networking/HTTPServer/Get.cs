@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Net;
 using System.IO;
+using System.Net.Mail;
 
 namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
 {
@@ -138,8 +139,25 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
                 else if (Context.Headers.AllKeys.Contains("Email"))//Get Login where Email matches
                 {
                     Data.Objects.Login L = Data.Objects.Login.FromEmail(Context.Headers["Email"]);
-                    if (L != null) { Context.ResponseObject.Data = L.ToJson(); }
-                    else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Email does not match an existing object"; ErrorOccured = true; }
+                    if (Context.URLSegments.Length == 3)
+                    {
+                        if (Context.URLSegments[2] == "recover")
+                        {
+                            if (!L.UpdateToken()) { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Was unable to recover"; ErrorOccured = true; }
+                            else
+                            {
+                                MailMessage Message = new MailMessage(Backend.Init.APIConfig["Email"]["Email"].ToString(), Context.Headers["Email"], "Password Recovery", Backend.Init.APIConfig["Email"]["Body"].ToString().Replace("<@Token>",L.AccessToken));
+                                Message.BodyEncoding = UTF8Encoding.UTF8;
+                                Message.DeliveryNotificationOptions = DeliveryNotificationOptions.OnFailure;
+                                Backend.Init.Emailer.Send(Message);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (L != null) { Context.ResponseObject.Data = L.ToJson(); }
+                        else { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Email does not match an existing object"; ErrorOccured = true; }
+                    }
                 }
                 else//Inform requestor that we dont have any infomation to work with
                 {
@@ -194,7 +212,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             else if (Context.URLSegments[1] == "nightbot")
             {
                 Context.GetStateParams();
-                if (Context.URLParamaters.ContainsKey("code") && Context.URLParamaters.ContainsKey("state") && Context.StateParamaters.ContainsKey("currencyid") && Context.StateParamaters.ContainsKey("accesstoken"))
+                if (Context.URLParamaters.ContainsKey("code") && Context.StateParamaters.ContainsKey("accesstoken") && Context.URLParamaters.ContainsKey("state") && Context.StateParamaters.ContainsKey("currencyid") && Context.StateParamaters.ContainsKey("accesstoken"))
                 {
                     string Code = Context.URLParamaters["code"];
                     try { int.Parse(Context.StateParamaters["currencyid"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
@@ -241,7 +259,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             else if (Context.URLSegments[1] == "streamlabs")
             {
                 Context.GetStateParams();
-                if (Context.URLParamaters.ContainsKey("code") && Context.URLParamaters.ContainsKey("state") && Context.StateParamaters.ContainsKey("currencyid"))
+                if (Context.URLParamaters.ContainsKey("code") && Context.URLParamaters.ContainsKey("state") && Context.StateParamaters.ContainsKey("currencyid") && Context.StateParamaters.ContainsKey("accesstoken"))
                 {
                     string Code = Context.URLParamaters["code"];
                     try { int.Parse(Context.StateParamaters["currencyid"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
@@ -287,7 +305,7 @@ namespace Twitch_Discord_Reward_API.Backend.Networking.HTTPServer
             else if (Context.URLSegments[1] == "twitch")
             {
                 Context.GetStateParams();
-                if (Context.URLParamaters.ContainsKey("code") && Context.URLParamaters.ContainsKey("state") && Context.StateParamaters.ContainsKey("currencyid"))
+                if (Context.URLParamaters.ContainsKey("code") && Context.StateParamaters.ContainsKey("accesstoken") && Context.URLParamaters.ContainsKey("state") && Context.StateParamaters.ContainsKey("currencyid"))
                 {
                     string Code = Context.URLParamaters["code"];
                     try { int.Parse(Context.StateParamaters["currencyid"]); } catch { Context.ResponseObject.Code = 400; Context.ResponseObject.Message = "Bad Request, Malformed CurrencyID"; return Context.ResponseObject; }
